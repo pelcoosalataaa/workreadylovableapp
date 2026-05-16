@@ -30,7 +30,7 @@ const certs: Cert[] = [
   { Icon: Layers, iconColor: "#7dedb8", iconBg: "rgba(255,77,106,0.1)", name: "Betongkurs", person: "Sara Berg", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Partner2Work AB" },
   { Icon: Flame, iconColor: "#ff4d6a", iconBg: "rgba(255,77,106,0.1)", name: "Heta arbeten", person: "Johan Nilsson", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Ikett Personalpartner" },
   { Icon: FileText, iconColor: "#60b0f4", iconBg: "rgba(0,224,150,0.1)", name: "Ritningsläsning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
-  { icon: "⚙️", iconBg: "rgba(0,224,150,0.1)", name: "CNC-utbildning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
+  { Icon: Award, iconColor: "#7dedb8", iconBg: "rgba(0,224,150,0.1)", name: "CNC-utbildning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
 ];
 
 const filters = ["Alla", "Giltiga", "Utgår snart", "Saknas", "Truckkort", "Traverskort", "Betongkurs"] as const;
