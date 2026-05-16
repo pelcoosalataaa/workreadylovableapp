@@ -1,23 +1,11 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AppSidebar } from "@/components/AppSidebar";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
-
-const navItems = [
-  { icon: "📊", label: "Dashboard", active: true },
-  { icon: "👷", label: "Personal", badge: 3 },
-  { icon: "🎬", label: "Moduler" },
-  { icon: "⏺", label: "Spela in" },
-  { icon: "🧠", label: "Kompetensmatris" },
-  { icon: "🏆", label: "Certifikat" },
-  { icon: "⚠️", label: "Utgående snart", badge: 2 },
-  { icon: "🔄", label: "Inhyrd personal" },
-  { icon: "🏢", label: "Bemanningsbolag" },
-  { icon: "⚙️", label: "Inställningar" },
-];
 
 function DashboardPage() {
   const navigate = useNavigate();
