@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { Building2 } from "lucide-react";
+import { Building2, X } from "lucide-react";
 
 export const Route = createFileRoute("/bemanningsbolag")({
   component: BemanningsbolagPage,
