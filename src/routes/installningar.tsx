@@ -557,8 +557,8 @@ function DangerCard() {
         padding: 20,
       }}
     >
-      <div className="font-display font-bold text-[14px] mb-3" style={{ color: "#ff4d6a" }}>
-        Farlig zon
+      <div className="font-display font-bold text-[14px] mb-3 flex items-center gap-2" style={{ color: "#ff4d6a" }}>
+        <AlertTriangle size={16} strokeWidth={1.75} /> Farlig zon
       </div>
       <div
         className="flex items-center justify-between"
