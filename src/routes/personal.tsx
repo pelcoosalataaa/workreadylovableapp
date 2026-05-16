@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/personal")({
   component: PersonalPage,
@@ -85,7 +86,7 @@ function PersonalPage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">👷 Personal</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Users size={22} strokeWidth={1.75} color="#7dedb8" /> Personal</h1>
               <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · 27 aktiva medarbetare</p>
             </div>
             <div className="flex items-center gap-2">
