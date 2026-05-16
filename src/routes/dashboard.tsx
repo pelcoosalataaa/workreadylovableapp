@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Users, Building2, RefreshCw, Bot, CircleDot } from "lucide-react";
+import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -204,11 +204,11 @@ function AiActivityCard() {
   );
 }
 
-function ModuleCard({ icon, title, sub, tagText, tagColor, percent, barColor, shimmer }: { icon: string; title: string; sub: string; tagText: string; tagColor: string; percent: number; barColor: string; shimmer?: boolean }) {
+function ModuleCard({ icon, title, sub, tagText, tagColor, percent, barColor, shimmer }: { icon: React.ReactNode; title: string; sub: string; tagText: string; tagColor: string; percent: number; barColor: string; shimmer?: boolean }) {
   return (
     <div className="rounded-[10px] border border-border p-4 flex flex-col gap-3" style={{ background: "#0e2538" }}>
       <div className="flex items-start justify-between">
-        <div className="text-2xl">{icon}</div>
+        <div className="flex h-5 w-5 items-center justify-center">{icon}</div>
         <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: `${tagColor}1a`, color: tagColor }}>{tagText}</span>
       </div>
       <div>
@@ -234,11 +234,11 @@ function ModulesSection() {
         <button className="text-xs text-muted-foreground hover:text-primary">Se alla →</button>
       </div>
       <div className="grid grid-cols-3 gap-4">
-        <ModuleCard icon="🏗" title="Introduktion betong" sub="12 min · 5 steg · Quiz" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
-        <ModuleCard icon="⚠️" title="Säkerhet & skydd" sub="8 min · 4 steg · Certifiering" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
-        <ModuleCard icon="📐" title="Ritningsläsning" sub="20 min · 8 steg · Quiz" tagText="19/27 klara" tagColor="#ffd166" percent={70} barColor="#ffd166" />
-        <ModuleCard icon="🚜" title="Traverskörning" sub="AI bygger just nu..." tagText="⏳ AI skapar" tagColor="#7dedb8" percent={55} barColor="#7dedb8" shimmer />
-        <ModuleCard icon="🔧" title="Gjutning & armering" sub="25 min · 10 steg · Certifiering" tagText="12/27 klara" tagColor="#3d6a7a" percent={44} barColor="#3d6a7a" />
+        <ModuleCard icon={<Layers size={20} strokeWidth={1.75} color="#7dedb8" />} title="Introduktion betong" sub="12 min · 5 steg · Quiz" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
+        <ModuleCard icon={<ShieldAlert size={20} strokeWidth={1.75} color="#ffd166" />} title="Säkerhet & skydd" sub="8 min · 4 steg · Certifiering" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
+        <ModuleCard icon={<FileText size={20} strokeWidth={1.75} color="#60b0f4" />} title="Ritningsläsning" sub="20 min · 8 steg · Quiz" tagText="19/27 klara" tagColor="#ffd166" percent={70} barColor="#ffd166" />
+        <ModuleCard icon={<ArrowUpFromLine size={20} strokeWidth={1.75} color="#7dedb8" />} title="Traverskörning" sub="AI bygger just nu..." tagText="⏳ AI skapar" tagColor="#7dedb8" percent={55} barColor="#7dedb8" shimmer />
+        <ModuleCard icon={<Hammer size={20} strokeWidth={1.75} color="#ffd166" />} title="Gjutning & armering" sub="25 min · 10 steg · Certifiering" tagText="12/27 klara" tagColor="#3d6a7a" percent={44} barColor="#3d6a7a" />
         <div className="rounded-[10px] border border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 text-center" style={{ background: "rgba(125,237,184,0.03)" }}>
           <div className="text-2xl">⏺</div>
           <div className="font-display font-bold text-sm">Ny modul</div>

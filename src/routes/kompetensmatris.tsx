@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { Grid3x3 } from "lucide-react";
+import { Grid3x3, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/kompetensmatris")({
   component: KompetensmatrisPage,
@@ -122,9 +122,9 @@ function KompetensmatrisPage() {
                 <span style={labelStyle}>Bransch</span>
                 <select style={selectStyle} defaultValue="alla">
                   <option value="alla">Alla branscher</option>
-                  <option>🏗 Betong & Prefab</option>
+                  <option>Betong & Prefab</option>
                   <option>⚙️ Verkstad & Industri</option>
-                  <option>🚜 Lager & Logistik</option>
+                  <option>Lager & Logistik</option>
                   <option>🔨 Bygg & Anläggning</option>
                 </select>
               </div>
@@ -177,7 +177,7 @@ function KompetensmatrisPage() {
           {/* Industry section */}
           <div>
             <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #1a3d58" }}>
-              <div className="flex items-center justify-center text-lg" style={{ width: 40, height: 40, background: "rgba(125,237,184,0.1)", borderRadius: 8 }}>🏗</div>
+              <div className="flex items-center justify-center" style={{ width: 40, height: 40, background: "rgba(125,237,184,0.1)", borderRadius: 8 }}><Layers size={20} strokeWidth={1.75} color="#7dedb8" /></div>
               <div>
                 <div className="font-display font-bold text-white text-[20px]">Betong & Prefab</div>
                 <div className="text-[12px] text-muted-foreground">Byggelement AB · Thomas Betong · SF Marina</div>

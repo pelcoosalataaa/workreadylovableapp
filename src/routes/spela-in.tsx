@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { CircleDot } from "lucide-react";
+import { CircleDot, Layers, ShieldAlert, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/spela-in")({
   component: SpelaInPage,
@@ -21,9 +21,9 @@ const howSteps: HowStep[] = [
 ];
 
 const previousModules = [
-  { icon: "🏗", title: "Introduktion betong", author: "Erik Svensson", tag: "27/27", color: "#00e096" },
-  { icon: "⚠️", title: "Säkerhet & skydd", author: "Anna Berg", tag: "27/27", color: "#00e096" },
-  { icon: "📐", title: "Ritningsläsning", author: "Erik Svensson", tag: "19/27", color: "#ffd166" },
+  { icon: <Layers size={20} strokeWidth={1.75} color="#7dedb8" />, title: "Introduktion betong", author: "Erik Svensson", tag: "27/27", color: "#00e096" },
+  { icon: <ShieldAlert size={20} strokeWidth={1.75} color="#ffd166" />, title: "Säkerhet & skydd", author: "Anna Berg", tag: "27/27", color: "#00e096" },
+  { icon: <FileText size={20} strokeWidth={1.75} color="#60b0f4" />, title: "Ritningsläsning", author: "Erik Svensson", tag: "19/27", color: "#ffd166" },
 ];
 
 function SpelaInPage() {
@@ -183,7 +183,7 @@ function SpelaInPage() {
               <div className="flex flex-col gap-2">
                 {previousModules.map((m) => (
                   <div key={m.title} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                    <div className="text-[18px]">{m.icon}</div>
+                    <div className="flex h-5 w-5 items-center justify-center">{m.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[13px] font-semibold text-foreground truncate">{m.title}</div>
                       <div className="text-[11px]" style={{ color: "#3d6a7a" }}>{m.author}</div>
