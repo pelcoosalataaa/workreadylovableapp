@@ -1,16 +1,29 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  Users,
+  Video,
+  CircleDot,
+  Grid3x3,
+  Award,
+  AlertTriangle,
+  RefreshCw,
+  Building2,
+  Settings,
+  type LucideIcon,
+} from "lucide-react";
 
-const navItems: { icon: string; label: string; to?: string; badge?: number }[] = [
-  { icon: "📊", label: "Dashboard", to: "/dashboard" },
-  { icon: "👷", label: "Personal", to: "/personal", badge: 3 },
-  { icon: "🎬", label: "Moduler", to: "/moduler" },
-  { icon: "⏺", label: "Spela in", to: "/spela-in" },
-  { icon: "🧠", label: "Kompetensmatris", to: "/kompetensmatris" },
-  { icon: "🏆", label: "Certifikat", to: "/certifikat" },
-  { icon: "⚠️", label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
-  { icon: "🔄", label: "Inhyrd personal", to: "/inhyrd-personal" },
-  { icon: "🏢", label: "Bemanningsbolag" },
-  { icon: "⚙️", label: "Inställningar" },
+const navItems: { Icon: LucideIcon; label: string; to?: string; badge?: number }[] = [
+  { Icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+  { Icon: Users, label: "Personal", to: "/personal", badge: 3 },
+  { Icon: Video, label: "Moduler", to: "/moduler" },
+  { Icon: CircleDot, label: "Spela in", to: "/spela-in" },
+  { Icon: Grid3x3, label: "Kompetensmatris", to: "/kompetensmatris" },
+  { Icon: Award, label: "Certifikat", to: "/certifikat" },
+  { Icon: AlertTriangle, label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
+  { Icon: RefreshCw, label: "Inhyrd personal", to: "/inhyrd-personal" },
+  { Icon: Building2, label: "Bemanningsbolag" },
+  { Icon: Settings, label: "Inställningar" },
 ];
 
 export function AppSidebar() {
@@ -34,9 +47,12 @@ export function AppSidebar() {
           const style = active
             ? { background: "rgba(125,237,184,0.08)", borderLeft: "2px solid #7dedb8", paddingLeft: "10px" }
             : undefined;
+          const Icon = item.Icon;
           const inner = (
             <>
-              <span className="text-base w-5">{item.icon}</span>
+              <span className="w-5 flex items-center justify-center">
+                <Icon size={16} strokeWidth={1.75} color={active ? "#7dedb8" : "rgba(237,250,244,0.35)"} />
+              </span>
               <span className="flex-1 text-left">{item.label}</span>
               {item.badge && (
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#ff4d6a", color: "#fff" }}>
