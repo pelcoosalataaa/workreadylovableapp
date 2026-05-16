@@ -22,7 +22,7 @@ const navItems: { Icon: LucideIcon; label: string; to?: string; badge?: number }
   { Icon: Award, label: "Certifikat", to: "/certifikat" },
   { Icon: AlertTriangle, label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
   { Icon: RefreshCw, label: "Inhyrd personal", to: "/inhyrd-personal" },
-  { Icon: Building2, label: "Bemanningsbolag" },
+  { Icon: Building2, label: "Bemanningsbolag", to: "/bemanningsbolag" },
   { Icon: Settings, label: "Inställningar" },
 ];
 
