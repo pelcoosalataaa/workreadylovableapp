@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UtgaendeCertifikatRouteImport } from './routes/utgaende-certifikat'
 import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
@@ -19,6 +20,11 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
+  id: '/utgaende-certifikat',
+  path: '/utgaende-certifikat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpelaInRoute = SpelaInRouteImport.update({
   id: '/spela-in',
   path: '/spela-in',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +93,7 @@ export interface FileRoutesByTo {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +106,7 @@ export interface FileRoutesById {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +120,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utgaende-certifikat'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utgaende-certifikat'
   id:
     | '__root__'
     | '/'
@@ -133,6 +144,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utgaende-certifikat'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,10 +157,18 @@ export interface RootRouteChildren {
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
   SpelaInRoute: typeof SpelaInRoute
+  UtgaendeCertifikatRoute: typeof UtgaendeCertifikatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/utgaende-certifikat': {
+      id: '/utgaende-certifikat'
+      path: '/utgaende-certifikat'
+      fullPath: '/utgaende-certifikat'
+      preLoaderRoute: typeof UtgaendeCertifikatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spela-in': {
       id: '/spela-in'
       path: '/spela-in'
@@ -225,6 +245,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
   SpelaInRoute: SpelaInRoute,
+  UtgaendeCertifikatRoute: UtgaendeCertifikatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
