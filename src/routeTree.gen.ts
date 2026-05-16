@@ -16,6 +16,7 @@ import { Route as ModulerRouteImport } from './routes/moduler'
 import { Route as MobilRouteImport } from './routes/mobil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
+import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
 import { Route as IndexRouteImport } from './routes/index'
@@ -55,6 +56,11 @@ const KompetensmatrisRoute = KompetensmatrisRouteImport.update({
   path: '/kompetensmatris',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InhyrdPersonalRoute = InhyrdPersonalRouteImport.update({
+  id: '/inhyrd-personal',
+  path: '/inhyrd-personal',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
+  '/inhyrd-personal': typeof InhyrdPersonalRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
+  '/inhyrd-personal': typeof InhyrdPersonalRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
+  '/inhyrd-personal': typeof InhyrdPersonalRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/certifikat'
     | '/dashboard'
+    | '/inhyrd-personal'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/certifikat'
     | '/dashboard'
+    | '/inhyrd-personal'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/certifikat'
     | '/dashboard'
+    | '/inhyrd-personal'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
+  InhyrdPersonalRoute: typeof InhyrdPersonalRoute
   KompetensmatrisRoute: typeof KompetensmatrisRoute
   LoginRoute: typeof LoginRoute
   MobilRoute: typeof MobilRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KompetensmatrisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inhyrd-personal': {
+      id: '/inhyrd-personal'
+      path: '/inhyrd-personal'
+      fullPath: '/inhyrd-personal'
+      preLoaderRoute: typeof InhyrdPersonalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -239,6 +259,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
+  InhyrdPersonalRoute: InhyrdPersonalRoute,
   KompetensmatrisRoute: KompetensmatrisRoute,
   LoginRoute: LoginRoute,
   MobilRoute: MobilRoute,
@@ -250,3 +271,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
