@@ -177,7 +177,7 @@ function ModuleCard({ m }: { m: Module }) {
 function RecordCard() {
   return (
     <a href="/spela-in" className="rounded-[10px] flex flex-col items-center justify-center gap-3 text-center transition hover:border-[rgba(125,237,184,0.4)]" style={{ background: "transparent", border: "1.5px dashed #1a3d58", padding: 20, minHeight: 220 }}>
-      <CircleDot size={32} strokeWidth={1.75} color="#7dedb8" />
+      <PlusCircle size={28} strokeWidth={1.5} color="#7dedb8" />
       <div>
         <div className="font-display font-bold text-[15px] text-white">Spela in ny modul</div>
         <div className="text-[11px] text-muted-foreground mt-1">AI bygger utbildningen automatiskt</div>
