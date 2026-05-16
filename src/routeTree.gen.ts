@@ -19,6 +19,7 @@ import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
 import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
+import { Route as BemanningsbolagRouteImport } from './routes/bemanningsbolag'
 import { Route as IndexRouteImport } from './routes/index'
 
 const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
@@ -71,6 +72,11 @@ const CertifikatRoute = CertifikatRouteImport.update({
   path: '/certifikat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BemanningsbolagRoute = BemanningsbolagRouteImport.update({
+  id: '/bemanningsbolag',
+  path: '/bemanningsbolag',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -79,6 +85,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bemanningsbolag': typeof BemanningsbolagRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bemanningsbolag': typeof BemanningsbolagRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bemanningsbolag': typeof BemanningsbolagRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bemanningsbolag'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bemanningsbolag'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/bemanningsbolag'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BemanningsbolagRoute: typeof BemanningsbolagRoute
   CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
   InhyrdPersonalRoute: typeof InhyrdPersonalRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CertifikatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bemanningsbolag': {
+      id: '/bemanningsbolag'
+      path: '/bemanningsbolag'
+      fullPath: '/bemanningsbolag'
+      preLoaderRoute: typeof BemanningsbolagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BemanningsbolagRoute: BemanningsbolagRoute,
   CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
   InhyrdPersonalRoute: InhyrdPersonalRoute,
