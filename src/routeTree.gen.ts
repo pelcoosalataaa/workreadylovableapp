@@ -15,6 +15,7 @@ import { Route as ModulerRouteImport } from './routes/moduler'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CertifikatRouteImport } from './routes/certifikat'
 import { Route as IndexRouteImport } from './routes/index'
 
 const SpelaInRoute = SpelaInRouteImport.update({
@@ -47,6 +48,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CertifikatRoute = CertifikatRouteImport.update({
+  id: '/certifikat',
+  path: '/certifikat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -55,6 +61,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
@@ -64,6 +71,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
@@ -74,6 +82,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
@@ -85,6 +94,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/certifikat'
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
@@ -94,6 +104,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/certifikat'
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
@@ -103,6 +114,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/certifikat'
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
@@ -113,6 +125,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
   KompetensmatrisRoute: typeof KompetensmatrisRoute
   LoginRoute: typeof LoginRoute
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/certifikat': {
+      id: '/certifikat'
+      path: '/certifikat'
+      fullPath: '/certifikat'
+      preLoaderRoute: typeof CertifikatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -177,6 +197,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
   KompetensmatrisRoute: KompetensmatrisRoute,
   LoginRoute: LoginRoute,
