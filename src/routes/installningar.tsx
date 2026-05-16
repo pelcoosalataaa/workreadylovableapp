@@ -502,7 +502,7 @@ function SubscriptionCard() {
           <Stat label="Nästa faktura" value="2026-06-16" size={14} mono />
           <Stat label="Medlem sedan" value="2024-11-01" size={14} mono />
         </div>
-        <button className="ins-ghost-btn w-full">Hantera prenumeration</button>
+        
       </div>
     </div>
   );
