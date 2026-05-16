@@ -238,11 +238,3 @@ function BemanningsbolagPage() {
     </div>
   );
 }
-      <style>{sidebarKeyframes}</style>
-      <style>{`
-        .bb-row:hover { background: rgba(125,237,184,0.03); }
-        .add-company:hover { border-color: #7dedb8 !important; background: rgba(125,237,184,0.02) !important; }
-      `}</style>
-    </div>
-  );
-}
