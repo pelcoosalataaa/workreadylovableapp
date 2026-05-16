@@ -7,7 +7,7 @@ const navItems: { icon: string; label: string; to?: string; badge?: number }[] =
   { icon: "⏺", label: "Spela in", to: "/spela-in" },
   { icon: "🧠", label: "Kompetensmatris", to: "/kompetensmatris" },
   { icon: "🏆", label: "Certifikat", to: "/certifikat" },
-  { icon: "⚠️", label: "Utgående snart", badge: 2 },
+  { icon: "⚠️", label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
   { icon: "🔄", label: "Inhyrd personal" },
   { icon: "🏢", label: "Bemanningsbolag" },
   { icon: "⚙️", label: "Inställningar" },
