@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { Award, Plus } from "lucide-react";
+import { Award, Plus, Layers, ShieldAlert, ArrowUpFromLine, Flame, FileText, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/certifikat")({
   component: CertifikatPage,
@@ -11,7 +11,8 @@ export const Route = createFileRoute("/certifikat")({
 type Status = "valid" | "expiring" | "missing";
 
 type Cert = {
-  icon: string;
+  Icon: LucideIcon;
+  iconColor: string;
   iconBg: string;
   name: string;
   person: string;
@@ -22,13 +23,13 @@ type Cert = {
 };
 
 const certs: Cert[] = [
-  { icon: "🏗", iconBg: "rgba(0,224,150,0.1)", name: "Betongkurs", person: "Anders Johansson", date: "Godkänd: 2024-11-05", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
-  { icon: "⚠️", iconBg: "rgba(0,224,150,0.1)", name: "Säkerhet & Skydd", person: "Anders Johansson", date: "Godkänd: 2024-11-05", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
-  { icon: "🚜", iconBg: "rgba(255,209,102,0.1)", name: "Traverskort", person: "Erik Holm", date: "Utgår: 2026-05-30", status: "expiring", tag: "⚠ Utgår om 14 dagar", company: "Byggelement AB" },
-  { icon: "🚜", iconBg: "rgba(255,209,102,0.1)", name: "Truckkort B", person: "Petter Lindgren", date: "Utgår: 2026-06-15", status: "expiring", tag: "⚠ Utgår om 30 dagar", company: "Partner2Work AB" },
-  { icon: "🏗", iconBg: "rgba(255,77,106,0.1)", name: "Betongkurs", person: "Sara Berg", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Partner2Work AB" },
-  { icon: "🔥", iconBg: "rgba(255,77,106,0.1)", name: "Heta arbeten", person: "Johan Nilsson", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Ikett Personalpartner" },
-  { icon: "📐", iconBg: "rgba(0,224,150,0.1)", name: "Ritningsläsning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
+  { Icon: Layers, iconColor: "#7dedb8", iconBg: "rgba(0,224,150,0.1)", name: "Betongkurs", person: "Anders Johansson", date: "Godkänd: 2024-11-05", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
+  { Icon: ShieldAlert, iconColor: "#ffd166", iconBg: "rgba(0,224,150,0.1)", name: "Säkerhet & Skydd", person: "Anders Johansson", date: "Godkänd: 2024-11-05", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
+  { Icon: ArrowUpFromLine, iconColor: "#7dedb8", iconBg: "rgba(255,209,102,0.1)", name: "Traverskort", person: "Erik Holm", date: "Utgår: 2026-05-30", status: "expiring", tag: "⚠ Utgår om 14 dagar", company: "Byggelement AB" },
+  { Icon: ArrowUpFromLine, iconColor: "#7dedb8", iconBg: "rgba(255,209,102,0.1)", name: "Truckkort B", person: "Petter Lindgren", date: "Utgår: 2026-06-15", status: "expiring", tag: "⚠ Utgår om 30 dagar", company: "Partner2Work AB" },
+  { Icon: Layers, iconColor: "#7dedb8", iconBg: "rgba(255,77,106,0.1)", name: "Betongkurs", person: "Sara Berg", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Partner2Work AB" },
+  { Icon: Flame, iconColor: "#ff4d6a", iconBg: "rgba(255,77,106,0.1)", name: "Heta arbeten", person: "Johan Nilsson", date: "Ej genomförd", status: "missing", tag: "✗ Saknas", company: "Ikett Personalpartner" },
+  { Icon: FileText, iconColor: "#60b0f4", iconBg: "rgba(0,224,150,0.1)", name: "Ritningsläsning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
   { icon: "⚙️", iconBg: "rgba(0,224,150,0.1)", name: "CNC-utbildning", person: "Maria Karlsson", date: "Godkänd: 2024-11-07", status: "valid", tag: "✓ Giltigt", company: "Byggelement AB" },
 ];
 
@@ -165,7 +166,7 @@ function CertifikatPage() {
                 }}
               >
                 <div className="flex items-start gap-3 mb-3">
-                  <div className="flex items-center justify-center text-xl shrink-0" style={{ width: 40, height: 40, background: c.iconBg, borderRadius: 8 }}>{c.icon}</div>
+                  <div className="flex items-center justify-center shrink-0" style={{ width: 40, height: 40, background: c.iconBg, borderRadius: 8 }}><c.Icon size={20} strokeWidth={1.75} color={c.iconColor} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="font-display font-bold text-white text-[16px] truncate">{c.name}</div>
                     <div className="text-[13px] text-foreground/90 truncate">{c.person}</div>
