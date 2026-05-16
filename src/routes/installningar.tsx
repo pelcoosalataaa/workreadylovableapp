@@ -12,6 +12,7 @@ import {
   CreditCard,
   CheckCircle,
   MoreHorizontal,
+  AlertTriangle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/installningar")({
