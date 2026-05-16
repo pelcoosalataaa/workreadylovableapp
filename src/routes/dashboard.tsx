@@ -103,8 +103,8 @@ function AlertBanner() {
 
 function StatsRow() {
   const stats = [
-    { color: "#7dedb8", label: "PERSONAL TOTALT", value: "27", sub: "↑ 3 nya denna vecka" },
-    { color: "#00e096", label: "GODKÄNDA & REDO", value: "19", sub: "70% av alla" },
+    { color: "#60b0f4", label: "PERSONAL TOTALT", value: "27", sub: "↑ 3 nya denna vecka" },
+    { color: "#7dedb8", label: "GODKÄNDA & REDO", value: "19", sub: "70% av alla" },
     { color: "#ffd166", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu" },
     { color: "#ff4d6a", label: "EJ PÅBÖRJAT", value: "3", sub: "⚠ SMS skickat" },
   ];
@@ -129,12 +129,12 @@ function PersonRow({ initials, name, role, percent, color, status }: { initials:
       <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0" style={{ background: `${color}22`, color }}>{initials}</div>
       <div className="min-w-0 w-44">
         <div className="text-sm font-semibold truncate">{name}</div>
-        <div className="text-[11px] text-muted-foreground truncate">{role}</div>
+        <div className="text-[11px] truncate" style={{ color: "#8ec8e0" }}>{role}</div>
       </div>
       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
         <div className="h-full rounded-full" style={{ width: `${percent}%`, background: color }} />
       </div>
-      <div className="text-xs font-semibold w-20 text-right" style={{ color: status.includes("Ej") ? "#ff4d6a" : color }}>{status}</div>
+      <div className="text-xs font-semibold w-20 text-right" style={{ color: status.includes("Ej") ? "#ff4d6a" : "#8ec8e0" }}>{status}</div>
     </div>
   );
 }
