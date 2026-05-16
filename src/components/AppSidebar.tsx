@@ -23,7 +23,7 @@ const navItems: { Icon: LucideIcon; label: string; to?: string; badge?: number }
   { Icon: AlertTriangle, label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
   { Icon: RefreshCw, label: "Inhyrd personal", to: "/inhyrd-personal" },
   { Icon: Building2, label: "Bemanningsbolag", to: "/bemanningsbolag" },
-  { Icon: Settings, label: "Inställningar" },
+  { Icon: Settings, label: "Inställningar", to: "/installningar" },
 ];
 
 export function AppSidebar() {
