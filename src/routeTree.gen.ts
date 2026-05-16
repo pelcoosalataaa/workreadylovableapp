@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
+import { Route as MobilRouteImport } from './routes/mobil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -31,6 +32,11 @@ const PersonalRoute = PersonalRouteImport.update({
 const ModulerRoute = ModulerRouteImport.update({
   id: '/moduler',
   path: '/moduler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobilRoute = MobilRouteImport.update({
+  id: '/mobil',
+  path: '/mobil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
+  '/mobil': typeof MobilRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
+  '/mobil': typeof MobilRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
+  '/mobil': typeof MobilRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
+    | '/mobil'
     | '/moduler'
     | '/personal'
     | '/spela-in'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
+    | '/mobil'
     | '/moduler'
     | '/personal'
     | '/spela-in'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/kompetensmatris'
     | '/login'
+    | '/mobil'
     | '/moduler'
     | '/personal'
     | '/spela-in'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   KompetensmatrisRoute: typeof KompetensmatrisRoute
   LoginRoute: typeof LoginRoute
+  MobilRoute: typeof MobilRoute
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
   SpelaInRoute: typeof SpelaInRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/moduler'
       fullPath: '/moduler'
       preLoaderRoute: typeof ModulerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobil': {
+      id: '/mobil'
+      path: '/mobil'
+      fullPath: '/mobil'
+      preLoaderRoute: typeof MobilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   KompetensmatrisRoute: KompetensmatrisRoute,
   LoginRoute: LoginRoute,
+  MobilRoute: MobilRoute,
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
   SpelaInRoute: SpelaInRoute,
