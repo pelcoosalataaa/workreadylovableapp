@@ -401,15 +401,6 @@ function IntegrationsCard() {
       sub: "SMS-utskick till personal",
       connected: true,
     },
-    {
-      icon: "PAY",
-      iconBg: "rgba(167,139,250,0.1)",
-      iconColor: "#a78bfa",
-      iconSize: 11,
-      name: "Stripe",
-      sub: "Betalning och prenumeration",
-      connected: false,
-    },
   ];
   return (
     <div className="ins-card">
@@ -511,7 +502,7 @@ function SubscriptionCard() {
           <Stat label="Nästa faktura" value="2026-06-16" size={14} mono />
           <Stat label="Medlem sedan" value="2024-11-01" size={14} mono />
         </div>
-        <button className="ins-ghost-btn w-full">Hantera prenumeration</button>
+        
       </div>
     </div>
   );
