@@ -89,7 +89,7 @@ function BemanningsbolagPage() {
               </h1>
               <p className="text-sm mt-1" style={{ color: "#6a9ab0" }}>Hantera era bemanningspartners och deras personal</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bolag</button>
+            <button onClick={openModal} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bolag</button>
           </div>
 
           {/* Stats */}
@@ -164,8 +164,26 @@ function BemanningsbolagPage() {
             </div>
           </div>
 
+          {/* Added companies */}
+          {companies.map((c) => (
+            <div key={c.name + c.email} style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
+              <div className="flex items-center gap-4 flex-wrap" style={{ padding: "20px 24px" }}>
+                <div className="flex items-center justify-center font-display font-bold text-[18px] shrink-0" style={{ width: 48, height: 48, borderRadius: 10, background: "#7dedb8", color: "#060f18" }}>{initialsOf(c.name)}</div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display font-bold text-white text-[18px]">{c.name}</div>
+                  {(c.city || c.description) && <div className="text-[12px]" style={{ color: "#6a9ab0" }}>{[c.city, c.description].filter(Boolean).join(" · ")}</div>}
+                  {(c.email || c.phone) && <div className="mono text-[11px] mt-0.5" style={{ color: "#6a9ab0" }}>{[c.email, c.phone].filter(Boolean).join(" · ")}</div>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="text-[11px] font-semibold px-3 py-1.5 rounded-md border" style={{ borderColor: "#1a3d58", color: "#edfaf4", background: "transparent" }}>Kontakta</button>
+                  <button className="text-[11px] font-bold px-3 py-1.5 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>Hantera</button>
+                </div>
+              </div>
+            </div>
+          ))}
+
           {/* Add company card */}
-          <button className="add-company flex flex-col items-center text-center" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 40, marginTop: 8, cursor: "pointer", transition: "all .2s", gap: 12 }}>
+          <button onClick={openModal} className="add-company flex flex-col items-center text-center" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 40, marginTop: 8, cursor: "pointer", transition: "all .2s", gap: 12 }}>
             <Building2 size={40} strokeWidth={1.75} color="#1a3d58" />
             <div className="font-display font-bold text-white text-[18px]" style={{ marginTop: 8 }}>Lägg till bemanningsbolag</div>
             <div className="text-[13px]" style={{ color: "#6a9ab0", maxWidth: 400, lineHeight: 1.6 }}>Lägg till ett nytt bemanningsbolag för att hantera deras uthyrda personal i WorkReady</div>
@@ -173,6 +191,53 @@ function BemanningsbolagPage() {
           </button>
         </main>
       </div>
+
+      {modalOpen && (
+        <div onClick={closeModal} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
+          <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="w-full max-w-[480px] relative" style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 12, padding: 32 }}>
+            <button type="button" onClick={closeModal} aria-label="Stäng" className="absolute top-4 right-4 p-1 rounded hover:bg-white/5" style={{ color: "#6a9ab0" }}>
+              <X size={18} strokeWidth={1.75} />
+            </button>
+            <h2 className="font-display font-bold text-white" style={{ fontSize: 20 }}>Lägg till bemanningsbolag</h2>
+            <div className="flex flex-col gap-3 mt-5">
+              {([
+                { k: "name", label: "Företagsnamn", required: true, type: "text", ph: "t.ex. Studentconsulting AB" },
+                { k: "city", label: "Ort", type: "text", ph: "t.ex. Göteborg" },
+                { k: "description", label: "Beskrivning", type: "text", ph: "t.ex. Bemanning & Rekrytering" },
+                { k: "email", label: "E-post", type: "email", ph: "info@foretag.se" },
+                { k: "phone", label: "Telefon", type: "text", ph: "010-000 00 00" },
+              ] as const).map((f) => (
+                <label key={f.k} className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-bold mono uppercase" style={{ color: "#6a9ab0" }}>{f.label}{f.required ? " *" : ""}</span>
+                  <input
+                    type={f.type}
+                    required={f.required}
+                    placeholder={f.ph}
+                    maxLength={f.k === "description" ? 200 : f.k === "email" ? 255 : 100}
+                    value={form[f.k]}
+                    onChange={(e) => setForm((s) => ({ ...s, [f.k]: e.target.value }))}
+                    className="text-sm px-3 py-2 rounded-md outline-none focus:border-[#7dedb8]"
+                    style={{ background: "#0b1e2d", border: "1px solid #1a3d58", color: "#edfaf4" }}
+                  />
+                </label>
+              ))}
+            </div>
+            <div className="flex items-center justify-end gap-2 mt-6">
+              <button type="button" onClick={closeModal} className="text-xs font-semibold px-4 py-2 rounded-md border" style={{ borderColor: "#1a3d58", color: "#edfaf4", background: "transparent" }}>Avbryt</button>
+              <button type="submit" className="text-xs font-bold px-4 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>Lägg till</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      <style>{sidebarKeyframes}</style>
+      <style>{`
+        .bb-row:hover { background: rgba(125,237,184,0.03); }
+        .add-company:hover { border-color: #7dedb8 !important; background: rgba(125,237,184,0.02) !important; }
+      `}</style>
+    </div>
+  );
+}
       <style>{sidebarKeyframes}</style>
       <style>{`
         .bb-row:hover { background: rgba(125,237,184,0.03); }
