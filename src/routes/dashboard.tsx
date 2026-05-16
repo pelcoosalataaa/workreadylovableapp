@@ -26,7 +26,7 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <Sidebar />
+      <AppSidebar />
       <div className="flex-1 ml-[260px] flex flex-col">
         <TopBar />
         <main className="px-8 py-7 flex flex-col gap-6">
