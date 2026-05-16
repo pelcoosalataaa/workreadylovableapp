@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 const navItems: { icon: string; label: string; to?: string; badge?: number }[] = [
   { icon: "📊", label: "Dashboard", to: "/dashboard" },
   { icon: "👷", label: "Personal", to: "/personal", badge: 3 },
-  { icon: "🎬", label: "Moduler" },
+  { icon: "🎬", label: "Moduler", to: "/moduler" },
   { icon: "⏺", label: "Spela in" },
   { icon: "🧠", label: "Kompetensmatris" },
   { icon: "🏆", label: "Certifikat" },
