@@ -152,8 +152,8 @@ function ModuleCard({ m }: { m: Module }) {
   return (
     <div className="mod-card rounded-[10px] flex flex-col gap-3" style={{ background: "#0e2538", border: "1px solid #1a3d58", padding: 20 }}>
       <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-md flex items-center justify-center text-lg" style={{ background: m.iconBg }}>{m.icon}</div>
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagText}</span>
+        <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ background: m.iconBg }}><m.Icon size={20} strokeWidth={1.75} color={m.iconColor} /></div>
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagPrefixIcon ? <m.tagPrefixIcon size={12} strokeWidth={1.75} /> : null}{m.tagText}</span>
       </div>
       <div>
         <h3 className="font-display font-bold text-[15px] text-white">{m.title}</h3>
