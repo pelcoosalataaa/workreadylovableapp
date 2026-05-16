@@ -163,8 +163,6 @@ function PersonalCard() {
       <PersonRow initials="PL" name="Petter Lindgren" role="Truckförare · Kväll" percent={65} color="#7dedb8" status="65%" />
       <PersonRow initials="SB" name="Sara Berg" role="Betongarbetare · Dag" percent={0} color="#ff4d6a" status="Ej start ⚠" />
 
-      <SectionDivider>🔄 Inhyrd — Ikett Personalpartner</SectionDivider>
-      <PersonRow initials="JN" name="Johan Nilsson" role="Montör · Dag" percent={40} color="#38b6ff" status="40%" />
 
       <button className="mt-4 w-full text-xs font-semibold py-2.5 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary transition">
         + Lägg till bemanningsbolag
