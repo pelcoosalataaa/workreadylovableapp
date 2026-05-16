@@ -6,7 +6,7 @@ const navItems: { icon: string; label: string; to?: string; badge?: number }[] =
   { icon: "🎬", label: "Moduler", to: "/moduler" },
   { icon: "⏺", label: "Spela in", to: "/spela-in" },
   { icon: "🧠", label: "Kompetensmatris", to: "/kompetensmatris" },
-  { icon: "🏆", label: "Certifikat" },
+  { icon: "🏆", label: "Certifikat", to: "/certifikat" },
   { icon: "⚠️", label: "Utgående snart", badge: 2 },
   { icon: "🔄", label: "Inhyrd personal" },
   { icon: "🏢", label: "Bemanningsbolag" },
