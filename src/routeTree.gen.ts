@@ -16,6 +16,7 @@ import { Route as ModulerRouteImport } from './routes/moduler'
 import { Route as MobilRouteImport } from './routes/mobil'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
+import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
@@ -57,6 +58,11 @@ const KompetensmatrisRoute = KompetensmatrisRouteImport.update({
   path: '/kompetensmatris',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InstallningarRoute = InstallningarRouteImport.update({
+  id: '/installningar',
+  path: '/installningar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InhyrdPersonalRoute = InhyrdPersonalRouteImport.update({
   id: '/inhyrd-personal',
   path: '/inhyrd-personal',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
+  '/installningar': typeof InstallningarRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
+  '/installningar': typeof InstallningarRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
+  '/installningar': typeof InstallningarRoute
   '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/mobil': typeof MobilRoute
@@ -134,6 +143,7 @@ export interface FileRouteTypes {
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
+    | '/installningar'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
+    | '/installningar'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
+    | '/installningar'
     | '/kompetensmatris'
     | '/login'
     | '/mobil'
@@ -177,6 +189,7 @@ export interface RootRouteChildren {
   CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
   InhyrdPersonalRoute: typeof InhyrdPersonalRoute
+  InstallningarRoute: typeof InstallningarRoute
   KompetensmatrisRoute: typeof KompetensmatrisRoute
   LoginRoute: typeof LoginRoute
   MobilRoute: typeof MobilRoute
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KompetensmatrisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/installningar': {
+      id: '/installningar'
+      path: '/installningar'
+      fullPath: '/installningar'
+      preLoaderRoute: typeof InstallningarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inhyrd-personal': {
       id: '/inhyrd-personal'
       path: '/inhyrd-personal'
@@ -281,6 +301,7 @@ const rootRouteChildren: RootRouteChildren = {
   CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
   InhyrdPersonalRoute: InhyrdPersonalRoute,
+  InstallningarRoute: InstallningarRoute,
   KompetensmatrisRoute: KompetensmatrisRoute,
   LoginRoute: LoginRoute,
   MobilRoute: MobilRoute,
@@ -292,3 +313,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
