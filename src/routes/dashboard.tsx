@@ -1,23 +1,11 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AppSidebar } from "@/components/AppSidebar";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
-
-const navItems = [
-  { icon: "📊", label: "Dashboard", active: true },
-  { icon: "👷", label: "Personal", badge: 3 },
-  { icon: "🎬", label: "Moduler" },
-  { icon: "⏺", label: "Spela in" },
-  { icon: "🧠", label: "Kompetensmatris" },
-  { icon: "🏆", label: "Certifikat" },
-  { icon: "⚠️", label: "Utgående snart", badge: 2 },
-  { icon: "🔄", label: "Inhyrd personal" },
-  { icon: "🏢", label: "Bemanningsbolag" },
-  { icon: "⚙️", label: "Inställningar" },
-];
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -38,7 +26,7 @@ function DashboardPage() {
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
-      <Sidebar />
+      <AppSidebar />
       <div className="flex-1 ml-[260px] flex flex-col">
         <TopBar />
         <main className="px-8 py-7 flex flex-col gap-6">
@@ -64,48 +52,6 @@ function DashboardPage() {
         .mono{font-family:'Space Mono',ui-monospace,monospace;letter-spacing:.08em}
       `}</style>
     </div>
-  );
-}
-
-function Sidebar() {
-  return (
-    <aside className="fixed top-0 left-0 bottom-0 w-[260px] bg-sidebar border-r border-border flex flex-col" style={{ background: "#0b1e2d" }}>
-      <div className="p-5 border-b border-border">
-        <div className="font-display font-bold text-[22px] text-foreground">WorkReady</div>
-        <div className="flex items-center gap-2 mt-1">
-          <span className="live-dot" />
-          <span className="text-[9px] font-semibold tracking-wider uppercase" style={{ color: "#7dedb8" }}>by Partner2Work AB</span>
-        </div>
-      </div>
-      <nav className="flex-1 py-3 px-2 flex flex-col gap-0.5 overflow-y-auto">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            className={`group flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-colors relative ${
-              item.active
-                ? "text-primary font-semibold"
-                : "text-foreground/80 hover:bg-white/5"
-            }`}
-            style={item.active ? { background: "rgba(125,237,184,0.08)", borderLeft: "2px solid #7dedb8", paddingLeft: "10px" } : undefined}
-          >
-            <span className="text-base w-5">{item.icon}</span>
-            <span className="flex-1 text-left">{item.label}</span>
-            {item.badge && (
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "#ff4d6a", color: "#fff" }}>
-                {item.badge}
-              </span>
-            )}
-          </button>
-        ))}
-      </nav>
-      <div className="p-4 border-t border-border flex items-center gap-3">
-        <div className="w-9 h-9 rounded-md flex items-center justify-center font-bold text-sm" style={{ background: "#7dedb8", color: "#060f18" }}>BE</div>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold truncate">Byggelement AB</div>
-          <div className="text-[11px] text-muted-foreground truncate">Ucklum · Admin</div>
-        </div>
-      </div>
-    </aside>
   );
 }
 
