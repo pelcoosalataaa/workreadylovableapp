@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SpelaInRoute = SpelaInRouteImport.update({
+  id: '/spela-in',
+  path: '/spela-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersonalRoute = PersonalRouteImport.update({
   id: '/personal',
   path: '/personal',
@@ -47,6 +53,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
+  '/spela-in': typeof SpelaInRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,6 +61,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
+  '/spela-in': typeof SpelaInRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -62,13 +70,27 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
+  '/spela-in': typeof SpelaInRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/login' | '/moduler' | '/personal'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/moduler'
+    | '/personal'
+    | '/spela-in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/moduler' | '/personal'
-  id: '__root__' | '/' | '/dashboard' | '/login' | '/moduler' | '/personal'
+  to: '/' | '/dashboard' | '/login' | '/moduler' | '/personal' | '/spela-in'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/login'
+    | '/moduler'
+    | '/personal'
+    | '/spela-in'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,10 +99,18 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
+  SpelaInRoute: typeof SpelaInRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/spela-in': {
+      id: '/spela-in'
+      path: '/spela-in'
+      fullPath: '/spela-in'
+      preLoaderRoute: typeof SpelaInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/personal': {
       id: '/personal'
       path: '/personal'
@@ -125,7 +155,18 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
+  SpelaInRoute: SpelaInRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
