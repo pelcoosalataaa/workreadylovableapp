@@ -43,9 +43,25 @@ function statusStyle(s: Status): React.CSSProperties {
   return { background: "rgba(255,77,106,0.1)", color: "#ff4d6a", border: "1px solid rgba(255,77,106,0.2)" };
 }
 
+type Company = { name: string; city: string; description: string; email: string; phone: string };
+
 function BemanningsbolagPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [form, setForm] = useState<Company>({ name: "", city: "", description: "", email: "", phone: "" });
+
+  const openModal = () => { setForm({ name: "", city: "", description: "", email: "", phone: "" }); setModalOpen(true); };
+  const closeModal = () => setModalOpen(false);
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) return;
+    setCompanies((c) => [...c, { ...form, name: form.name.trim().slice(0, 100), city: form.city.trim().slice(0, 100), description: form.description.trim().slice(0, 200), email: form.email.trim().slice(0, 255), phone: form.phone.trim().slice(0, 50) }]);
+    setModalOpen(false);
+  };
+
+  const initialsOf = (n: string) => n.trim().split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase() || "??";
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
