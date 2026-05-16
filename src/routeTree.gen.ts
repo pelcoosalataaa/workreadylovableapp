@@ -13,6 +13,7 @@ import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -36,6 +37,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KompetensmatrisRoute = KompetensmatrisRouteImport.update({
+  id: '/kompetensmatris',
+  path: '/kompetensmatris',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -50,6 +56,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/kompetensmatris': typeof KompetensmatrisRoute
   '/login': typeof LoginRoute
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
@@ -77,16 +86,25 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/kompetensmatris'
     | '/login'
     | '/moduler'
     | '/personal'
     | '/spela-in'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/login' | '/moduler' | '/personal' | '/spela-in'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/kompetensmatris'
+    | '/login'
+    | '/moduler'
+    | '/personal'
+    | '/spela-in'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/kompetensmatris'
     | '/login'
     | '/moduler'
     | '/personal'
@@ -96,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  KompetensmatrisRoute: typeof KompetensmatrisRoute
   LoginRoute: typeof LoginRoute
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
@@ -132,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kompetensmatris': {
+      id: '/kompetensmatris'
+      path: '/kompetensmatris'
+      fullPath: '/kompetensmatris'
+      preLoaderRoute: typeof KompetensmatrisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -152,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  KompetensmatrisRoute: KompetensmatrisRoute,
   LoginRoute: LoginRoute,
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
