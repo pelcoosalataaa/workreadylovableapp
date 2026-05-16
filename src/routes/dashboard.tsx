@@ -251,7 +251,7 @@ function AiActivityCard() {
               <div className="text-xs font-semibold truncate">{it.label}</div>
               <div className="text-[11px] text-muted-foreground truncate">{it.sub}</div>
             </div>
-            <div className="text-[10px] text-muted-foreground whitespace-nowrap">{it.time}</div>
+            <div className="mono text-[10px] whitespace-nowrap" style={{ color: "#3d6a7a" }}>{it.time}</div>
           </div>
         ))}
       </div>
