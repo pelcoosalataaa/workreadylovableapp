@@ -202,10 +202,10 @@ function BemanningsbolagPage() {
             <div className="flex flex-col gap-3 mt-5">
               {([
                 { k: "name", label: "Företagsnamn", required: true, type: "text", ph: "t.ex. Studentconsulting AB" },
-                { k: "city", label: "Ort", type: "text", ph: "t.ex. Göteborg" },
-                { k: "description", label: "Beskrivning", type: "text", ph: "t.ex. Bemanning & Rekrytering" },
-                { k: "email", label: "E-post", type: "email", ph: "info@foretag.se" },
-                { k: "phone", label: "Telefon", type: "text", ph: "010-000 00 00" },
+                { k: "city", label: "Ort", required: false, type: "text", ph: "t.ex. Göteborg" },
+                { k: "description", label: "Beskrivning", required: false, type: "text", ph: "t.ex. Bemanning & Rekrytering" },
+                { k: "email", label: "E-post", required: false, type: "email", ph: "info@foretag.se" },
+                { k: "phone", label: "Telefon", required: false, type: "text", ph: "010-000 00 00" },
               ] as const).map((f) => (
                 <label key={f.k} className="flex flex-col gap-1.5">
                   <span className="text-[11px] font-bold mono uppercase" style={{ color: "#6a9ab0" }}>{f.label}{f.required ? " *" : ""}</span>
