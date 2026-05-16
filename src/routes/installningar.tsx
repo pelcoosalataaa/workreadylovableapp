@@ -401,15 +401,6 @@ function IntegrationsCard() {
       sub: "SMS-utskick till personal",
       connected: true,
     },
-    {
-      icon: "PAY",
-      iconBg: "rgba(167,139,250,0.1)",
-      iconColor: "#a78bfa",
-      iconSize: 11,
-      name: "Stripe",
-      sub: "Betalning och prenumeration",
-      connected: false,
-    },
   ];
   return (
     <div className="ins-card">
