@@ -4,7 +4,7 @@ const navItems: { icon: string; label: string; to?: string; badge?: number }[] =
   { icon: "📊", label: "Dashboard", to: "/dashboard" },
   { icon: "👷", label: "Personal", to: "/personal", badge: 3 },
   { icon: "🎬", label: "Moduler", to: "/moduler" },
-  { icon: "⏺", label: "Spela in" },
+  { icon: "⏺", label: "Spela in", to: "/spela-in" },
   { icon: "🧠", label: "Kompetensmatris" },
   { icon: "🏆", label: "Certifikat" },
   { icon: "⚠️", label: "Utgående snart", badge: 2 },
