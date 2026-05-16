@@ -8,7 +8,7 @@ const navItems: { icon: string; label: string; to?: string; badge?: number }[] =
   { icon: "🧠", label: "Kompetensmatris", to: "/kompetensmatris" },
   { icon: "🏆", label: "Certifikat", to: "/certifikat" },
   { icon: "⚠️", label: "Utgående certifikat", to: "/utgaende-certifikat", badge: 2 },
-  { icon: "🔄", label: "Inhyrd personal" },
+  { icon: "🔄", label: "Inhyrd personal", to: "/inhyrd-personal" },
   { icon: "🏢", label: "Bemanningsbolag" },
   { icon: "⚙️", label: "Inställningar" },
 ];
