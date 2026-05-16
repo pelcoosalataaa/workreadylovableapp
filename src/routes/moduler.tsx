@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { Video, CircleDot } from "lucide-react";
+import { Video, CircleDot, Layers, ShieldAlert, FileText, MoveUp, Hammer, PlusCircle, Bot, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/moduler")({
   component: ModulerPage,
@@ -12,12 +12,14 @@ type Category = "Betong & Prefab" | "Säkerhet" | "Maskiner";
 type TagColor = "green" | "yellow" | "mint" | "muted";
 
 type Module = {
-  icon: string;
+  Icon: LucideIcon;
+  iconColor: string;
   iconBg: string;
   title: string;
   meta: string;
   tagText: string;
   tagColor: TagColor;
+  tagPrefixIcon?: LucideIcon;
   percent: number;
   barColor: string;
   category: Category;
@@ -25,11 +27,11 @@ type Module = {
 };
 
 const modules: Module[] = [
-  { icon: "🏗", iconBg: "rgba(125,237,184,0.1)", title: "Introduktion betong", meta: "12 min · 5 steg · Quiz · Inspelad av Erik Svensson", tagText: "27/27 klara", tagColor: "green", percent: 100, barColor: "#00e096", category: "Betong & Prefab" },
-  { icon: "⚠️", iconBg: "rgba(255,77,106,0.1)", title: "Säkerhet & skydd", meta: "8 min · 4 steg · Certifiering · Inspelad av Anna Berg", tagText: "27/27 klara", tagColor: "green", percent: 100, barColor: "#00e096", category: "Säkerhet" },
-  { icon: "📐", iconBg: "rgba(56,182,255,0.1)", title: "Ritningsläsning", meta: "20 min · 8 steg · Quiz · Inspelad av Erik Svensson", tagText: "19/27 klara", tagColor: "yellow", percent: 70, barColor: "#ffd166", category: "Betong & Prefab" },
-  { icon: "🚜", iconBg: "rgba(125,237,184,0.08)", title: "Traverskörning", meta: "AI bygger just nu... · Inspelad av Erik Svensson", tagText: "⏳ AI skapar", tagColor: "mint", percent: 65, barColor: "#7dedb8", category: "Maskiner", building: true },
-  { icon: "🔧", iconBg: "rgba(255,209,102,0.1)", title: "Gjutning & armering", meta: "25 min · 10 steg · Certifiering · Inspelad av Erik Svensson", tagText: "12/27 klara", tagColor: "muted", percent: 44, barColor: "#3d6a7a", category: "Betong & Prefab" },
+  { Icon: Layers, iconColor: "#7dedb8", iconBg: "rgba(125,237,184,0.1)", title: "Introduktion betong", meta: "12 min · 5 steg · Quiz · Inspelad av Erik Svensson", tagText: "27/27 klara", tagColor: "green", percent: 100, barColor: "#00e096", category: "Betong & Prefab" },
+  { Icon: ShieldAlert, iconColor: "#ff4d6a", iconBg: "rgba(255,77,106,0.1)", title: "Säkerhet & skydd", meta: "8 min · 4 steg · Certifiering · Inspelad av Anna Berg", tagText: "27/27 klara", tagColor: "green", percent: 100, barColor: "#00e096", category: "Säkerhet" },
+  { Icon: FileText, iconColor: "#60b0f4", iconBg: "rgba(56,182,255,0.1)", title: "Ritningsläsning", meta: "20 min · 8 steg · Quiz · Inspelad av Erik Svensson", tagText: "19/27 klara", tagColor: "yellow", percent: 70, barColor: "#ffd166", category: "Betong & Prefab" },
+  { Icon: MoveUp, iconColor: "#7dedb8", iconBg: "rgba(125,237,184,0.08)", title: "Traverskörning", meta: "AI bygger just nu... · Inspelad av Erik Svensson", tagText: "AI skapar", tagColor: "mint", tagPrefixIcon: Bot, percent: 65, barColor: "#7dedb8", category: "Maskiner", building: true },
+  { Icon: Hammer, iconColor: "#ffd166", iconBg: "rgba(255,209,102,0.1)", title: "Gjutning & armering", meta: "25 min · 10 steg · Certifiering · Inspelad av Erik Svensson", tagText: "12/27 klara", tagColor: "muted", percent: 44, barColor: "#3d6a7a", category: "Betong & Prefab" },
 ];
 
 const filters = ["Alla moduler", "Betong & Prefab", "Säkerhet", "Maskiner", "AI skapar"] as const;
@@ -150,8 +152,8 @@ function ModuleCard({ m }: { m: Module }) {
   return (
     <div className="mod-card rounded-[10px] flex flex-col gap-3" style={{ background: "#0e2538", border: "1px solid #1a3d58", padding: 20 }}>
       <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-md flex items-center justify-center text-lg" style={{ background: m.iconBg }}>{m.icon}</div>
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagText}</span>
+        <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ background: m.iconBg }}><m.Icon size={20} strokeWidth={1.75} color={m.iconColor} /></div>
+        <span className={`text-[10px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagPrefixIcon ? <m.tagPrefixIcon size={12} strokeWidth={1.75} /> : null}{m.tagText}</span>
       </div>
       <div>
         <h3 className="font-display font-bold text-[15px] text-white">{m.title}</h3>
@@ -175,7 +177,7 @@ function ModuleCard({ m }: { m: Module }) {
 function RecordCard() {
   return (
     <a href="/spela-in" className="rounded-[10px] flex flex-col items-center justify-center gap-3 text-center transition hover:border-[rgba(125,237,184,0.4)]" style={{ background: "transparent", border: "1.5px dashed #1a3d58", padding: 20, minHeight: 220 }}>
-      <CircleDot size={32} strokeWidth={1.75} color="#7dedb8" />
+      <PlusCircle size={28} strokeWidth={1.5} color="#7dedb8" />
       <div>
         <div className="font-display font-bold text-[15px] text-white">Spela in ny modul</div>
         <div className="text-[11px] text-muted-foreground mt-1">AI bygger utbildningen automatiskt</div>
