@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { CircleDot } from "lucide-react";
 
 export const Route = createFileRoute("/spela-in")({
   component: SpelaInPage,
@@ -57,7 +58,7 @@ function SpelaInPage() {
       <AppSidebar />
       <main className="ml-[260px] min-h-screen p-8" style={{ background: "#060f18" }}>
         <header className="mb-6">
-          <h1 className="font-display font-bold text-[24px] text-foreground">⏺ Spela in ny modul</h1>
+          <h1 className="font-display font-bold text-[24px] text-foreground flex items-center gap-2"><CircleDot size={22} strokeWidth={1.75} color="#7dedb8" /> Spela in ny modul</h1>
           <p className="text-[13px]" style={{ color: "#3d6a7a" }}>AI guidar dig genom hela inspelningen</p>
         </header>
 

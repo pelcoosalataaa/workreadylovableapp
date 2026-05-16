@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { Grid3x3 } from "lucide-react";
 
 export const Route = createFileRoute("/kompetensmatris")({
   component: KompetensmatrisPage,
@@ -105,7 +106,7 @@ function KompetensmatrisPage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">🧠 Kompetensmatris</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Grid3x3 size={22} strokeWidth={1.75} color="#7dedb8" /> Kompetensmatris</h1>
               <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · Branschsorterad kompetensöversikt</p>
             </div>
             <div className="flex items-center gap-2">
