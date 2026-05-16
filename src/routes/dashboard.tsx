@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
+import { Users, Building2, RefreshCw, Bot, CircleDot } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -67,7 +68,7 @@ function TopBar() {
       <div className="flex items-center gap-3">
         <span className="text-xs text-muted-foreground">Lördag, 16 maj 2026</span>
         <button className="text-xs px-3 py-2 rounded-md border border-border hover:bg-white/5 transition">+ Bjud in personal</button>
-        <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>⏺ Ny modul</button>
+        <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Ny modul</button>
       </div>
     </header>
   );
@@ -148,18 +149,18 @@ function PersonalCard() {
   return (
     <div className="rounded-[10px] border border-border p-5" style={{ background: "#0e2538" }}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold text-base">👷 Personal — Status idag</h3>
+        <h3 className="font-display font-bold text-base flex items-center gap-2"><Users size={18} strokeWidth={1.75} color="#7dedb8" /> Personal — Status idag</h3>
         <div className="flex gap-2">
           <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8" }}>P2W · 8</span>
           <span className="text-[10px] font-semibold px-2 py-1 rounded-full border border-border text-muted-foreground">Egen · 19</span>
         </div>
       </div>
 
-      <SectionDivider>🏢 Egen personal — Byggelement AB</SectionDivider>
+      <SectionDivider><span className="inline-flex items-center gap-1.5"><Building2 size={12} strokeWidth={1.75} /> Egen personal — Byggelement AB</span></SectionDivider>
       <PersonRow initials="AJ" name="Anders Johansson" role="Betongarbetare · Dag" percent={100} color="#00e096" status="100% ✓" />
       <PersonRow initials="MK" name="Maria Karlsson" role="CNC-operatör · Dag" percent={100} color="#00e096" status="100% ✓" />
 
-      <SectionDivider>🔄 Inhyrd — Partner2Work AB</SectionDivider>
+      <SectionDivider><span className="inline-flex items-center gap-1.5"><RefreshCw size={12} strokeWidth={1.75} /> Inhyrd — Partner2Work AB</span></SectionDivider>
       <PersonRow initials="PL" name="Petter Lindgren" role="Truckförare · Kväll" percent={65} color="#7dedb8" status="65%" />
       <PersonRow initials="SB" name="Sara Berg" role="Betongarbetare · Dag" percent={0} color="#ff4d6a" status="Ej start ⚠" />
 
@@ -182,7 +183,7 @@ function AiActivityCard() {
   return (
     <div className="rounded-[10px] border border-border p-5" style={{ background: "#0e2538" }}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold text-base">🤖 AI-aktivitet</h3>
+        <h3 className="font-display font-bold text-base flex items-center gap-2"><Bot size={18} strokeWidth={1.75} color="#7dedb8" /> AI-aktivitet</h3>
         <span className="text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1.5" style={{ background: "rgba(0,224,150,0.12)", color: "#00e096" }}>
           <span className="live-dot" />Aktiv nu
         </span>

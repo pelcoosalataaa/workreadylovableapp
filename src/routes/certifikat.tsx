@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { Award, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/certifikat")({
   component: CertifikatPage,
@@ -99,7 +100,7 @@ function CertifikatPage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">🏆 Certifikat & Godkännanden</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Award size={22} strokeWidth={1.75} color="#7dedb8" /> Certifikat & Godkännanden</h1>
               <p className="text-sm text-muted-foreground mt-1">Alla certifikat sparas automatiskt och visas vid tillsyn</p>
             </div>
             <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera alla</button>
@@ -183,7 +184,7 @@ function CertifikatPage() {
               className="flex flex-col items-center justify-center text-center gap-2"
               style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 20, minHeight: 180 }}
             >
-              <div className="text-[28px]">➕</div>
+              <Plus size={28} strokeWidth={1.75} color="#7dedb8" />
               <div className="font-display font-bold text-white text-[14px]">Lägg till certifikat</div>
               <div className="text-[11px] text-muted-foreground">Manuellt eller via utbildning</div>
               <button className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Nytt certifikat</button>

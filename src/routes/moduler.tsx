@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { Video, CircleDot } from "lucide-react";
 
 export const Route = createFileRoute("/moduler")({
   component: ModulerPage,
@@ -73,10 +74,10 @@ function ModulerPage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">🎬 Utbildningsmoduler</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Video size={22} strokeWidth={1.75} color="#7dedb8" /> Utbildningsmoduler</h1>
               <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · 5 aktiva moduler</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>⏺ Spela in ny modul</button>
+            <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Spela in ny modul</button>
           </div>
 
           {/* Stats */}
@@ -174,7 +175,7 @@ function ModuleCard({ m }: { m: Module }) {
 function RecordCard() {
   return (
     <a href="/spela-in" className="rounded-[10px] flex flex-col items-center justify-center gap-3 text-center transition hover:border-[rgba(125,237,184,0.4)]" style={{ background: "transparent", border: "1.5px dashed #1a3d58", padding: 20, minHeight: 220 }}>
-      <div className="text-[32px]">⏺</div>
+      <CircleDot size={32} strokeWidth={1.75} color="#7dedb8" />
       <div>
         <div className="font-display font-bold text-[15px] text-white">Spela in ny modul</div>
         <div className="text-[11px] text-muted-foreground mt-1">AI bygger utbildningen automatiskt</div>

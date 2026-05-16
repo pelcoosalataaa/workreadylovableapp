@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { RefreshCw, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/inhyrd-personal")({
   component: InhyrdPage,
@@ -69,7 +70,7 @@ function InhyrdPage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">🔄 Inhyrd personal</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><RefreshCw size={22} strokeWidth={1.75} color="#7dedb8" /> Inhyrd personal</h1>
               <p className="text-sm text-muted-foreground mt-1">Översikt över inhyrd personal från era bemanningsbolag</p>
             </div>
             <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bemanningsbolag</button>
@@ -130,7 +131,7 @@ function InhyrdPage() {
 
           {/* Add company card */}
           <button className="add-company flex flex-col items-center gap-3" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 32, marginTop: 4, cursor: "pointer", transition: "all .2s" }}>
-            <div style={{ fontSize: 32 }}>🏢</div>
+            <Building2 size={32} strokeWidth={1.75} color="#7dedb8" />
             <div className="font-display font-bold text-white text-[16px]">Lägg till bemanningsbolag</div>
             <div className="text-[13px] text-muted-foreground text-center">Klicka för att lägga till ett nytt bemanningsbolag och deras personal</div>
             <span className="font-bold" style={{ background: "#7dedb8", color: "#060f18", padding: "10px 24px", borderRadius: 6, fontSize: 13 }}>+ Lägg till</span>

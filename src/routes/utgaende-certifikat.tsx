@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AlertTriangle, Mail, AlertOctagon, AlertCircle, CheckCircle2, Bot } from "lucide-react";
 
 export const Route = createFileRoute("/utgaende-certifikat")({
   component: UtgaendePage,
@@ -116,10 +117,10 @@ function UtgaendePage() {
           {/* Header */}
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
-              <h1 className="font-display font-bold text-[24px] text-white">⚠️ Utgående certifikat</h1>
+              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><AlertTriangle size={22} strokeWidth={1.75} color="#7dedb8" /> Utgående certifikat</h1>
               <p className="text-sm text-muted-foreground mt-1">Certifikat som kräver förnyelse inom 90 dagar</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>📧 Skicka påminnelser</button>
+            <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><Mail size={14} strokeWidth={1.75} /> Skicka påminnelser</button>
           </div>
 
           {/* Alert banner */}
@@ -143,24 +144,24 @@ function UtgaendePage() {
           {/* Timeline */}
           <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, overflow: "hidden", marginTop: 4 }}>
             <div style={{ background: "rgba(255,77,106,0.06)", borderBottom: "1px solid rgba(255,77,106,0.2)", padding: "10px 20px" }}>
-              <div className="mono uppercase font-bold" style={{ fontSize: 9, color: "#ff4d6a" }}>🔴 KRITISKT — UTGÅR INOM 14 DAGAR</div>
+              <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ff4d6a" }}><AlertOctagon size={12} strokeWidth={1.75} /> KRITISKT — UTGÅR INOM 14 DAGAR</div>
             </div>
             {section14.map((r) => <RowItem key={r.name} r={r} />)}
 
             <div style={{ background: "rgba(255,209,102,0.06)", borderBottom: "1px solid rgba(255,209,102,0.2)", padding: "10px 20px" }}>
-              <div className="mono uppercase font-bold" style={{ fontSize: 9, color: "#ffd166" }}>🟡 VARNING — UTGÅR INOM 30 DAGAR</div>
+              <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ffd166" }}><AlertTriangle size={12} strokeWidth={1.75} /> VARNING — UTGÅR INOM 30 DAGAR</div>
             </div>
             {section30.map((r) => <RowItem key={r.name} r={r} />)}
 
             <div style={{ background: "rgba(125,237,184,0.04)", borderBottom: "1px solid rgba(125,237,184,0.15)", padding: "10px 20px" }}>
-              <div className="mono uppercase font-bold" style={{ fontSize: 9, color: "#7dedb8" }}>🟢 PLANERA — UTGÅR INOM 90 DAGAR</div>
+              <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#7dedb8" }}><CheckCircle2 size={12} strokeWidth={1.75} /> PLANERA — UTGÅR INOM 90 DAGAR</div>
             </div>
             {section90.map((r, i) => <RowItem key={r.name} r={r} last={i === section90.length - 1} />)}
           </div>
 
           {/* Bottom card */}
           <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, padding: 24, marginTop: 4 }}>
-            <div className="font-display font-bold text-white text-[16px] mb-2">🤖 Automatiska påminnelser</div>
+            <div className="font-display font-bold text-white text-[16px] mb-2 flex items-center gap-2"><Bot size={18} strokeWidth={1.75} color="#7dedb8" /> Automatiska påminnelser</div>
             <div className="text-[13px] text-muted-foreground mb-4">WorkReady skickar automatiska SMS-påminnelser till personal och chef när certifikat närmar sig utgångsdatum.</div>
             {[
               "90 dagar innan — Informationsmeddelande till personal",

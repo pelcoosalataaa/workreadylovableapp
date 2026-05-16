@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Smartphone } from "lucide-react";
 
 export const Route = createFileRoute("/mobil")({
   component: MobilPage,
@@ -31,8 +32,8 @@ function MobilPage() {
           "radial-gradient(ellipse at top, #0b1e2d 0%, #060f18 60%), repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(125,237,184,0.04) 40px), repeating-linear-gradient(90deg, transparent 0, transparent 39px, rgba(125,237,184,0.04) 40px)",
       }}
     >
-      <h2 className="font-display font-bold text-white text-[18px] text-center" style={{ marginBottom: 24 }}>
-        📱 Så här ser det ut för din personal
+      <h2 className="font-display font-bold text-white text-[18px] text-center flex items-center justify-center gap-2" style={{ marginBottom: 24 }}>
+        <Smartphone size={20} strokeWidth={1.75} color="#7dedb8" /> Så här ser det ut för din personal
       </h2>
 
       {/* Phone */}
