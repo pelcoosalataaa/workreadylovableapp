@@ -51,7 +51,7 @@ export function AppSidebar() {
           const inner = (
             <>
               <span className="w-5 flex items-center justify-center">
-                <Icon size={16} strokeWidth={1.75} color={active ? "#7dedb8" : "rgba(237,250,244,0.35)"} />
+                <Icon size={16} strokeWidth={1.75} color={active ? "#7dedb8" : "rgba(237,250,244,0.6)"} />
               </span>
               <span className="flex-1 text-left">{item.label}</span>
               {item.badge && (
