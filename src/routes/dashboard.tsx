@@ -58,6 +58,8 @@ function DashboardPage() {
 }
 
 function TopBar() {
+  const navigate = useNavigate();
+  const [inviteOpen, setInviteOpen] = useState(false);
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 border-b border-border" style={{ background: "#0b1e2d" }}>
       <div className="flex items-center gap-3">
@@ -68,9 +70,10 @@ function TopBar() {
       </div>
       <div className="flex items-center gap-3">
         <span className="text-xs text-muted-foreground">Lördag, 16 maj 2026</span>
-        <button className="text-xs px-3 py-2 rounded-md border border-border hover:bg-white/5 transition">+ Bjud in personal</button>
-        <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Ny modul</button>
+        <button onClick={() => setInviteOpen(true)} className="text-xs px-3 py-2 rounded-md border border-border hover:bg-white/5 transition">+ Bjud in personal</button>
+        <button onClick={() => navigate({ to: "/spela-in" })} className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Ny modul</button>
       </div>
+      <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </header>
   );
 }
