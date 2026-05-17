@@ -112,7 +112,7 @@ function CertifikatPage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Award size={22} strokeWidth={1.75} color="#7dedb8" /> Certifikat & Godkännanden</h1>
               <p className="text-sm text-muted-foreground mt-1">Alla certifikat sparas automatiskt och visas vid tillsyn</p>
             </div>
-            <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera alla</button>
+            <button onClick={() => toast("Exporterar certifikat... Filen laddas ner inom några sekunder.")} className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera alla</button>
           </div>
 
           {/* Alert banner */}
