@@ -197,8 +197,8 @@ function UtgaendePage() {
             ))}
             <div className="flex items-center justify-between mt-4">
               <div className="font-bold text-[14px] text-white">Aktivera automatiska påminnelser</div>
-              <div className="relative cursor-pointer" style={{ width: 44, height: 24, background: "#7dedb8", borderRadius: 12 }}>
-                <div className="absolute" style={{ top: 2, left: 22, width: 20, height: 20, borderRadius: 999, background: "#060f18" }} />
+              <div onClick={() => { const next = !autoRemind; setAutoRemind(next); toast.success(next ? "Automatiska påminnelser aktiverade!" : "Automatiska påminnelser inaktiverade"); }} role="button" className="relative cursor-pointer" style={{ width: 44, height: 24, background: autoRemind ? "#7dedb8" : "#1a3d58", borderRadius: 12, transition: "background .15s" }}>
+                <div className="absolute" style={{ top: 2, left: autoRemind ? 22 : 2, width: 20, height: 20, borderRadius: 999, background: "#060f18", transition: "left .15s" }} />
               </div>
             </div>
           </div>
