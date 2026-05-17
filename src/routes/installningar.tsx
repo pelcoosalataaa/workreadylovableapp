@@ -287,51 +287,21 @@ type UserRow = {
 };
 
 function UsersCard() {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!openMenu) return;
+    const onClick = () => setOpenMenu(null);
+    window.addEventListener("click", onClick);
+    return () => window.removeEventListener("click", onClick);
+  }, [openMenu]);
+
   const users: UserRow[] = [
-    {
-      initials: "LS",
-      name: "Lars Svensson",
-      email: "lars@byggelement.se",
-      badge: "Admin",
-      bg: "rgba(125,237,184,0.1)",
-      fg: "#7dedb8",
-      border: "rgba(125,237,184,0.2)",
-      avatarBg: "rgba(125,237,184,0.12)",
-      avatarFg: "#7dedb8",
-    },
-    {
-      initials: "ES",
-      name: "Erik Svensson",
-      email: "erik@byggelement.se",
-      badge: "Teamledare",
-      bg: "rgba(0,224,150,0.1)",
-      fg: "#00e096",
-      border: "rgba(0,224,150,0.2)",
-      avatarBg: "rgba(0,224,150,0.12)",
-      avatarFg: "#00e096",
-    },
-    {
-      initials: "AB",
-      name: "Anna Berg",
-      email: "anna@byggelement.se",
-      badge: "Chef",
-      bg: "rgba(96,176,244,0.1)",
-      fg: "#60b0f4",
-      border: "rgba(96,176,244,0.2)",
-      avatarBg: "rgba(96,176,244,0.12)",
-      avatarFg: "#60b0f4",
-    },
-    {
-      initials: "P2",
-      name: "Partner2Work AB",
-      email: "Bemanningspartner",
-      badge: "Partner",
-      bg: "rgba(125,237,184,0.08)",
-      fg: "#7dedb8",
-      border: "rgba(125,237,184,0.2)",
-      avatarBg: "#7dedb8",
-      avatarFg: "#060f18",
-    },
+    { initials: "LS", name: "Lars Svensson", email: "lars@byggelement.se", badge: "Admin", bg: "rgba(125,237,184,0.1)", fg: "#7dedb8", border: "rgba(125,237,184,0.2)", avatarBg: "rgba(125,237,184,0.12)", avatarFg: "#7dedb8" },
+    { initials: "ES", name: "Erik Svensson", email: "erik@byggelement.se", badge: "Teamledare", bg: "rgba(0,224,150,0.1)", fg: "#00e096", border: "rgba(0,224,150,0.2)", avatarBg: "rgba(0,224,150,0.12)", avatarFg: "#00e096" },
+    { initials: "AB", name: "Anna Berg", email: "anna@byggelement.se", badge: "Chef", bg: "rgba(96,176,244,0.1)", fg: "#60b0f4", border: "rgba(96,176,244,0.2)", avatarBg: "rgba(96,176,244,0.12)", avatarFg: "#60b0f4" },
+    { initials: "P2", name: "Partner2Work AB", email: "Bemanningspartner", badge: "Partner", bg: "rgba(125,237,184,0.08)", fg: "#7dedb8", border: "rgba(125,237,184,0.2)", avatarBg: "#7dedb8", avatarFg: "#060f18" },
   ];
   return (
     <div className="ins-card">
@@ -339,47 +309,32 @@ function UsersCard() {
         <div className="ins-head-title">
           <Users size={16} strokeWidth={1.75} color="#7dedb8" /> Användare & Åtkomst
         </div>
-        <button className="ins-mint-btn">+ Bjud in</button>
+        <button onClick={() => setInviteOpen(true)} className="ins-mint-btn">+ Bjud in</button>
       </div>
       <div>
         {users.map((u, i) => (
-          <div
-            key={u.initials}
-            className="flex items-center gap-3"
-            style={{
-              padding: "12px 20px",
-              borderBottom: i === users.length - 1 ? "none" : "1px solid #1a3d58",
-            }}
-          >
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-              style={{ background: u.avatarBg, color: u.avatarFg }}
-            >
-              {u.initials}
-            </div>
+          <div key={u.initials} className="flex items-center gap-3" style={{ padding: "12px 20px", borderBottom: i === users.length - 1 ? "none" : "1px solid #1a3d58" }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: u.avatarBg, color: u.avatarFg }}>{u.initials}</div>
             <div className="min-w-0">
               <div className="font-bold text-[13px] text-white">{u.name}</div>
               <div className="text-[11px]" style={{ color: "#6a9ab0" }}>{u.email}</div>
             </div>
-            <span
-              className="ml-auto"
-              style={{
-                background: u.bg,
-                color: u.fg,
-                border: `1px solid ${u.border}`,
-                padding: "4px 10px",
-                borderRadius: 4,
-                fontSize: 10,
-                fontFamily: "'Space Mono', ui-monospace, monospace",
-                letterSpacing: ".05em",
-              }}
-            >
-              {u.badge}
-            </span>
-            <MoreHorizontal size={16} strokeWidth={1.75} color="#6a9ab0" className="cursor-pointer" />
+            <span className="ml-auto" style={{ background: u.bg, color: u.fg, border: `1px solid ${u.border}`, padding: "4px 10px", borderRadius: 4, fontSize: 10, fontFamily: "'Space Mono', ui-monospace, monospace", letterSpacing: ".05em" }}>{u.badge}</span>
+            <div className="relative">
+              <button onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === u.initials ? null : u.initials); }} aria-label="Mer" style={{ background: "transparent", border: 0, padding: 2, cursor: "pointer" }}>
+                <MoreHorizontal size={16} strokeWidth={1.75} color="#6a9ab0" />
+              </button>
+              {openMenu === u.initials && (
+                <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 6, padding: 4, zIndex: 20, minWidth: 170, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                  <button onClick={() => { toast.success(`Redigera roll för ${u.name}`); setOpenMenu(null); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, color: "#edfaf4", background: "transparent", border: 0, borderRadius: 4, cursor: "pointer" }}>Redigera roll</button>
+                  <button onClick={() => { toast.success(`${u.name} borttagen`); setOpenMenu(null); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, color: "#ff4d6a", background: "transparent", border: 0, borderRadius: 4, cursor: "pointer" }}>Ta bort användare</button>
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
+      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }
