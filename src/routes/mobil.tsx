@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/mobil")({
 });
 
 function MobilPage() {
-  const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(true);
   const [modul, setModul] = useState<Modul | null>(null);
 
