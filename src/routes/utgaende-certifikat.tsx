@@ -94,9 +94,17 @@ function RowItem({ r, last, onAction }: { r: Row; last?: boolean; onAction: (r: 
   );
 }
 
+type ModalKind = null | "fornya" | "bokaKurs" | "planera";
+
 function UtgaendePage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [modal, setModal] = useState<ModalKind>(null);
+  const [activeRow, setActiveRow] = useState<Row | null>(null);
+  const [datum, setDatum] = useState("");
+  const [anteckning, setAnteckning] = useState("");
+  const [kurstyp, setKurstyp] = useState("");
+  const [plats, setPlats] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -110,6 +118,17 @@ function UtgaendePage() {
   }, [navigate]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
+
+  const handleAction = (r: Row) => {
+    setActiveRow(r);
+    setDatum(""); setAnteckning(""); setKurstyp(""); setPlats("");
+    if (r.action.startsWith("Förnya")) setModal("fornya");
+    else if (r.action.startsWith("Boka kurs")) setModal("bokaKurs");
+    else if (r.action.startsWith("Påminn")) { toast.success(`SMS-påminnelse skickad till ${r.name}!`); }
+    else if (r.action.startsWith("Planera")) setModal("planera");
+  };
+
+  const closeModal = () => { setModal(null); setActiveRow(null); };
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
