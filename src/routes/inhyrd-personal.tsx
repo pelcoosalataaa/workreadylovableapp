@@ -9,8 +9,8 @@ export const Route = createFileRoute("/inhyrd-personal")({
 });
 
 const stats = [
-  { label: "TOTALT INHYRD", value: "8", color: "#7dedb8" },
-  { label: "GODKÄNDA", value: "6", color: "#00e096" },
+  { label: "TOTALT INHYRD", value: "8", color: "#60b0f4" },
+  { label: "GODKÄNDA", value: "6", color: "#7dedb8" },
   { label: "UNDER UPPLÄRNING", value: "2", color: "#ffd166" },
 ];
 

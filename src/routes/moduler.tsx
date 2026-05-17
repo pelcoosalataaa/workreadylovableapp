@@ -125,8 +125,8 @@ function ModulerPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <StatCard color="#7dedb8" label="AKTIVA MODULER" value="5" />
-            <StatCard color="#00e096" label="PERSONAL GODKÄNDA" value="127" />
+            <StatCard color="#60b0f4" label="AKTIVA MODULER" value="5" />
+            <StatCard color="#7dedb8" label="PERSONAL GODKÄNDA" value="127" />
             <StatCard color="#ffd166" label="UNDER UPPLÄRNING" value="23" />
           </div>
 
