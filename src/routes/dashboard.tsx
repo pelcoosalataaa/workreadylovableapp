@@ -94,6 +94,7 @@ function WelcomeRow() {
 }
 
 function AlertBanner() {
+  const navigate = useNavigate();
   return (
     <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(255,77,106,0.08)", border: "1px solid rgba(255,77,106,0.3)" }}>
       <span className="red-dot shrink-0" />
