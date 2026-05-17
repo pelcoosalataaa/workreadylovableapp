@@ -77,7 +77,7 @@ function InhyrdPage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><RefreshCw size={22} strokeWidth={1.75} color="#7dedb8" /> Inhyrd personal</h1>
               <p className="text-sm text-muted-foreground mt-1">Översikt över inhyrd personal från era bemanningsbolag</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bemanningsbolag</button>
+            <button onClick={() => setAddOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bemanningsbolag</button>
           </div>
 
           {/* Stats */}
