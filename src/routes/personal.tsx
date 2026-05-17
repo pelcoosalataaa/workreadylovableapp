@@ -98,7 +98,7 @@ function PersonalPage() {
                 placeholder="🔍 Sök person..."
                 className="text-xs px-3 py-2 rounded-md border border-border bg-card text-foreground outline-none focus:border-primary w-56"
               />
-              <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till personal</button>
+              <button onClick={() => setInviteOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till personal</button>
             </div>
           </div>
 
