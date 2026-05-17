@@ -13,7 +13,7 @@ export const Route = createFileRoute("/utgaende-certifikat")({
 const stats = [
   { label: "UTGÅR INOM 14 DAGAR", value: "2", color: "#ff4d6a" },
   { label: "UTGÅR INOM 30 DAGAR", value: "1", color: "#ffd166" },
-  { label: "UTGÅR INOM 90 DAGAR", value: "3", color: "#7dedb8" },
+  { label: "UTGÅR INOM 90 DAGAR", value: "3", color: "#60b0f4" },
 ];
 
 type Row = {
