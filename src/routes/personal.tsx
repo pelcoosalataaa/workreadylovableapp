@@ -170,6 +170,7 @@ function PersonalPage() {
         </main>
       </div>
       <style>{sidebarKeyframes}</style>
+      <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
     </div>
   );
 }
