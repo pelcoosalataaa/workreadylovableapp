@@ -70,7 +70,7 @@ const section90: Row[] = [
   },
 ];
 
-function RowItem({ r, last }: { r: Row; last?: boolean }) {
+function RowItem({ r, last, onAction }: { r: Row; last?: boolean; onAction: (r: Row) => void }) {
   return (
     <div className="flex items-center gap-[14px]" style={{ padding: "16px 20px", borderBottom: last ? "none" : "1px solid #1a3d58" }}>
       <div className="flex items-center justify-center font-bold text-[12px] shrink-0" style={{ width: 34, height: 34, borderRadius: 999, background: r.avatarBg, color: r.avatarColor }}>{r.initials}</div>
@@ -88,7 +88,7 @@ function RowItem({ r, last }: { r: Row; last?: boolean }) {
       </div>
       <div className="flex items-center gap-3 shrink-0">
         <span className="mono font-bold" style={{ background: r.badgeBg, color: r.badgeColor, border: `1px solid ${r.badgeBorder}`, borderRadius: 4, padding: "3px 9px", fontSize: 10 }}>{r.badge}</span>
-        <button className="text-xs font-semibold px-3 py-1.5 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>{r.action}</button>
+        <button onClick={() => onAction(r)} className="text-xs font-semibold px-3 py-1.5 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>{r.action}</button>
       </div>
     </div>
   );
