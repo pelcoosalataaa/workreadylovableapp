@@ -148,6 +148,13 @@ function ModulDetailPage() {
                   </div>
                 </div>
               </div>
+
+              <div>
+                <div className="text-[11px] font-semibold mb-2" style={{ color: "#7dedb8", letterSpacing: "0.05em" }}>Debug — Quiz data från databasen</div>
+                <pre style={{ background: "#060f18", color: "#7dedb8", fontSize: 11, fontFamily: "monospace", padding: 16, borderRadius: 8, overflow: "auto", margin: 0 }}>
+{JSON.stringify(data.quiz, null, 2)}
+                </pre>
+              </div>
             </>
           )}
         </main>
