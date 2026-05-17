@@ -184,6 +184,7 @@ function PersonalPage() {
       </div>
       <style>{sidebarKeyframes}</style>
       <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
   );
 }
