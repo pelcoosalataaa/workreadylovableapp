@@ -209,6 +209,18 @@ function CertifikatPage() {
         @keyframes expiringGlow { 0%,100%{box-shadow:0 0 0 1px rgba(255,209,102,0.2)} 50%{box-shadow:0 0 0 1px rgba(255,209,102,0.55), 0 0 16px rgba(255,209,102,0.2)} }
         .cert-expiring { animation: expiringGlow 2.4s ease-in-out infinite; }
       `}</style>
+      <AppModal open={addOpen} onClose={() => setAddOpen(false)} title="Lägg till certifikat" footer={
+        <>
+          <GhostBtn onClick={() => setAddOpen(false)}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Certifikat sparat!"); setCTyp(""); setCPerson(""); setCGodk(""); setCUtg(""); setCBolag(""); setAddOpen(false); }}>Spara</MintBtn>
+        </>
+      }>
+        <Field label="Certifikattyp"><SelectInput options={["Betongkurs", "Traverskort", "Truckkort B", "CNC-utbildning", "Svetsarlicens", "Heta arbeten"]} value={cTyp} onChange={(e) => setCTyp(e.target.value)} /></Field>
+        <Field label="Person"><TextInput value={cPerson} onChange={(e) => setCPerson(e.target.value)} /></Field>
+        <Field label="Godkänd datum"><TextInput type="date" value={cGodk} onChange={(e) => setCGodk(e.target.value)} /></Field>
+        <Field label="Utgångsdatum"><TextInput type="date" value={cUtg} onChange={(e) => setCUtg(e.target.value)} /></Field>
+        <Field label="Bemanningsbolag"><SelectInput options={["Byggelement AB", "Partner2Work AB", "Ikett Personalpartner"]} value={cBolag} onChange={(e) => setCBolag(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }
