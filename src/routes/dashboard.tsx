@@ -119,7 +119,7 @@ function StatsRow() {
         <div
           key={s.label}
           role="button"
-          onClick={() => navigate({ to: "/personal", search: s.search ? { filter: s.search } : undefined as never })}
+          onClick={() => navigate({ to: "/personal", search: s.search ? { filter: s.search } : ({} as never) })}
           className="stat-card relative overflow-hidden rounded-[10px] border border-border p-5"
           style={{ background: "#0b1e2d" }}
         >
