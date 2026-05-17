@@ -106,16 +106,23 @@ function AlertBanner() {
 }
 
 function StatsRow() {
+  const navigate = useNavigate();
   const stats = [
-    { color: "#60b0f4", label: "PERSONAL TOTALT", value: "27", sub: "↑ 3 nya denna vecka" },
-    { color: "#7dedb8", label: "GODKÄNDA & REDO", value: "19", sub: "70% av alla" },
-    { color: "#ffd166", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu" },
-    { color: "#ff4d6a", label: "EJ PÅBÖRJAT", value: "3", sub: "⚠ SMS skickat" },
+    { color: "#60b0f4", label: "PERSONAL TOTALT", value: "27", sub: "↑ 3 nya denna vecka", search: undefined as string | undefined },
+    { color: "#7dedb8", label: "GODKÄNDA & REDO", value: "19", sub: "70% av alla", search: "godkanda" },
+    { color: "#ffd166", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu", search: "pagar" },
+    { color: "#ff4d6a", label: "EJ PÅBÖRJAT", value: "3", sub: "⚠ SMS skickat", search: "ej-start" },
   ];
   return (
     <div className="grid grid-cols-4 gap-4">
       {stats.map((s) => (
-        <div key={s.label} className="relative overflow-hidden rounded-[10px] border border-border p-5" style={{ background: "#0b1e2d" }}>
+        <div
+          key={s.label}
+          role="button"
+          onClick={() => navigate({ to: "/personal", search: s.search ? { filter: s.search } : undefined as never })}
+          className="stat-card relative overflow-hidden rounded-[10px] border border-border p-5"
+          style={{ background: "#0b1e2d" }}
+        >
           <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: s.color }} />
           <div className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${s.color}22, transparent 70%)` }} />
           <div className="mono text-[9px] font-bold text-muted-foreground">{s.label}</div>
