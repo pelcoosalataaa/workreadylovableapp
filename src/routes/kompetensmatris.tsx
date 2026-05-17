@@ -290,6 +290,16 @@ function KompetensmatrisPage() {
         </main>
       </div>
       <style>{sidebarKeyframes}</style>
+      <AppModal open={addOpen} onClose={() => setAddOpen(false)} title="Lägg till kompetens" footer={
+        <>
+          <GhostBtn onClick={() => setAddOpen(false)}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Kompetens tillagd!"); setKName(""); setKAvd(""); setKBransch(""); setAddOpen(false); }}>Lägg till</MintBtn>
+        </>
+      }>
+        <Field label="Kompetensnamn"><TextInput value={kName} onChange={(e) => setKName(e.target.value)} /></Field>
+        <Field label="Avdelning"><SelectInput options={["Gjutavdelningen", "CNC-produktion", "Lager & Utskeppning", "Montering", "Armeringsavdelningen"]} value={kAvd} onChange={(e) => setKAvd(e.target.value)} /></Field>
+        <Field label="Bransch"><SelectInput options={["Betong & Prefab", "Verkstad & Industri", "Lager & Logistik", "Bygg & Anläggning"]} value={kBransch} onChange={(e) => setKBransch(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }
