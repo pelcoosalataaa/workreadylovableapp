@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
+import { InvitePersonalModal } from "@/components/InvitePersonalModal";
 import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
