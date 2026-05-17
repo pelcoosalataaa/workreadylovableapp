@@ -74,3 +74,6 @@
 .mint-glow {
   background: radial-gradient(circle at center, rgba(125,237,184,0.18), transparent 60%);
 }
+
+button, a, [role="button"], .nav-item, .person-row, .mod-card,
+.stat-card, .faq-q, .price-card { cursor: pointer; }
