@@ -147,6 +147,8 @@ function InhyrdPage() {
         .inhyrd-row:hover { background: rgba(125,237,184,0.03); }
         .add-company:hover { border-color: #7dedb8 !important; background: rgba(125,237,184,0.03) !important; }
       `}</style>
+      <AddCompanyModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
   );
 }
