@@ -196,7 +196,7 @@ function CertifikatPage() {
               <Plus size={28} strokeWidth={1.75} color="#7dedb8" />
               <div className="font-display font-bold text-white text-[14px]">Lägg till certifikat</div>
               <div className="text-[11px] text-muted-foreground">Manuellt eller via utbildning</div>
-              <button className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Nytt certifikat</button>
+              <button onClick={() => setAddOpen(true)} className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Nytt certifikat</button>
             </div>
           </div>
         </main>
