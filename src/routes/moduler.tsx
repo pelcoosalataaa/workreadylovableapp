@@ -14,6 +14,7 @@ type Category = "Betong & Prefab" | "Säkerhet" | "Maskiner";
 type TagColor = "green" | "yellow" | "mint" | "muted";
 
 type Module = {
+  id?: string;
   Icon: LucideIcon;
   iconColor: string;
   iconBg: string;
