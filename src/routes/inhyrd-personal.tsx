@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AddCompanyModal } from "@/components/AddCompanyModal";
+import { PersonDetailModal, type PersonDetail } from "@/components/PersonDetailModal";
 import { RefreshCw, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/inhyrd-personal")({
