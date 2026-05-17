@@ -152,8 +152,11 @@ function ModulerPage() {
 
           {/* Grid */}
           <div className="grid grid-cols-3 gap-4">
-            {visible.map((m) => (
-              <ModuleCard key={m.title} m={m} />
+            {loadingDb && (
+              <div className="col-span-3 text-[12px] text-muted-foreground">Laddar moduler...</div>
+            )}
+            {visible.map((m, i) => (
+              <ModuleCard key={`${m.title}-${i}`} m={m} />
             ))}
             <RecordCard />
           </div>
