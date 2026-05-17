@@ -50,6 +50,7 @@ function BemanningsbolagPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [manageData, setManageData] = useState<ManageCompanyData | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [form, setForm] = useState<Company>({ name: "", city: "", description: "", email: "", phone: "" });
 
