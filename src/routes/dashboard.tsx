@@ -238,11 +238,12 @@ function ModuleCard({ icon, title, sub, tagText, tagColor, percent, barColor, sh
 }
 
 function ModulesSection() {
+  const navigate = useNavigate();
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-display font-bold text-base">Utbildningsmoduler</h3>
-        <button className="text-xs text-muted-foreground hover:text-primary">Se alla →</button>
+        <button onClick={() => navigate({ to: "/moduler" })} className="text-xs text-muted-foreground hover:text-primary">Se alla →</button>
       </div>
       <div className="grid grid-cols-3 gap-4">
         <ModuleCard icon={<Layers size={20} strokeWidth={1.75} color="#7dedb8" />} title="Introduktion betong" sub="12 min · 5 steg · Quiz" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
