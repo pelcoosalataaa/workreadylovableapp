@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
+import { PersonDetailModal, type PersonDetail } from "@/components/PersonDetailModal";
 import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/personal")({
   component: PersonalPage,
+  validateSearch: (s: Record<string, unknown>) => ({ filter: typeof s.filter === "string" ? s.filter : undefined }),
 });
 
 type Status = "Godkänd" | "Pågår" | "Ej start";
