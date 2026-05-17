@@ -115,7 +115,7 @@ function CompanyCard() {
         <div className="ins-head-title">
           <Building2 size={16} strokeWidth={1.75} color="#7dedb8" /> Företagsprofil
         </div>
-        <button className="ins-mint-btn">Spara</button>
+        <button onClick={() => toast.success("Inställningar sparade!")} className="ins-mint-btn">Spara</button>
       </div>
       <div className="p-6 grid grid-cols-2 gap-4">
         <Field label="Företagsnamn" defaultValue="Byggelement AB" />
