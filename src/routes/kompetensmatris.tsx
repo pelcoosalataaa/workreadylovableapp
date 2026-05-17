@@ -83,6 +83,10 @@ function KompetensmatrisPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [kName, setKName] = useState("");
+  const [kAvd, setKAvd] = useState("");
+  const [kBransch, setKBransch] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
