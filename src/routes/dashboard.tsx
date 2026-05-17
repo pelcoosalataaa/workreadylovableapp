@@ -100,7 +100,7 @@ function AlertBanner() {
       <p className="text-xs flex-1">
         <span style={{ color: "#ff4d6a", fontWeight: 600 }}>Sara Berg</span> har inte påbörjat sin utbildning — börjar måndag. <span className="text-muted-foreground mx-2">|</span> <span style={{ color: "#ff4d6a", fontWeight: 600 }}>Erik Holm</span> — traverskort utgår om 14 dagar.
       </p>
-      <a className="text-xs font-semibold whitespace-nowrap hover:underline" style={{ color: "#7dedb8" }} href="#">Åtgärda →</a>
+      <button type="button" onClick={() => navigate({ to: "/utgaende-certifikat" })} className="text-xs font-semibold whitespace-nowrap hover:underline bg-transparent border-0 p-0" style={{ color: "#7dedb8" }}>Åtgärda →</button>
     </div>
   );
 }
