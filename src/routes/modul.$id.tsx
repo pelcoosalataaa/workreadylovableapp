@@ -124,7 +124,7 @@ function ModulDetailPage() {
                     })}
                     {data.quiz.length > 0 && Object.keys(answers).length === data.quiz.length && (() => {
                       const total = data.quiz.length;
-                      const score = data.quiz.reduce((acc, q, i) => acc + (answers[i] === Number(q.ratt) ? 1 : 0), 0);
+                      const score = data.quiz.reduce((acc, q, i) => acc + (answers[i] === Number(q.ratt_svar ?? q.ratt) ? 1 : 0), 0);
                       const passed = score >= 3;
                       return (
                         <div style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid #1a3d58" }} className="flex flex-col gap-2">
