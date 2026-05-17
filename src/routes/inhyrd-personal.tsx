@@ -50,6 +50,8 @@ function statusStyle(s: Status): React.CSSProperties {
 function InhyrdPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [selected, setSelected] = useState<PersonDetail | null>(null);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
