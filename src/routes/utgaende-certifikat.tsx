@@ -204,6 +204,38 @@ function UtgaendePage() {
         </main>
       </div>
       <style>{sidebarKeyframes}</style>
+
+      <AppModal open={modal === "fornya"} onClose={closeModal} title="Förnya certifikat" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Förnyelse bokad!"); closeModal(); }}>Boka förnyelse</MintBtn>
+        </>
+      }>
+        <p className="text-[13px] text-foreground/90">Boka förnyelse för {activeRow?.name}. Ange datum för ny kurs.</p>
+        <Field label="Nytt datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Anteckning"><TextArea value={anteckning} onChange={(e) => setAnteckning(e.target.value)} /></Field>
+      </AppModal>
+
+      <AppModal open={modal === "bokaKurs"} onClose={closeModal} title="Boka kurs" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Kurs bokad!"); closeModal(); }}>Boka</MintBtn>
+        </>
+      }>
+        <Field label="Kurstyp"><TextInput value={kurstyp} onChange={(e) => setKurstyp(e.target.value)} /></Field>
+        <Field label="Datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Plats"><TextInput value={plats} onChange={(e) => setPlats(e.target.value)} /></Field>
+      </AppModal>
+
+      <AppModal open={modal === "planera"} onClose={closeModal} title="Planera förnyelse" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Förnyelse planerad!"); closeModal(); }}>Spara</MintBtn>
+        </>
+      }>
+        <Field label="Planerat datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Anteckning"><TextArea value={anteckning} onChange={(e) => setAnteckning(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }
