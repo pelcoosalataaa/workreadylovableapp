@@ -151,7 +151,7 @@ function PersonalPage() {
               </thead>
               <tbody>
                 {rows.map((p) => (
-                  <tr key={p.initials} className="transition-colors hover:bg-[rgba(125,237,184,0.03)]" style={{ borderBottom: "1px solid rgba(26,61,88,0.4)" }}>
+                  <tr key={p.initials} onClick={() => setSelected({ name: p.name, role: p.role, dept: p.dept, company: p.company, percent: p.percent, status: p.status, certs: p.certs })} className="person-row transition-colors hover:bg-[rgba(125,237,184,0.03)]" style={{ borderBottom: "1px solid rgba(26,61,88,0.4)" }}>
                     <td style={{ padding: "12px 16px" }}>
                       <div className="flex items-center gap-3">
                         <div className="rounded-full flex items-center justify-center font-bold text-[11px] shrink-0" style={{ width: 34, height: 34, background: p.avatarBg, color: p.avatarColor }}>{p.initials}</div>
