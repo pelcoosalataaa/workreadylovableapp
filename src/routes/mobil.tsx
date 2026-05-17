@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,8 +13,7 @@ export const Route = createFileRoute("/mobil")({
 });
 
 function MobilPage() {
-  const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const [modul, setModul] = useState<Modul | null>(null);
 
@@ -24,18 +23,6 @@ function MobilPage() {
   const [correctCount, setCorrectCount] = useState(0);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) navigate({ to: "/login" });
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setReady(true);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!ready) return;
     (async () => {
       setLoading(true);
       const { data } = await supabase
@@ -54,7 +41,7 @@ function MobilPage() {
       }
       setLoading(false);
     })();
-  }, [ready]);
+  }, []);
 
   const total = modul?.quiz.length ?? 0;
   const current = modul?.quiz[qIndex];
@@ -86,8 +73,6 @@ function MobilPage() {
       setSelected(null);
     }
   }
-
-  if (!ready) return <div className="min-h-screen bg-background" />;
 
   const passed = total > 0 && correctCount / total >= 0.75;
 
