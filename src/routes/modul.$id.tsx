@@ -8,7 +8,7 @@ export const Route = createFileRoute("/modul/$id")({
   component: ModulDetailPage,
 });
 
-type Quiz = { fraga: string; alternativ: string[]; ratt: number };
+type Quiz = { fraga: string; alternativ: string[]; ratt_svar?: number; ratt?: number };
 type Steg = { rubrik?: string; text?: string } | string;
 
 function ModulDetailPage() {
@@ -86,7 +86,7 @@ function ModulDetailPage() {
                     {data.quiz.map((q, qi) => {
                       const picked = answers[qi];
                       const answered = picked !== undefined;
-                      const correctIdx = Number(q.ratt);
+                      const correctIdx = Number(q.ratt_svar ?? q.ratt);
                       return (
                         <div key={qi}>
                           <div className="font-bold text-white text-[13px] mb-2">{qi + 1}. {q.fraga}</div>
@@ -124,7 +124,7 @@ function ModulDetailPage() {
                     })}
                     {data.quiz.length > 0 && Object.keys(answers).length === data.quiz.length && (() => {
                       const total = data.quiz.length;
-                      const score = data.quiz.reduce((acc, q, i) => acc + (answers[i] === Number(q.ratt) ? 1 : 0), 0);
+                      const score = data.quiz.reduce((acc, q, i) => acc + (answers[i] === Number(q.ratt_svar ?? q.ratt) ? 1 : 0), 0);
                       const passed = score >= 3;
                       return (
                         <div style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid #1a3d58" }} className="flex flex-col gap-2">
@@ -147,13 +147,6 @@ function ModulDetailPage() {
                     })()}
                   </div>
                 </div>
-              </div>
-
-              <div>
-                <div className="text-[11px] font-semibold mb-2" style={{ color: "#7dedb8", letterSpacing: "0.05em" }}>Debug — Quiz data från databasen</div>
-                <pre style={{ background: "#060f18", color: "#7dedb8", fontSize: 11, fontFamily: "monospace", padding: 16, borderRadius: 8, overflow: "auto", margin: 0 }}>
-{JSON.stringify(data.quiz, null, 2)}
-                </pre>
               </div>
             </>
           )}
