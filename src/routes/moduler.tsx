@@ -60,11 +60,48 @@ function ModulerPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
+  const [dbModules, setDbModules] = useState<Module[]>([]);
+  const [loadingDb, setLoadingDb] = useState(true);
+
+  useEffect(() => {
+    if (!ready) return;
+    (async () => {
+      const { data, error } = await supabase
+        .from("moduler")
+        .select("id, titel, kategori, skapad_av, created_at")
+        .order("created_at", { ascending: false });
+      if (!error && data) {
+        const mapped: Module[] = data.map((r) => {
+          const cat = (["Betong & Prefab", "Säkerhet", "Maskiner"] as const).includes(r.kategori as Category)
+            ? (r.kategori as Category)
+            : "Betong & Prefab";
+          const dateStr = new Date(r.created_at).toLocaleDateString("sv-SE", { year: "numeric", month: "long", day: "numeric" });
+          return {
+            Icon: Layers,
+            iconColor: "#7dedb8",
+            iconBg: "rgba(125,237,184,0.1)",
+            title: r.titel,
+            meta: `${dateStr} · Skapad av: ${r.skapad_av ?? "Okänd"}`,
+            tagText: "Ny",
+            tagColor: "green",
+            percent: 100,
+            barColor: "#00e096",
+            category: cat,
+          };
+        });
+        setDbModules(mapped);
+      }
+      setLoadingDb(false);
+    })();
+  }, [ready]);
+
+  const allModules = useMemo(() => [...dbModules, ...modules], [dbModules]);
+
   const visible = useMemo(() => {
-    if (filter === "Alla moduler") return modules;
-    if (filter === "AI skapar") return modules.filter((m) => m.building);
-    return modules.filter((m) => m.category === filter);
-  }, [filter]);
+    if (filter === "Alla moduler") return allModules;
+    if (filter === "AI skapar") return allModules.filter((m) => m.building);
+    return allModules.filter((m) => m.category === filter);
+  }, [filter, allModules]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
 
@@ -115,8 +152,11 @@ function ModulerPage() {
 
           {/* Grid */}
           <div className="grid grid-cols-3 gap-4">
-            {visible.map((m) => (
-              <ModuleCard key={m.title} m={m} />
+            {loadingDb && (
+              <div className="col-span-3 text-[12px] text-muted-foreground">Laddar moduler...</div>
+            )}
+            {visible.map((m, i) => (
+              <ModuleCard key={`${m.title}-${i}`} m={m} />
             ))}
             <RecordCard />
           </div>
