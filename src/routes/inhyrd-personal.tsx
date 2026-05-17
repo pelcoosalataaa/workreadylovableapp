@@ -111,7 +111,7 @@ function InhyrdPage() {
               <div>Person</div><div>Roll</div><div>Avdelning</div><div>Startdatum</div><div>Framsteg</div><div>Status</div><div>Certifikat</div>
             </div>
             {rows.map((r, i) => (
-              <div key={r.name} className="inhyrd-row grid items-center" style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 100px 110px 1.7fr", padding: "14px 16px", borderBottom: i === rows.length - 1 ? "none" : "1px solid rgba(26,61,88,0.4)", gap: 12, fontSize: 12 }}>
+              <div key={r.name} onClick={() => setSelected({ name: r.name, role: r.role, dept: r.dept, company: "Partner2Work AB", start: r.start, percent: r.percent, status: r.status, certs: r.certs })} className="inhyrd-row person-row grid items-center" style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 100px 110px 1.7fr", padding: "14px 16px", borderBottom: i === rows.length - 1 ? "none" : "1px solid rgba(26,61,88,0.4)", gap: 12, fontSize: 12 }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex items-center justify-center font-bold text-[11px] shrink-0" style={{ width: 32, height: 32, borderRadius: 999, background: r.avatarBg, color: r.avatarColor }}>{r.initials}</div>
                   <div className="font-bold text-[13px] text-white truncate">{r.name}</div>
