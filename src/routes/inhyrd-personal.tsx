@@ -134,7 +134,7 @@ function InhyrdPage() {
           </div>
 
           {/* Add company card */}
-          <button className="add-company flex flex-col items-center gap-3" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 32, marginTop: 4, cursor: "pointer", transition: "all .2s" }}>
+          <button onClick={() => setAddOpen(true)} className="add-company flex flex-col items-center gap-3" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 32, marginTop: 4, cursor: "pointer", transition: "all .2s" }}>
             <Building2 size={32} strokeWidth={1.75} color="#7dedb8" />
             <div className="font-display font-bold text-white text-[16px]">Lägg till bemanningsbolag</div>
             <div className="text-[13px] text-muted-foreground text-center">Klicka för att lägga till ett nytt bemanningsbolag och deras personal</div>
