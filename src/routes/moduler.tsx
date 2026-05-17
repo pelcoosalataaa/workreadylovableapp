@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, SelectInput, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { Video, CircleDot, Layers, ShieldAlert, FileText, MoveUp, Hammer, PlusCircle, Bot, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/moduler")({
