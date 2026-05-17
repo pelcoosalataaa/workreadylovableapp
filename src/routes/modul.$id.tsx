@@ -86,7 +86,7 @@ function ModulDetailPage() {
                     {data.quiz.map((q, qi) => {
                       const picked = answers[qi];
                       const answered = picked !== undefined;
-                      const correctIdx = Number(q.ratt);
+                      const correctIdx = Number(q.ratt_svar ?? q.ratt);
                       return (
                         <div key={qi}>
                           <div className="font-bold text-white text-[13px] mb-2">{qi + 1}. {q.fraga}</div>
