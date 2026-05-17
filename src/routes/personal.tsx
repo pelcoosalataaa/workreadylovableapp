@@ -206,7 +206,7 @@ function PersonalPage() {
           </div>
         </main>
       </div>
-      <style>{sidebarKeyframes}</style>
+      <style>{sidebarKeyframes}{`.copy-link-btn svg{color:#3d6a7a;transition:color .15s}.copy-link-btn:hover svg{color:#7dedb8}`}</style>
       <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
