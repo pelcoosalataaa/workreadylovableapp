@@ -14,7 +14,6 @@ export const Route = createFileRoute("/mobil")({
 
 function MobilPage() {
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modul, setModul] = useState<Modul | null>(null);
 
@@ -24,18 +23,6 @@ function MobilPage() {
   const [correctCount, setCorrectCount] = useState(0);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) navigate({ to: "/login" });
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setReady(true);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!ready) return;
     (async () => {
       setLoading(true);
       const { data } = await supabase
