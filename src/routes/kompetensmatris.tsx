@@ -117,7 +117,7 @@ function KompetensmatrisPage() {
             </div>
             <div className="flex items-center gap-2">
               <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera</button>
-              <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till kompetens</button>
+              <button onClick={() => setAddOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till kompetens</button>
             </div>
           </div>
 
