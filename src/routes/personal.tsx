@@ -59,10 +59,21 @@ function badgeStyle(status: Status): React.CSSProperties {
 
 function PersonalPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("Alla");
+  const [extraStatus, setExtraStatus] = useState<Status | null>(null);
   const [query, setQuery] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [selected, setSelected] = useState<PersonDetail | null>(null);
+
+  useEffect(() => {
+    const f = search.filter;
+    if (f === "godkanda") { setFilter("Godkända"); setExtraStatus(null); }
+    else if (f === "ej-start") { setFilter("Ej påbörjat"); setExtraStatus(null); }
+    else if (f === "pagar") { setFilter("Alla"); setExtraStatus("Pågår"); }
+    else setExtraStatus(null);
+  }, [search.filter]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -77,8 +88,8 @@ function PersonalPage() {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return people.filter((p) => matchesFilter(p, filter) && (!q || p.name.toLowerCase().includes(q)));
-  }, [filter, query]);
+    return people.filter((p) => matchesFilter(p, filter) && (!extraStatus || p.status === extraStatus) && (!q || p.name.toLowerCase().includes(q)));
+  }, [filter, extraStatus, query]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
 
