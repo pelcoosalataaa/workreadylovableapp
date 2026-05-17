@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
 import { CircleDot, Layers, ShieldAlert, FileText, Check, Loader2 } from "lucide-react";
 import { processModuleVideo } from "@/lib/moduler.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/spela-in")({
   component: SpelaInPage,
@@ -117,6 +118,23 @@ function SpelaInPage() {
         window.clearTimeout(moveToQuiz);
         setPhase("done");
         setSuccessMsg("Modulen är klar och har skickats till all personal!");
+
+        // Send SMS notification to test number
+        try {
+          const { data: smsData, error: smsErr } = await supabase.functions.invoke("send-sms", {
+            body: {
+              to: "+46735255494",
+              message: "Hej! Du har fått en ny utbildningsmodul i WorkReady. Logga in för att börja din utbildning.",
+            },
+          });
+          if (smsErr || !smsData?.success) {
+            toast("❌ SMS kunde inte skickas");
+          } else {
+            toast("✅ SMS skickat till personal!");
+          }
+        } catch {
+          toast("❌ SMS kunde inte skickas");
+        }
       } catch (err) {
         window.clearTimeout(moveToSteps);
         window.clearTimeout(moveToQuiz);
