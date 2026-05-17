@@ -80,6 +80,7 @@ function ModulerPage() {
             : "Betong & Prefab";
           const dateStr = new Date(r.created_at).toLocaleDateString("sv-SE", { year: "numeric", month: "long", day: "numeric" });
           return {
+            id: r.id,
             Icon: Layers,
             iconColor: "#7dedb8",
             iconBg: "rgba(125,237,184,0.1)",
