@@ -8,7 +8,7 @@ export const Route = createFileRoute("/modul/$id")({
   component: ModulDetailPage,
 });
 
-type Quiz = { fraga: string; alternativ: string[]; ratt: number };
+type Quiz = { fraga: string; alternativ: string[]; ratt_svar?: number; ratt?: number };
 type Steg = { rubrik?: string; text?: string } | string;
 
 function ModulDetailPage() {
