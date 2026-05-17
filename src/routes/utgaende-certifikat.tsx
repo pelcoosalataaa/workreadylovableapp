@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, TextArea, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { AlertTriangle, Mail, AlertOctagon, AlertCircle, CheckCircle2, Bot } from "lucide-react";
 
 export const Route = createFileRoute("/utgaende-certifikat")({
@@ -68,7 +70,7 @@ const section90: Row[] = [
   },
 ];
 
-function RowItem({ r, last }: { r: Row; last?: boolean }) {
+function RowItem({ r, last, onAction }: { r: Row; last?: boolean; onAction: (r: Row) => void }) {
   return (
     <div className="flex items-center gap-[14px]" style={{ padding: "16px 20px", borderBottom: last ? "none" : "1px solid #1a3d58" }}>
       <div className="flex items-center justify-center font-bold text-[12px] shrink-0" style={{ width: 34, height: 34, borderRadius: 999, background: r.avatarBg, color: r.avatarColor }}>{r.initials}</div>
@@ -86,15 +88,23 @@ function RowItem({ r, last }: { r: Row; last?: boolean }) {
       </div>
       <div className="flex items-center gap-3 shrink-0">
         <span className="mono font-bold" style={{ background: r.badgeBg, color: r.badgeColor, border: `1px solid ${r.badgeBorder}`, borderRadius: 4, padding: "3px 9px", fontSize: 10 }}>{r.badge}</span>
-        <button className="text-xs font-semibold px-3 py-1.5 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>{r.action}</button>
+        <button onClick={() => onAction(r)} className="text-xs font-semibold px-3 py-1.5 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>{r.action}</button>
       </div>
     </div>
   );
 }
 
+type ModalKind = null | "fornya" | "bokaKurs" | "planera";
+
 function UtgaendePage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [modal, setModal] = useState<ModalKind>(null);
+  const [activeRow, setActiveRow] = useState<Row | null>(null);
+  const [datum, setDatum] = useState("");
+  const [anteckning, setAnteckning] = useState("");
+  const [kurstyp, setKurstyp] = useState("");
+  const [plats, setPlats] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -108,6 +118,17 @@ function UtgaendePage() {
   }, [navigate]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
+
+  const handleAction = (r: Row) => {
+    setActiveRow(r);
+    setDatum(""); setAnteckning(""); setKurstyp(""); setPlats("");
+    if (r.action.startsWith("Förnya")) setModal("fornya");
+    else if (r.action.startsWith("Boka kurs")) setModal("bokaKurs");
+    else if (r.action.startsWith("Påminn")) { toast.success(`SMS-påminnelse skickad till ${r.name}!`); }
+    else if (r.action.startsWith("Planera")) setModal("planera");
+  };
+
+  const closeModal = () => { setModal(null); setActiveRow(null); };
 
   return (
     <div className="min-h-screen flex bg-background text-foreground">
@@ -146,17 +167,17 @@ function UtgaendePage() {
             <div style={{ background: "rgba(255,77,106,0.06)", borderBottom: "1px solid rgba(255,77,106,0.2)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ff4d6a" }}><AlertOctagon size={12} strokeWidth={1.75} /> KRITISKT — UTGÅR INOM 14 DAGAR</div>
             </div>
-            {section14.map((r) => <RowItem key={r.name} r={r} />)}
+            {section14.map((r) => <RowItem key={r.name} r={r} onAction={handleAction} />)}
 
             <div style={{ background: "rgba(255,209,102,0.06)", borderBottom: "1px solid rgba(255,209,102,0.2)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ffd166" }}><AlertTriangle size={12} strokeWidth={1.75} /> VARNING — UTGÅR INOM 30 DAGAR</div>
             </div>
-            {section30.map((r) => <RowItem key={r.name} r={r} />)}
+            {section30.map((r) => <RowItem key={r.name} r={r} onAction={handleAction} />)}
 
             <div style={{ background: "rgba(125,237,184,0.04)", borderBottom: "1px solid rgba(125,237,184,0.15)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#7dedb8" }}><CheckCircle2 size={12} strokeWidth={1.75} /> PLANERA — UTGÅR INOM 90 DAGAR</div>
             </div>
-            {section90.map((r, i) => <RowItem key={r.name} r={r} last={i === section90.length - 1} />)}
+            {section90.map((r, i) => <RowItem key={r.name} r={r} last={i === section90.length - 1} onAction={handleAction} />)}
           </div>
 
           {/* Bottom card */}
@@ -183,6 +204,38 @@ function UtgaendePage() {
         </main>
       </div>
       <style>{sidebarKeyframes}</style>
+
+      <AppModal open={modal === "fornya"} onClose={closeModal} title="Förnya certifikat" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Förnyelse bokad!"); closeModal(); }}>Boka förnyelse</MintBtn>
+        </>
+      }>
+        <p className="text-[13px] text-foreground/90">Boka förnyelse för {activeRow?.name}. Ange datum för ny kurs.</p>
+        <Field label="Nytt datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Anteckning"><TextArea value={anteckning} onChange={(e) => setAnteckning(e.target.value)} /></Field>
+      </AppModal>
+
+      <AppModal open={modal === "bokaKurs"} onClose={closeModal} title="Boka kurs" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Kurs bokad!"); closeModal(); }}>Boka</MintBtn>
+        </>
+      }>
+        <Field label="Kurstyp"><TextInput value={kurstyp} onChange={(e) => setKurstyp(e.target.value)} /></Field>
+        <Field label="Datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Plats"><TextInput value={plats} onChange={(e) => setPlats(e.target.value)} /></Field>
+      </AppModal>
+
+      <AppModal open={modal === "planera"} onClose={closeModal} title="Planera förnyelse" footer={
+        <>
+          <GhostBtn onClick={closeModal}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Förnyelse planerad!"); closeModal(); }}>Spara</MintBtn>
+        </>
+      }>
+        <Field label="Planerat datum"><TextInput type="date" value={datum} onChange={(e) => setDatum(e.target.value)} /></Field>
+        <Field label="Anteckning"><TextArea value={anteckning} onChange={(e) => setAnteckning(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }

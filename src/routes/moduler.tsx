@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, SelectInput, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { Video, CircleDot, Layers, ShieldAlert, FileText, MoveUp, Hammer, PlusCircle, Bot, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/moduler")({
@@ -12,6 +14,7 @@ type Category = "Betong & Prefab" | "Säkerhet" | "Maskiner";
 type TagColor = "green" | "yellow" | "mint" | "muted";
 
 type Module = {
+  id?: string;
   Icon: LucideIcon;
   iconColor: string;
   iconBg: string;
@@ -77,6 +80,7 @@ function ModulerPage() {
             : "Betong & Prefab";
           const dateStr = new Date(r.created_at).toLocaleDateString("sv-SE", { year: "numeric", month: "long", day: "numeric" });
           return {
+            id: r.id,
             Icon: Layers,
             iconColor: "#7dedb8",
             iconBg: "rgba(125,237,184,0.1)",
@@ -189,28 +193,54 @@ function StatCard({ color, label, value }: { color: string; label: string; value
 }
 
 function ModuleCard({ m }: { m: Module }) {
+  const navigate = useNavigate();
+  const [editOpen, setEditOpen] = useState(false);
+  const [namn, setNamn] = useState(m.title);
+  const [kat, setKat] = useState<string>(m.category);
+
+  const onCardClick = () => {
+    if (m.building) return;
+    if (m.id) navigate({ to: "/modul/$id", params: { id: m.id } });
+  };
+
+  const save = () => {
+    toast.success("Modul sparad!");
+    setEditOpen(false);
+  };
+
   return (
-    <div className="mod-card rounded-[10px] flex flex-col gap-3" style={{ background: "#0e2538", border: "1px solid #1a3d58", padding: 20 }}>
-      <div className="flex items-start justify-between">
-        <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ background: m.iconBg }}><m.Icon size={20} strokeWidth={1.75} color={m.iconColor} /></div>
-        <span className={`text-[10px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagPrefixIcon ? <m.tagPrefixIcon size={12} strokeWidth={1.75} /> : null}{m.tagText}</span>
+    <>
+      <div onClick={onCardClick} className="mod-card rounded-[10px] flex flex-col gap-3" style={{ background: "#0e2538", border: "1px solid #1a3d58", padding: 20, cursor: m.id && !m.building ? "pointer" : "default" }}>
+        <div className="flex items-start justify-between">
+          <div className="w-10 h-10 rounded-md flex items-center justify-center" style={{ background: m.iconBg }}><m.Icon size={20} strokeWidth={1.75} color={m.iconColor} /></div>
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-full inline-flex items-center gap-1 ${m.building ? "mint-pulse" : ""}`} style={tagStyles[m.tagColor]}>{m.tagPrefixIcon ? <m.tagPrefixIcon size={12} strokeWidth={1.75} /> : null}{m.tagText}</span>
+        </div>
+        <div>
+          <h3 className="font-display font-bold text-[15px] text-white">{m.title}</h3>
+          <p className="text-[11px] text-muted-foreground mt-1">{m.meta}</p>
+        </div>
+        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
+          {m.building ? (
+            <div className="ai-bar h-full shimmer-bar rounded-full" />
+          ) : (
+            <div className="h-full rounded-full" style={{ width: `${m.percent}%`, background: m.barColor }} />
+          )}
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.04)", color: "#3d6a7a", border: "1px solid #1a3d58" }}>{m.category}</span>
+          <button className="ghost-btn" disabled={m.building} onClick={(e) => { e.stopPropagation(); setEditOpen(true); }}>{m.building ? "Bygger..." : "Redigera"}</button>
+        </div>
       </div>
-      <div>
-        <h3 className="font-display font-bold text-[15px] text-white">{m.title}</h3>
-        <p className="text-[11px] text-muted-foreground mt-1">{m.meta}</p>
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
-        {m.building ? (
-          <div className="ai-bar h-full shimmer-bar rounded-full" />
-        ) : (
-          <div className="h-full rounded-full" style={{ width: `${m.percent}%`, background: m.barColor }} />
-        )}
-      </div>
-      <div className="flex items-center justify-between mt-1">
-        <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.04)", color: "#3d6a7a", border: "1px solid #1a3d58" }}>{m.category}</span>
-        <button className="ghost-btn" disabled={m.building}>{m.building ? "Bygger..." : "Redigera"}</button>
-      </div>
-    </div>
+      <AppModal open={editOpen} onClose={() => setEditOpen(false)} title="Redigera modul" footer={
+        <>
+          <GhostBtn onClick={() => setEditOpen(false)}>Avbryt</GhostBtn>
+          <MintBtn onClick={save}>Spara</MintBtn>
+        </>
+      }>
+        <Field label="Modulnamn"><TextInput value={namn} onChange={(e) => setNamn(e.target.value)} /></Field>
+        <Field label="Kategori"><SelectInput options={["Betong & Prefab", "Säkerhet", "Maskiner"]} value={kat} onChange={(e) => setKat(e.target.value)} /></Field>
+      </AppModal>
+    </>
   );
 }
 

@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, SelectInput, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { Award, Plus, Layers, ShieldAlert, ArrowUpFromLine, Flame, FileText, type LucideIcon } from "lucide-react";
 
 export const Route = createFileRoute("/certifikat")({
@@ -77,6 +79,12 @@ function CertifikatPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("Alla");
+  const [addOpen, setAddOpen] = useState(false);
+  const [cTyp, setCTyp] = useState("");
+  const [cPerson, setCPerson] = useState("");
+  const [cGodk, setCGodk] = useState("");
+  const [cUtg, setCUtg] = useState("");
+  const [cBolag, setCBolag] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -104,7 +112,7 @@ function CertifikatPage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Award size={22} strokeWidth={1.75} color="#7dedb8" /> Certifikat & Godkännanden</h1>
               <p className="text-sm text-muted-foreground mt-1">Alla certifikat sparas automatiskt och visas vid tillsyn</p>
             </div>
-            <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera alla</button>
+            <button onClick={() => toast("Exporterar certifikat... Filen laddas ner inom några sekunder.")} className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera alla</button>
           </div>
 
           {/* Alert banner */}
@@ -188,7 +196,7 @@ function CertifikatPage() {
               <Plus size={28} strokeWidth={1.75} color="#7dedb8" />
               <div className="font-display font-bold text-white text-[14px]">Lägg till certifikat</div>
               <div className="text-[11px] text-muted-foreground">Manuellt eller via utbildning</div>
-              <button className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Nytt certifikat</button>
+              <button onClick={() => setAddOpen(true)} className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Nytt certifikat</button>
             </div>
           </div>
         </main>
@@ -201,6 +209,18 @@ function CertifikatPage() {
         @keyframes expiringGlow { 0%,100%{box-shadow:0 0 0 1px rgba(255,209,102,0.2)} 50%{box-shadow:0 0 0 1px rgba(255,209,102,0.55), 0 0 16px rgba(255,209,102,0.2)} }
         .cert-expiring { animation: expiringGlow 2.4s ease-in-out infinite; }
       `}</style>
+      <AppModal open={addOpen} onClose={() => setAddOpen(false)} title="Lägg till certifikat" footer={
+        <>
+          <GhostBtn onClick={() => setAddOpen(false)}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Certifikat sparat!"); setCTyp(""); setCPerson(""); setCGodk(""); setCUtg(""); setCBolag(""); setAddOpen(false); }}>Spara</MintBtn>
+        </>
+      }>
+        <Field label="Certifikattyp"><SelectInput options={["Betongkurs", "Traverskort", "Truckkort B", "CNC-utbildning", "Svetsarlicens", "Heta arbeten"]} value={cTyp} onChange={(e) => setCTyp(e.target.value)} /></Field>
+        <Field label="Person"><TextInput value={cPerson} onChange={(e) => setCPerson(e.target.value)} /></Field>
+        <Field label="Godkänd datum"><TextInput type="date" value={cGodk} onChange={(e) => setCGodk(e.target.value)} /></Field>
+        <Field label="Utgångsdatum"><TextInput type="date" value={cUtg} onChange={(e) => setCUtg(e.target.value)} /></Field>
+        <Field label="Bemanningsbolag"><SelectInput options={["Byggelement AB", "Partner2Work AB", "Ikett Personalpartner"]} value={cBolag} onChange={(e) => setCBolag(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }

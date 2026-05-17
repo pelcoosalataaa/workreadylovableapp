@@ -22,6 +22,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
 import { Route as BemanningsbolagRouteImport } from './routes/bemanningsbolag'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ModulIdRouteImport } from './routes/modul.$id'
 
 const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
   id: '/utgaende-certifikat',
@@ -88,6 +89,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModulIdRoute = ModulIdRouteImport.update({
+  id: '/modul/$id',
+  path: '/modul/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
+  '/modul/$id': typeof ModulIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
+  '/modul/$id': typeof ModulIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +142,7 @@ export interface FileRoutesById {
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
+  '/modul/$id': typeof ModulIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/personal'
     | '/spela-in'
     | '/utgaende-certifikat'
+    | '/modul/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/personal'
     | '/spela-in'
     | '/utgaende-certifikat'
+    | '/modul/$id'
   id:
     | '__root__'
     | '/'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '/personal'
     | '/spela-in'
     | '/utgaende-certifikat'
+    | '/modul/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   PersonalRoute: typeof PersonalRoute
   SpelaInRoute: typeof SpelaInRoute
   UtgaendeCertifikatRoute: typeof UtgaendeCertifikatRoute
+  ModulIdRoute: typeof ModulIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/modul/$id': {
+      id: '/modul/$id'
+      path: '/modul/$id'
+      fullPath: '/modul/$id'
+      preLoaderRoute: typeof ModulIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +329,7 @@ const rootRouteChildren: RootRouteChildren = {
   PersonalRoute: PersonalRoute,
   SpelaInRoute: SpelaInRoute,
   UtgaendeCertifikatRoute: UtgaendeCertifikatRoute,
+  ModulIdRoute: ModulIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

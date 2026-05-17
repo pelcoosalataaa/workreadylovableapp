@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, SelectInput, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { Grid3x3, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/kompetensmatris")({
@@ -81,6 +83,10 @@ function KompetensmatrisPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [kName, setKName] = useState("");
+  const [kAvd, setKAvd] = useState("");
+  const [kBransch, setKBransch] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -111,7 +117,7 @@ function KompetensmatrisPage() {
             </div>
             <div className="flex items-center gap-2">
               <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera</button>
-              <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till kompetens</button>
+              <button onClick={() => setAddOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till kompetens</button>
             </div>
           </div>
 
@@ -284,6 +290,16 @@ function KompetensmatrisPage() {
         </main>
       </div>
       <style>{sidebarKeyframes}</style>
+      <AppModal open={addOpen} onClose={() => setAddOpen(false)} title="Lägg till kompetens" footer={
+        <>
+          <GhostBtn onClick={() => setAddOpen(false)}>Avbryt</GhostBtn>
+          <MintBtn onClick={() => { toast.success("Kompetens tillagd!"); setKName(""); setKAvd(""); setKBransch(""); setAddOpen(false); }}>Lägg till</MintBtn>
+        </>
+      }>
+        <Field label="Kompetensnamn"><TextInput value={kName} onChange={(e) => setKName(e.target.value)} /></Field>
+        <Field label="Avdelning"><SelectInput options={["Gjutavdelningen", "CNC-produktion", "Lager & Utskeppning", "Montering", "Armeringsavdelningen"]} value={kAvd} onChange={(e) => setKAvd(e.target.value)} /></Field>
+        <Field label="Bransch"><SelectInput options={["Betong & Prefab", "Verkstad & Industri", "Lager & Logistik", "Bygg & Anläggning"]} value={kBransch} onChange={(e) => setKBransch(e.target.value)} /></Field>
+      </AppModal>
     </div>
   );
 }
