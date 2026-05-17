@@ -69,8 +69,8 @@ function tagStyle(s: Status): React.CSSProperties {
 }
 
 const statCards = [
-  { label: "TOTALT CERTIFIKAT", value: "24", color: "#7dedb8" },
-  { label: "GILTIGA", value: "21", color: "#00e096" },
+  { label: "TOTALT CERTIFIKAT", value: "24", color: "#60b0f4" },
+  { label: "GILTIGA", value: "21", color: "#7dedb8" },
   { label: "UTGÅR SNART", value: "2", color: "#ffd166" },
   { label: "SAKNAS", value: "3", color: "#ff4d6a" },
 ];
