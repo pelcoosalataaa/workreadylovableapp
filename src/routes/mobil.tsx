@@ -1,15 +1,27 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Smartphone } from "lucide-react";
+
+type QuizQ = { fraga: string; ratt_svar: number; alternativ: string[] };
+type Modul = { id: string; titel: string; steg: string[]; quiz: QuizQ[] };
 
 export const Route = createFileRoute("/mobil")({
   component: MobilPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    personal: typeof s.personal === "string" ? s.personal : undefined,
+  }),
 });
 
 function MobilPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [modul, setModul] = useState<Modul | null>(null);
+
+  const [phase, setPhase] = useState<"steg" | "quiz" | "klar">("steg");
+  const [qIndex, setQIndex] = useState(0);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [correctCount, setCorrectCount] = useState(0);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -22,128 +34,221 @@ function MobilPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
+  useEffect(() => {
+    if (!ready) return;
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("moduler")
+        .select("id, titel, steg, quiz")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setModul({
+          id: data.id,
+          titel: data.titel,
+          steg: Array.isArray(data.steg) ? (data.steg as string[]) : [],
+          quiz: Array.isArray(data.quiz) ? (data.quiz as unknown as QuizQ[]) : [],
+        });
+      }
+      setLoading(false);
+    })();
+  }, [ready]);
+
+  const total = modul?.quiz.length ?? 0;
+  const current = modul?.quiz[qIndex];
+  const progress = useMemo(() => {
+    if (phase === "steg") return 0;
+    if (phase === "klar") return 100;
+    return total > 0 ? ((qIndex + (selected !== null ? 1 : 0)) / total) * 100 : 0;
+  }, [phase, qIndex, selected, total]);
+
+  function resetQuiz() {
+    setPhase("steg");
+    setQIndex(0);
+    setSelected(null);
+    setCorrectCount(0);
+  }
+
+  function handleAnswer(i: number) {
+    if (selected !== null || !current) return;
+    setSelected(i);
+    if (i === current.ratt_svar) setCorrectCount((c) => c + 1);
+  }
+
+  function handleNext() {
+    if (!modul) return;
+    if (qIndex + 1 >= total) {
+      setPhase("klar");
+    } else {
+      setQIndex((i) => i + 1);
+      setSelected(null);
+    }
+  }
+
   if (!ready) return <div className="min-h-screen bg-background" />;
+
+  const passed = total > 0 && correctCount / total >= 0.75;
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center py-12 px-4"
-      style={{
-        background:
-          "radial-gradient(ellipse at top, #0b1e2d 0%, #060f18 60%), repeating-linear-gradient(0deg, transparent 0, transparent 39px, rgba(125,237,184,0.04) 40px), repeating-linear-gradient(90deg, transparent 0, transparent 39px, rgba(125,237,184,0.04) 40px)",
-      }}
+      className="min-h-screen w-full flex flex-col"
+      style={{ background: "#060f18", color: "#edfaf4" }}
     >
-      <h2 className="font-display font-bold text-white text-[18px] text-center flex items-center justify-center gap-2" style={{ marginBottom: 24 }}>
-        <Smartphone size={20} strokeWidth={1.75} color="#7dedb8" /> Så här ser det ut för din personal
-      </h2>
-
-      {/* Phone */}
-      <div
-        className="overflow-hidden"
-        style={{
-          width: 390,
-          margin: "0 auto",
-          background: "#060f18",
-          borderRadius: 32,
-          border: "1px solid #1a3d58",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.6), 0 0 0 8px #0b1e2d",
-        }}
-      >
-        {/* Status bar */}
-        <div className="flex items-center justify-between" style={{ padding: "12px 20px" }}>
-          <span className="mono text-[11px] text-white">09:41</span>
-          <span className="mono text-[11px]" style={{ color: "#3d6a7a" }}>●●●● 4G 🔋</span>
-        </div>
-
-        {/* App header */}
-        <div style={{ background: "#7dedb8", padding: "16px 20px" }}>
-          <div className="flex items-start gap-3">
-            <span className="text-lg font-bold" style={{ color: "#060f18" }}>←</span>
-            <div className="flex-1">
-              <div className="font-display font-bold text-[16px]" style={{ color: "#060f18" }}>Säkerhet vid gjutning</div>
-              <div className="text-[11px]" style={{ color: "rgba(0,0,0,0.6)" }}>Byggelement Ucklum · Modul 3 av 5</div>
+      {/* Header */}
+      <div style={{ background: "#7dedb8", padding: "16px 20px" }}>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.history.back()}
+            style={{ background: "transparent", border: "none", color: "#060f18", fontSize: 20, fontWeight: 700, cursor: "pointer" }}
+            aria-label="Tillbaka"
+          >
+            ←
+          </button>
+          <div className="flex-1 text-center">
+            <div className="font-display font-bold" style={{ color: "#060f18", fontSize: 16, fontFamily: "Syne, sans-serif" }}>
+              {loading ? "Laddar…" : modul?.titel ?? "Ingen modul"}
             </div>
-            <span className="text-[11px] font-bold" style={{ color: "rgba(0,0,0,0.5)" }}>OnboardAI</span>
+            <div style={{ color: "rgba(0,0,0,0.6)", fontSize: 11 }}>WorkReady · Modul</div>
           </div>
-        </div>
-
-        {/* Progress */}
-        <div style={{ background: "#0b1e2d", padding: "12px 20px", borderBottom: "1px solid #1a3d58" }}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[12px] text-muted-foreground">Framsteg</span>
-            <span className="mono text-[11px]" style={{ color: "#7dedb8" }}>Fråga 2 av 4</span>
-          </div>
-          <div style={{ height: 6, background: "#1a3d58", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{ width: "50%", height: "100%", background: "#7dedb8", borderRadius: 3 }} />
-          </div>
-        </div>
-
-        {/* Scroll content */}
-        <div style={{ padding: 20 }}>
-          {/* Video card */}
-          <div className="overflow-hidden" style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 12, marginBottom: 16 }}>
-            <div className="flex flex-col items-center justify-center gap-3" style={{ height: 160, background: "linear-gradient(180deg,#0e2538,#122840)" }}>
-              <button className="flex items-center justify-center rounded-full" style={{ width: 56, height: 56, background: "#7dedb8", color: "#060f18", fontSize: 20 }}>▶</button>
-              <span className="mono text-[11px]" style={{ color: "#3d6a7a" }}>⏱ 4:32 min</span>
-            </div>
-            <div style={{ padding: "12px 16px", borderTop: "1px solid #1a3d58" }}>
-              <div className="font-bold text-[13px] text-white">Erik visar: Säkerhet vid gjutning</div>
-              <div className="text-[11px] text-muted-foreground">Inspelad på plats i fabriken i Ucklum</div>
-            </div>
-          </div>
-
-          {/* Question card */}
-          <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <div className="mono text-[10px] uppercase font-bold" style={{ color: "#7dedb8", marginBottom: 10 }}>Fråga 2 av 4</div>
-            <div className="flex items-center justify-center" style={{ width: "100%", height: 80, background: "#122840", border: "1px solid #1a3d58", borderRadius: 8, fontSize: 36, marginBottom: 16 }}>⛑️</div>
-            <div className="font-display font-bold text-white text-[17px]" style={{ marginBottom: 20, lineHeight: 1.35 }}>
-              Vilken skyddsutrustning MÅSTE du ha på dig innan du börjar gjuta?
-            </div>
-
-            {/* Options */}
-            <div className="flex flex-col gap-2.5">
-              {/* A */}
-              <div className="flex items-center gap-3" style={{ padding: "14px 16px", background: "#122840", border: "2px solid #1a3d58", borderRadius: 10 }}>
-                <div className="flex items-center justify-center rounded-full mono" style={{ width: 28, height: 28, background: "#1a3d58", color: "#edfaf4", fontSize: 12 }}>A</div>
-                <span className="text-[14px] font-medium text-white">Bara skyddshjälm</span>
-              </div>
-              {/* B selected */}
-              <div className="flex items-center gap-3" style={{ padding: "14px 16px", background: "rgba(125,237,184,0.1)", border: "2px solid #7dedb8", borderRadius: 10 }}>
-                <div className="flex items-center justify-center rounded-full font-bold" style={{ width: 28, height: 28, background: "#7dedb8", color: "#060f18", fontSize: 14 }}>✓</div>
-                <span className="text-[14px] font-medium" style={{ color: "#7dedb8" }}>Hjälm, skyddsglasögon, handskar och skyddsskor</span>
-              </div>
-              {/* C */}
-              <div className="flex items-center gap-3" style={{ padding: "14px 16px", background: "#122840", border: "2px solid #1a3d58", borderRadius: 10 }}>
-                <div className="flex items-center justify-center rounded-full mono" style={{ width: 28, height: 28, background: "#1a3d58", color: "#edfaf4", fontSize: 12 }}>C</div>
-                <span className="text-[14px] font-medium text-white">Handskar räcker vid kortare arbeten</span>
-              </div>
-              {/* D */}
-              <div className="flex items-center gap-3" style={{ padding: "14px 16px", background: "#122840", border: "2px solid #1a3d58", borderRadius: 10 }}>
-                <div className="flex items-center justify-center rounded-full mono" style={{ width: 28, height: 28, background: "#1a3d58", color: "#edfaf4", fontSize: 12 }}>D</div>
-                <span className="text-[14px] font-medium text-white">Ingen utrustning behövs inomhus</span>
-              </div>
-            </div>
-
-            {/* Feedback */}
-            <div style={{ background: "rgba(125,237,184,0.1)", border: "1px solid rgba(125,237,184,0.3)", borderRadius: 10, padding: "14px 16px", marginTop: 16 }}>
-              <div className="font-bold text-[14px]" style={{ color: "#7dedb8", marginBottom: 4 }}>✅ Rätt!</div>
-              <div className="text-[12px] text-muted-foreground" style={{ lineHeight: 1.6 }}>
-                All skyddsutrustning krävs alltid vid gjutning. Betong kan orsaka allvarliga kemiska brännskador.
-              </div>
-            </div>
-
-            {/* Next button */}
-            <button
-              className="font-display font-bold w-full"
-              style={{ marginTop: 16, padding: 16, background: "#7dedb8", color: "#060f18", borderRadius: 10, fontSize: 15 }}
-            >
-              Nästa fråga →
-            </button>
-          </div>
+          <div style={{ width: 20 }} />
         </div>
       </div>
-      <style>{`
-        .mono { font-family: 'Space Mono', ui-monospace, monospace; letter-spacing: .04em; }
-      `}</style>
+
+      {/* Progress */}
+      {modul && total > 0 && (
+        <div style={{ padding: "10px 20px", background: "#0b1e2d", borderBottom: "1px solid #1a3d58" }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+            <span style={{ fontSize: 11, color: "#3d6a7a" }}>
+              {phase === "quiz" ? `Fråga ${qIndex + 1} av ${total}` : phase === "klar" ? "Klar" : "Genomgång"}
+            </span>
+            <span style={{ fontSize: 11, color: "#7dedb8", fontFamily: "Space Mono, monospace" }}>
+              {Math.round(progress)}%
+            </span>
+          </div>
+          <div style={{ height: 6, background: "#1a3d58", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ width: `${progress}%`, height: "100%", background: "#7dedb8", transition: "width .2s" }} />
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      <div style={{ padding: 20, maxWidth: 560, width: "100%", margin: "0 auto" }}>
+        {loading && <div style={{ color: "#3d6a7a", textAlign: "center", marginTop: 40 }}>Laddar…</div>}
+
+        {!loading && !modul && (
+          <div style={{ textAlign: "center", marginTop: 60, padding: 24, background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 12, color: "#edfaf4", fontSize: 14 }}>
+            Ingen utbildning tillgänglig just nu. Kontakta din chef.
+          </div>
+        )}
+
+        {!loading && modul && phase === "steg" && (
+          <div className="flex flex-col" style={{ gap: 12 }}>
+            {modul.steg.map((s, i) => (
+              <div key={i} className="flex items-start gap-3" style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 12, padding: 14 }}>
+                <div className="flex items-center justify-center shrink-0" style={{ width: 32, height: 32, borderRadius: 16, background: "#7dedb8", color: "#060f18", fontWeight: 700, fontSize: 14 }}>
+                  {i + 1}
+                </div>
+                <div style={{ color: "#ffffff", fontSize: 14, lineHeight: 1.5 }}>{s}</div>
+              </div>
+            ))}
+            {total > 0 && (
+              <button
+                onClick={() => setPhase("quiz")}
+                className="font-display font-bold w-full"
+                style={{ marginTop: 12, padding: 16, background: "#7dedb8", color: "#060f18", borderRadius: 10, fontSize: 15, border: "none", cursor: "pointer" }}
+              >
+                Starta quiz →
+              </button>
+            )}
+          </div>
+        )}
+
+        {!loading && modul && phase === "quiz" && current && (
+          <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 16, padding: 20 }}>
+            <div style={{ color: "#7dedb8", fontSize: 10, fontFamily: "Space Mono, monospace", textTransform: "uppercase", fontWeight: 700, marginBottom: 10 }}>
+              Fråga {qIndex + 1} av {total}
+            </div>
+            <div className="font-display font-bold" style={{ color: "#ffffff", fontSize: 17, fontFamily: "Syne, sans-serif", marginBottom: 18, lineHeight: 1.35 }}>
+              {current.fraga}
+            </div>
+
+            <div className="flex flex-col" style={{ gap: 10 }}>
+              {current.alternativ.map((opt, i) => {
+                const isCorrect = i === current.ratt_svar;
+                const isPicked = selected === i;
+                let bg = "#122840";
+                let border = "2px solid #1a3d58";
+                let color = "#ffffff";
+                if (selected !== null) {
+                  if (isPicked && isCorrect) {
+                    bg = "rgba(0,224,150,0.2)"; border = "2px solid #00e096"; color = "#00e096";
+                  } else if (isPicked && !isCorrect) {
+                    bg = "rgba(255,77,106,0.2)"; border = "2px solid #ff4d6a"; color = "#ff4d6a";
+                  } else if (!isPicked && isCorrect) {
+                    bg = "rgba(0,224,150,0.2)"; border = "2px solid #00e096"; color = "#00e096";
+                  }
+                }
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleAnswer(i)}
+                    disabled={selected !== null}
+                    style={{ textAlign: "left", padding: "14px 16px", background: bg, border, borderRadius: 10, color, fontSize: 14, fontWeight: 500, cursor: selected !== null ? "default" : "pointer" }}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+
+            {selected !== null && (
+              <div style={{ marginTop: 14, fontSize: 13, fontWeight: 700, color: selected === current.ratt_svar ? "#00e096" : "#ff4d6a" }}>
+                {selected === current.ratt_svar
+                  ? "✅ Rätt!"
+                  : `❌ Fel! Rätt svar: ${current.alternativ[current.ratt_svar]}`}
+              </div>
+            )}
+
+            {selected !== null && (
+              <button
+                onClick={handleNext}
+                className="font-display font-bold w-full"
+                style={{ marginTop: 16, padding: 16, background: "#7dedb8", color: "#060f18", borderRadius: 10, fontSize: 15, border: "none", cursor: "pointer" }}
+              >
+                {qIndex + 1 >= total ? "Se resultat →" : "Nästa fråga →"}
+              </button>
+            )}
+          </div>
+        )}
+
+        {!loading && modul && phase === "klar" && (
+          <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 16, padding: 24, textAlign: "center" }}>
+            <div style={{ fontSize: 13, color: "#3d6a7a", marginBottom: 8 }}>
+              {correctCount} av {total} rätt
+            </div>
+            {passed ? (
+              <div className="font-display font-bold" style={{ color: "#00e096", fontSize: 18, fontFamily: "Syne, sans-serif" }}>
+                ✅ Godkänd! Certifikat sparat.
+              </div>
+            ) : (
+              <>
+                <div className="font-display font-bold" style={{ color: "#ff4d6a", fontSize: 18, fontFamily: "Syne, sans-serif", marginBottom: 16 }}>
+                  ❌ Försök igen
+                </div>
+                <button
+                  onClick={resetQuiz}
+                  className="font-display font-bold w-full"
+                  style={{ padding: 14, background: "#7dedb8", color: "#060f18", borderRadius: 10, fontSize: 15, border: "none", cursor: "pointer" }}
+                >
+                  Gör om quiz
+                </button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
