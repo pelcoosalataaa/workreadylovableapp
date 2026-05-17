@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { CircleDot, Layers, ShieldAlert, FileText } from "lucide-react";
+import { CircleDot, Layers, ShieldAlert, FileText, Check, Loader2 } from "lucide-react";
+import { processModuleVideo } from "@/lib/moduler.functions";
 
 export const Route = createFileRoute("/spela-in")({
   component: SpelaInPage,
@@ -11,26 +12,28 @@ export const Route = createFileRoute("/spela-in")({
 const momentOptions = ["Välj moment...", "Gjutning", "Armering", "Traverskörning", "Säkerhet", "Ritningsläsning", "Annat"];
 const categoryOptions = ["Betong & Prefab", "Verkstad & Industri", "Lager & Logistik", "Bygg & Anläggning"];
 
-type HowStep = { dot: "green" | "mint" | "muted"; mark: string; title: string; desc: string };
-const howSteps: HowStep[] = [
-  { dot: "green", mark: "✓", title: "Du väljer moment", desc: "Vilket arbetsmoment ska läras ut?" },
-  { dot: "green", mark: "✓", title: "Du laddar upp video", desc: "5–10 minuter räcker. AI hanterar resten." },
-  { dot: "mint", mark: "", title: "AI transkriberar", desc: "Omvandlar tal till text automatiskt" },
-  { dot: "muted", mark: "○", title: "AI skapar steg & quiz", desc: "Strukturerar och bygger utbildningen" },
-  { dot: "muted", mark: "○", title: "Personal får SMS", desc: "Länk skickas direkt till ny personal" },
-];
-
 const previousModules = [
   { icon: <Layers size={20} strokeWidth={1.75} color="#7dedb8" />, title: "Introduktion betong", author: "Erik Svensson", tag: "27/27", color: "#00e096" },
   { icon: <ShieldAlert size={20} strokeWidth={1.75} color="#ffd166" />, title: "Säkerhet & skydd", author: "Anna Berg", tag: "27/27", color: "#00e096" },
   { icon: <FileText size={20} strokeWidth={1.75} color="#60b0f4" />, title: "Ritningsläsning", author: "Erik Svensson", tag: "19/27", color: "#ffd166" },
 ];
 
+type StepState = "pending" | "active" | "done";
+type Phase = "idle" | "uploading" | "transcribing" | "generating-steps" | "generating-quiz" | "done" | "error";
+
+const MAX_SIZE = 500 * 1024 * 1024;
+
 function SpelaInPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [uploadHover, setUploadHover] = useState(false);
-  const uploadRef = useRef<HTMLDivElement>(null);
+  const [moment, setMoment] = useState(momentOptions[0]);
+  const [kategori, setKategori] = useState(categoryOptions[0]);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [uploadPct, setUploadPct] = useState(0);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -46,11 +49,95 @@ function SpelaInPage() {
 
   const cardCls = "rounded-[10px] border border-border p-6";
   const cardStyle = { background: "#0e2538" } as const;
-  const selectStyle = {
-    background: "#060f18",
-    border: "1px solid #1a3d58",
-    color: "#edfaf4",
-  } as const;
+  const selectStyle = { background: "#060f18", border: "1px solid #1a3d58", color: "#edfaf4" } as const;
+
+  const stepStates: { label: string; state: StepState }[] = [
+    { label: "Video uppladdad", state: phase === "idle" || phase === "uploading" ? (phase === "uploading" ? "active" : "pending") : "done" },
+    { label: "AI transkriberar talet...", state: phase === "transcribing" ? "active" : (["generating-steps", "generating-quiz", "done"].includes(phase) ? "done" : "pending") },
+    { label: "AI skapar steg & instruktioner...", state: phase === "generating-steps" ? "active" : (["generating-quiz", "done"].includes(phase) ? "done" : "pending") },
+    { label: "AI genererar quiz-frågor...", state: phase === "generating-quiz" ? "active" : (phase === "done" ? "done" : "pending") },
+    { label: "Modul klar!", state: phase === "done" ? "done" : "pending" },
+  ];
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (moment === momentOptions[0]) {
+      setErrorMsg("Välj ett moment först");
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setErrorMsg("Filen är för stor (max 500MB)");
+      return;
+    }
+
+    const { data: sess } = await supabase.auth.getSession();
+    const userId = sess.session?.user.id;
+    if (!userId) {
+      setErrorMsg("Inte inloggad");
+      return;
+    }
+
+    const videoPath = `${userId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+
+    try {
+      setPhase("uploading");
+      setUploadPct(0);
+      // Simulated progress while uploading (supabase-js doesn't expose progress events natively)
+      const tick = window.setInterval(() => {
+        setUploadPct((p) => (p < 90 ? p + Math.random() * 8 : p));
+      }, 250);
+
+      const { error: upErr } = await supabase.storage.from("moduler").upload(videoPath, file, {
+        contentType: file.type || "video/mp4",
+        upsert: false,
+      });
+      window.clearInterval(tick);
+      if (upErr) {
+        setPhase("error");
+        setErrorMsg("Uppladdningen misslyckades — försök igen");
+        return;
+      }
+      setUploadPct(100);
+
+      setPhase("transcribing");
+      // GPT phase is one server call; split UI into two stages for perceived progress
+      const serverPromise = processModuleVideo({ data: { videoPath, kategori, moment } });
+
+      // After ~when whisper typically finishes, optimistically move UI forward
+      const moveToSteps = window.setTimeout(() => setPhase((p) => (p === "transcribing" ? "generating-steps" : p)), 8000);
+      const moveToQuiz = window.setTimeout(() => setPhase((p) => (p === "generating-steps" ? "generating-quiz" : p)), 16000);
+
+      try {
+        await serverPromise;
+        window.clearTimeout(moveToSteps);
+        window.clearTimeout(moveToQuiz);
+        setPhase("done");
+        setSuccessMsg("Modulen är klar och har skickats till all personal!");
+      } catch (err) {
+        window.clearTimeout(moveToSteps);
+        window.clearTimeout(moveToQuiz);
+        const msg = err instanceof Error ? err.message : "";
+        setPhase("error");
+        if (msg.includes("transcription_failed")) {
+          setErrorMsg("AI kunde inte transkribera videon — kontrollera att videon har ljud");
+        } else if (msg.includes("generation_failed") || msg.includes("save_failed")) {
+          setErrorMsg("AI kunde inte skapa modulen — försök igen");
+        } else {
+          setErrorMsg("AI kunde inte skapa modulen — försök igen");
+        }
+      }
+    } catch {
+      setPhase("error");
+      setErrorMsg("Uppladdningen misslyckades — försök igen");
+    }
+  };
+
+  const triggerFilePick = () => fileInputRef.current?.click();
+  const processing = phase !== "idle" && phase !== "done" && phase !== "error";
 
   return (
     <>
@@ -70,11 +157,11 @@ function SpelaInPage() {
               <div className="font-mono text-[9px] tracking-wider" style={{ color: "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 1</div>
               <h2 className="font-display font-bold text-[18px] mt-1 mb-4">Välj moment att spela in</h2>
               <label className="text-[11px] uppercase tracking-wider" style={{ color: "#3d6a7a" }}>Moment</label>
-              <select className="w-full rounded-md mt-1 mb-4 px-3 py-3 text-sm outline-none" style={selectStyle}>
+              <select value={moment} onChange={(e) => setMoment(e.target.value)} className="w-full rounded-md mt-1 mb-4 px-3 py-3 text-sm outline-none" style={selectStyle}>
                 {momentOptions.map((o) => <option key={o} style={{ background: "#060f18" }}>{o}</option>)}
               </select>
               <label className="text-[11px] uppercase tracking-wider" style={{ color: "#3d6a7a" }}>Branschkategori</label>
-              <select className="w-full rounded-md mt-1 px-3 py-3 text-sm outline-none" style={selectStyle}>
+              <select value={kategori} onChange={(e) => setKategori(e.target.value)} className="w-full rounded-md mt-1 px-3 py-3 text-sm outline-none" style={selectStyle}>
                 {categoryOptions.map((o) => <option key={o} style={{ background: "#060f18" }}>{o}</option>)}
               </select>
             </section>
@@ -83,50 +170,89 @@ function SpelaInPage() {
             <section className={cardCls} style={cardStyle}>
               <div className="font-mono text-[9px] tracking-wider" style={{ color: "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 2</div>
               <h2 className="font-display font-bold text-[18px] mt-1 mb-4">Ladda upp din video</h2>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/*"
+                className="hidden"
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+
               <div
-                ref={uploadRef}
                 onMouseEnter={() => setUploadHover(true)}
                 onMouseLeave={() => setUploadHover(false)}
-                className="rounded-lg text-center transition-all cursor-pointer"
+                onClick={() => !processing && triggerFilePick()}
+                onDragOver={(e) => { e.preventDefault(); setUploadHover(true); }}
+                onDragLeave={() => setUploadHover(false)}
+                onDrop={(e) => { e.preventDefault(); setUploadHover(false); if (!processing) handleFiles(e.dataTransfer.files); }}
+                className="rounded-lg text-center transition-all"
                 style={{
                   border: `2px dashed ${uploadHover ? "#7dedb8" : "#1a3d58"}`,
                   padding: "40px",
                   background: uploadHover ? "rgba(125,237,184,0.05)" : "rgba(125,237,184,0.02)",
+                  cursor: processing ? "not-allowed" : "pointer",
+                  opacity: processing ? 0.6 : 1,
                 }}
               >
                 <div style={{ fontSize: 40 }}>📹</div>
                 <div className="text-[16px] font-bold text-foreground mt-2">Dra & släpp video här</div>
                 <div className="text-[13px] mt-1" style={{ color: "#3d6a7a" }}>
-                  Eller filma direkt med din telefon · MP4, MOV · max 500MB
+                  Eller klicka för att välja · MP4, MOV · max 500MB
                 </div>
               </div>
-              <div
-                className="mt-4 rounded-md text-[12px]"
-                style={{
-                  background: "rgba(125,237,184,0.05)",
-                  border: "1px solid rgba(125,237,184,0.15)",
-                  padding: "12px",
-                  color: "#3d6a7a",
-                }}
-              >
+
+              {phase === "uploading" && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between text-[12px] mb-2" style={{ color: "#3d6a7a" }}>
+                    <span>Laddar upp video...</span>
+                    <span>{Math.round(uploadPct)}%</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
+                    <div className="h-full transition-all" style={{ width: `${uploadPct}%`, background: "#7dedb8" }} />
+                  </div>
+                </div>
+              )}
+
+              {errorMsg && (
+                <div className="mt-4 rounded-md text-[12px] px-3 py-2" style={{ background: "rgba(255,77,106,0.08)", border: "1px solid rgba(255,77,106,0.3)", color: "#ff4d6a" }}>
+                  {errorMsg}
+                </div>
+              )}
+
+              <div className="mt-4 rounded-md text-[12px]" style={{ background: "rgba(125,237,184,0.05)", border: "1px solid rgba(125,237,184,0.15)", padding: "12px", color: "#3d6a7a" }}>
                 💡 Tips: Filma det viktigaste momentet. 5–10 minuter räcker. Prata naturligt — AI fixar resten.
               </div>
             </section>
 
-            {/* Step 3 (disabled) */}
-            <section className={cardCls} style={{ ...cardStyle, opacity: 0.5 }}>
-              <div className="font-mono text-[9px] tracking-wider" style={{ color: "#3d6a7a", fontFamily: "'Space Mono', monospace" }}>STEG 3</div>
-              <h2 className="font-display font-bold text-[18px] mt-1 mb-2">AI bygger utbildningen</h2>
-              <p className="text-[13px] mb-4" style={{ color: "#3d6a7a" }}>
-                Ladda upp din video i steg 2 för att aktivera AI-bearbetningen.
-              </p>
-              <button
-                disabled
-                className="w-full rounded-md py-3 font-bold text-sm cursor-not-allowed"
-                style={{ background: "#7dedb8", color: "#060f18", opacity: 0.4 }}
-              >
-                🤖 Låt AI bygga modulen
-              </button>
+            {/* Step 3 — progress / status */}
+            <section className={cardCls} style={{ ...cardStyle, opacity: phase === "idle" ? 0.5 : 1 }}>
+              <div className="font-mono text-[9px] tracking-wider" style={{ color: phase === "idle" ? "#3d6a7a" : "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 3</div>
+              <h2 className="font-display font-bold text-[18px] mt-1 mb-4">AI bygger utbildningen</h2>
+
+              {phase === "idle" ? (
+                <p className="text-[13px]" style={{ color: "#3d6a7a" }}>
+                  Ladda upp din video i steg 2 för att aktivera AI-bearbetningen.
+                </p>
+              ) : (
+                <ol className="flex flex-col gap-3">
+                  {stepStates.map((s, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <div className="flex items-center justify-center shrink-0" style={{ width: 22, height: 22, borderRadius: 999, background: s.state === "done" ? "#00e096" : s.state === "active" ? "transparent" : "transparent", border: s.state === "pending" ? "1px solid #3d6a7a" : s.state === "active" ? "1px solid #7dedb8" : "none" }}>
+                        {s.state === "done" && <Check size={14} strokeWidth={3} color="#060f18" />}
+                        {s.state === "active" && <Loader2 size={14} strokeWidth={2.5} color="#7dedb8" className="animate-spin" />}
+                      </div>
+                      <span className="text-[13px]" style={{ color: s.state === "pending" ? "#3d6a7a" : "#edfaf4", fontWeight: s.state === "active" ? 600 : 400 }}>{s.label}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              {successMsg && (
+                <div className="mt-5 rounded-md text-[13px] px-4 py-3 font-semibold" style={{ background: "rgba(125,237,184,0.1)", border: "1px solid rgba(125,237,184,0.3)", color: "#7dedb8" }}>
+                  ✓ {successMsg}
+                </div>
+              )}
             </section>
           </div>
 
@@ -135,33 +261,23 @@ function SpelaInPage() {
             <section className={cardCls} style={cardStyle}>
               <h2 className="font-display font-bold text-[16px] mb-4">Hur det fungerar</h2>
               <ol className="flex flex-col gap-3">
-                {howSteps.map((s, i) => {
-                  const dotBg =
-                    s.dot === "green" ? "#00e096" :
-                    s.dot === "mint" ? "#7dedb8" :
-                    "transparent";
-                  const dotBorder = s.dot === "muted" ? "1px solid #3d6a7a" : "none";
-                  return (
-                    <li key={i} className="flex items-start gap-3">
-                      <div
-                        className="flex items-center justify-center text-[10px] font-bold shrink-0"
-                        style={{
-                          width: 20, height: 20, borderRadius: 999,
-                          background: dotBg,
-                          border: dotBorder,
-                          color: "#060f18",
-                          animation: s.dot === "mint" ? "pulseDot 1.4s ease-in-out infinite" : undefined,
-                        }}
-                      >
-                        {s.mark}
-                      </div>
-                      <div>
-                        <div className="text-[13px] font-semibold text-foreground">{s.title}</div>
-                        <div className="text-[12px]" style={{ color: "#3d6a7a" }}>{s.desc}</div>
-                      </div>
-                    </li>
-                  );
-                })}
+                {[
+                  { mark: "✓", title: "Du väljer moment", desc: "Vilket arbetsmoment ska läras ut?" },
+                  { mark: "✓", title: "Du laddar upp video", desc: "5–10 minuter räcker. AI hanterar resten." },
+                  { mark: "", title: "AI transkriberar", desc: "Omvandlar tal till text automatiskt" },
+                  { mark: "○", title: "AI skapar steg & quiz", desc: "Strukturerar och bygger utbildningen" },
+                  { mark: "○", title: "Personal får SMS", desc: "Länk skickas direkt till ny personal" },
+                ].map((s, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="flex items-center justify-center text-[10px] font-bold shrink-0" style={{ width: 20, height: 20, borderRadius: 999, background: s.mark === "✓" ? "#00e096" : s.mark === "" ? "#7dedb8" : "transparent", border: s.mark === "○" ? "1px solid #3d6a7a" : "none", color: "#060f18" }}>
+                      {s.mark}
+                    </div>
+                    <div>
+                      <div className="text-[13px] font-semibold text-foreground">{s.title}</div>
+                      <div className="text-[12px]" style={{ color: "#3d6a7a" }}>{s.desc}</div>
+                    </div>
+                  </li>
+                ))}
               </ol>
               <div className="my-5 h-px" style={{ background: "#1a3d58" }} />
               <div className="grid grid-cols-3 text-center">
@@ -188,14 +304,7 @@ function SpelaInPage() {
                       <div className="text-[13px] font-semibold text-foreground truncate">{m.title}</div>
                       <div className="text-[11px]" style={{ color: "#3d6a7a" }}>{m.author}</div>
                     </div>
-                    <span
-                      className="text-[10px] font-bold px-2 py-1 rounded"
-                      style={{
-                        background: `${m.color}1a`,
-                        color: m.color,
-                        border: `1px solid ${m.color}33`,
-                      }}
-                    >
+                    <span className="text-[10px] font-bold px-2 py-1 rounded" style={{ background: `${m.color}1a`, color: m.color, border: `1px solid ${m.color}33` }}>
                       {m.tag}
                     </span>
                   </div>
@@ -205,13 +314,6 @@ function SpelaInPage() {
           </div>
         </div>
       </main>
-
-      <style>{`
-        @keyframes pulseDot {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.7; }
-        }
-      `}</style>
     </>
   );
 }

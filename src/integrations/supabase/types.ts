@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      moduler: {
+        Row: {
+          created_at: string
+          id: string
+          kategori: string | null
+          quiz: Json
+          skapad_av: string | null
+          steg: Json
+          titel: string
+          transkription: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kategori?: string | null
+          quiz?: Json
+          skapad_av?: string | null
+          steg?: Json
+          titel: string
+          transkription?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kategori?: string | null
+          quiz?: Json
+          skapad_av?: string | null
+          steg?: Json
+          titel?: string
+          transkription?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
