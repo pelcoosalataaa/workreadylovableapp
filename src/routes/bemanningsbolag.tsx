@@ -237,6 +237,7 @@ function BemanningsbolagPage() {
         .bb-row:hover { background: rgba(125,237,184,0.03); }
         .add-company:hover { border-color: #7dedb8 !important; background: rgba(125,237,184,0.02) !important; }
       `}</style>
+      <ManageCompanyModal open={!!manageData} onClose={() => setManageData(null)} data={manageData} />
     </div>
   );
 }
