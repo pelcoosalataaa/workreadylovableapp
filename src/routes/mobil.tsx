@@ -41,7 +41,7 @@ function MobilPage() {
       }
       setLoading(false);
     })();
-  }, [ready]);
+  }, []);
 
   const total = modul?.quiz.length ?? 0;
   const current = modul?.quiz[qIndex];
@@ -73,8 +73,6 @@ function MobilPage() {
       setSelected(null);
     }
   }
-
-  if (!ready) return <div className="min-h-screen bg-background" />;
 
   const passed = total > 0 && correctCount / total >= 0.75;
 
