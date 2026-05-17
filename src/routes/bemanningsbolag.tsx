@@ -178,7 +178,7 @@ function BemanningsbolagPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button className="text-[11px] font-semibold px-3 py-1.5 rounded-md border" style={{ borderColor: "#1a3d58", color: "#edfaf4", background: "transparent" }}>Kontakta</button>
-                  <button className="text-[11px] font-bold px-3 py-1.5 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>Hantera</button>
+                  <button onClick={() => setManageData({ name: c.name, city: c.city, email: c.email, phone: c.phone, uthyrda: 0, godkanda: 0, pagar: 0, personnel: [] })} className="text-[11px] font-bold px-3 py-1.5 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>Hantera</button>
                 </div>
               </div>
             </div>
