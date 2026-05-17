@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
 import { PersonDetailModal, type PersonDetail } from "@/components/PersonDetailModal";
-import { Users } from "lucide-react";
+import { Users, Copy, Check } from "lucide-react";
 
 export const Route = createFileRoute("/personal")({
   component: PersonalPage,
@@ -66,6 +66,16 @@ function PersonalPage() {
   const [query, setQuery] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [selected, setSelected] = useState<PersonDetail | null>(null);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, name: string, key: string) => {
+    e.stopPropagation();
+    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    const url = window.location.origin + "/mobil?personal=" + slug;
+    navigator.clipboard.writeText(url);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
+  };
 
   useEffect(() => {
     const f = search.filter;
@@ -144,7 +154,7 @@ function PersonalPage() {
             <table className="w-full border-collapse">
               <thead>
                 <tr style={{ background: "rgba(0,0,0,0.2)" }}>
-                  {["Person", "Roll", "Avdelning", "Bemanningsbolag", "Framsteg", "Status", "Certifikat"].map((h) => (
+                  {["Person", "Roll", "Avdelning", "Bemanningsbolag", "Framsteg", "Status", "Certifikat", "Länk"].map((h) => (
                     <th key={h} className="mono text-left font-bold uppercase" style={{ color: "#3d6a7a", fontSize: 9, padding: "10px 16px" }}>{h}</th>
                   ))}
                 </tr>
@@ -170,11 +180,25 @@ function PersonalPage() {
                       <span className="text-[10px] font-bold px-2 py-1 rounded-full" style={badgeStyle(p.status)}>{p.status}</span>
                     </td>
                     <td className="text-[11px]" style={{ padding: "12px 16px", color: "#edfaf4" }}>{p.certs}</td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <button
+                        onClick={(e) => handleCopyLink(e, p.name, p.initials)}
+                        title="Kopiera utbildningslänk"
+                        className="copy-link-btn"
+                        style={{ background: "transparent", border: "none", padding: 6, cursor: "pointer", display: "inline-flex" }}
+                      >
+                        {copiedKey === p.initials ? (
+                          <Check size={14} color="#7dedb8" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </button>
+                    </td>
                   </tr>
                 ))}
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center text-xs text-muted-foreground" style={{ padding: 24 }}>Inga personer matchar filtret.</td>
+                    <td colSpan={8} className="text-center text-xs text-muted-foreground" style={{ padding: 24 }}>Inga personer matchar filtret.</td>
                   </tr>
                 )}
               </tbody>
@@ -182,7 +206,7 @@ function PersonalPage() {
           </div>
         </main>
       </div>
-      <style>{sidebarKeyframes}</style>
+      <style>{sidebarKeyframes}{`.copy-link-btn svg{color:#3d6a7a;transition:color .15s}.copy-link-btn:hover svg{color:#7dedb8}`}</style>
       <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
       <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
