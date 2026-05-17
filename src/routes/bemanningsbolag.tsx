@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
 import { Building2, X } from "lucide-react";
+import { ManageCompanyModal, type ManageCompanyData } from "@/components/ManageCompanyModal";
 
 export const Route = createFileRoute("/bemanningsbolag")({
   component: BemanningsbolagPage,
