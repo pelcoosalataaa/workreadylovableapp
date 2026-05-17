@@ -105,6 +105,7 @@ function UtgaendePage() {
   const [anteckning, setAnteckning] = useState("");
   const [kurstyp, setKurstyp] = useState("");
   const [plats, setPlats] = useState("");
+  const [autoRemind, setAutoRemind] = useState(true);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
