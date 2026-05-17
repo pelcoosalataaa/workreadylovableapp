@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AppModal, Field, TextInput, TextArea, GhostBtn, MintBtn } from "@/components/AppModal";
+import { toast } from "sonner";
 import { AlertTriangle, Mail, AlertOctagon, AlertCircle, CheckCircle2, Bot } from "lucide-react";
 
 export const Route = createFileRoute("/utgaende-certifikat")({
