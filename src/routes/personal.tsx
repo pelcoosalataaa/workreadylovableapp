@@ -60,6 +60,7 @@ function PersonalPage() {
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("Alla");
   const [query, setQuery] = useState("");
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
