@@ -120,7 +120,7 @@ function ModulerPage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Video size={22} strokeWidth={1.75} color="#7dedb8" /> Utbildningsmoduler</h1>
               <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · 5 aktiva moduler</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Spela in ny modul</button>
+            <button onClick={() => navigate({ to: "/spela-in" })} className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Spela in ny modul</button>
           </div>
 
           {/* Stats */}

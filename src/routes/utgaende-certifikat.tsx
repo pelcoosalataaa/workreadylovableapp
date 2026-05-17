@@ -105,6 +105,7 @@ function UtgaendePage() {
   const [anteckning, setAnteckning] = useState("");
   const [kurstyp, setKurstyp] = useState("");
   const [plats, setPlats] = useState("");
+  const [autoRemind, setAutoRemind] = useState(true);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -141,7 +142,7 @@ function UtgaendePage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><AlertTriangle size={22} strokeWidth={1.75} color="#7dedb8" /> Utgående certifikat</h1>
               <p className="text-sm text-muted-foreground mt-1">Certifikat som kräver förnyelse inom 90 dagar</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><Mail size={14} strokeWidth={1.75} /> Skicka påminnelser</button>
+            <button onClick={() => toast.success("SMS-påminnelser skickade till all berörd personal!")} className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><Mail size={14} strokeWidth={1.75} /> Skicka påminnelser</button>
           </div>
 
           {/* Alert banner */}
@@ -196,8 +197,8 @@ function UtgaendePage() {
             ))}
             <div className="flex items-center justify-between mt-4">
               <div className="font-bold text-[14px] text-white">Aktivera automatiska påminnelser</div>
-              <div className="relative cursor-pointer" style={{ width: 44, height: 24, background: "#7dedb8", borderRadius: 12 }}>
-                <div className="absolute" style={{ top: 2, left: 22, width: 20, height: 20, borderRadius: 999, background: "#060f18" }} />
+              <div onClick={() => { const next = !autoRemind; setAutoRemind(next); toast.success(next ? "Automatiska påminnelser aktiverade!" : "Automatiska påminnelser inaktiverade"); }} role="button" className="relative cursor-pointer" style={{ width: 44, height: 24, background: autoRemind ? "#7dedb8" : "#1a3d58", borderRadius: 12, transition: "background .15s" }}>
+                <div className="absolute" style={{ top: 2, left: autoRemind ? 22 : 2, width: 20, height: 20, borderRadius: 999, background: "#060f18", transition: "left .15s" }} />
               </div>
             </div>
           </div>

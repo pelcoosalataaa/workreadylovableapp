@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { AddCompanyModal } from "@/components/AddCompanyModal";
+import { PersonDetailModal, type PersonDetail } from "@/components/PersonDetailModal";
 import { RefreshCw, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/inhyrd-personal")({
@@ -48,6 +50,8 @@ function statusStyle(s: Status): React.CSSProperties {
 function InhyrdPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [selected, setSelected] = useState<PersonDetail | null>(null);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -73,7 +77,7 @@ function InhyrdPage() {
               <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><RefreshCw size={22} strokeWidth={1.75} color="#7dedb8" /> Inhyrd personal</h1>
               <p className="text-sm text-muted-foreground mt-1">Översikt över inhyrd personal från era bemanningsbolag</p>
             </div>
-            <button className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bemanningsbolag</button>
+            <button onClick={() => setAddOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till bemanningsbolag</button>
           </div>
 
           {/* Stats */}
@@ -107,7 +111,7 @@ function InhyrdPage() {
               <div>Person</div><div>Roll</div><div>Avdelning</div><div>Startdatum</div><div>Framsteg</div><div>Status</div><div>Certifikat</div>
             </div>
             {rows.map((r, i) => (
-              <div key={r.name} className="inhyrd-row grid items-center" style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 100px 110px 1.7fr", padding: "14px 16px", borderBottom: i === rows.length - 1 ? "none" : "1px solid rgba(26,61,88,0.4)", gap: 12, fontSize: 12 }}>
+              <div key={r.name} onClick={() => setSelected({ name: r.name, role: r.role, dept: r.dept, company: "Partner2Work AB", start: r.start, percent: r.percent, status: r.status, certs: r.certs })} className="inhyrd-row person-row grid items-center" style={{ gridTemplateColumns: "2fr 1.5fr 1.5fr 1fr 100px 110px 1.7fr", padding: "14px 16px", borderBottom: i === rows.length - 1 ? "none" : "1px solid rgba(26,61,88,0.4)", gap: 12, fontSize: 12 }}>
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="flex items-center justify-center font-bold text-[11px] shrink-0" style={{ width: 32, height: 32, borderRadius: 999, background: r.avatarBg, color: r.avatarColor }}>{r.initials}</div>
                   <div className="font-bold text-[13px] text-white truncate">{r.name}</div>
@@ -130,7 +134,7 @@ function InhyrdPage() {
           </div>
 
           {/* Add company card */}
-          <button className="add-company flex flex-col items-center gap-3" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 32, marginTop: 4, cursor: "pointer", transition: "all .2s" }}>
+          <button onClick={() => setAddOpen(true)} className="add-company flex flex-col items-center gap-3" style={{ background: "transparent", border: "1px dashed #1a3d58", borderRadius: 10, padding: 32, marginTop: 4, cursor: "pointer", transition: "all .2s" }}>
             <Building2 size={32} strokeWidth={1.75} color="#7dedb8" />
             <div className="font-display font-bold text-white text-[16px]">Lägg till bemanningsbolag</div>
             <div className="text-[13px] text-muted-foreground text-center">Klicka för att lägga till ett nytt bemanningsbolag och deras personal</div>
@@ -143,6 +147,8 @@ function InhyrdPage() {
         .inhyrd-row:hover { background: rgba(125,237,184,0.03); }
         .add-company:hover { border-color: #7dedb8 !important; background: rgba(125,237,184,0.03) !important; }
       `}</style>
+      <AddCompanyModal open={addOpen} onClose={() => setAddOpen(false)} />
+      <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
   );
 }

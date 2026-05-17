@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
+import { PersonDetailModal, type PersonDetail } from "@/components/PersonDetailModal";
 import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/personal")({
   component: PersonalPage,
+  validateSearch: (s: Record<string, unknown>) => ({ filter: typeof s.filter === "string" ? s.filter : undefined }),
 });
 
 type Status = "Godkänd" | "Pågår" | "Ej start";
@@ -57,10 +59,21 @@ function badgeStyle(status: Status): React.CSSProperties {
 
 function PersonalPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("Alla");
+  const [extraStatus, setExtraStatus] = useState<Status | null>(null);
   const [query, setQuery] = useState("");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [selected, setSelected] = useState<PersonDetail | null>(null);
+
+  useEffect(() => {
+    const f = search.filter;
+    if (f === "godkanda") { setFilter("Godkända"); setExtraStatus(null); }
+    else if (f === "ej-start") { setFilter("Ej påbörjat"); setExtraStatus(null); }
+    else if (f === "pagar") { setFilter("Alla"); setExtraStatus("Pågår"); }
+    else setExtraStatus(null);
+  }, [search.filter]);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -75,8 +88,8 @@ function PersonalPage() {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return people.filter((p) => matchesFilter(p, filter) && (!q || p.name.toLowerCase().includes(q)));
-  }, [filter, query]);
+    return people.filter((p) => matchesFilter(p, filter) && (!extraStatus || p.status === extraStatus) && (!q || p.name.toLowerCase().includes(q)));
+  }, [filter, extraStatus, query]);
 
   if (!ready) return <div className="min-h-screen bg-background" />;
 
@@ -138,7 +151,7 @@ function PersonalPage() {
               </thead>
               <tbody>
                 {rows.map((p) => (
-                  <tr key={p.initials} className="transition-colors hover:bg-[rgba(125,237,184,0.03)]" style={{ borderBottom: "1px solid rgba(26,61,88,0.4)" }}>
+                  <tr key={p.initials} onClick={() => setSelected({ name: p.name, role: p.role, dept: p.dept, company: p.company, percent: p.percent, status: p.status, certs: p.certs })} className="person-row transition-colors hover:bg-[rgba(125,237,184,0.03)]" style={{ borderBottom: "1px solid rgba(26,61,88,0.4)" }}>
                     <td style={{ padding: "12px 16px" }}>
                       <div className="flex items-center gap-3">
                         <div className="rounded-full flex items-center justify-center font-bold text-[11px] shrink-0" style={{ width: 34, height: 34, background: p.avatarBg, color: p.avatarColor }}>{p.initials}</div>
@@ -171,6 +184,7 @@ function PersonalPage() {
       </div>
       <style>{sidebarKeyframes}</style>
       <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <PersonDetailModal open={!!selected} onClose={() => setSelected(null)} person={selected} />
     </div>
   );
 }
