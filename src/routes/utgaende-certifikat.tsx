@@ -167,17 +167,17 @@ function UtgaendePage() {
             <div style={{ background: "rgba(255,77,106,0.06)", borderBottom: "1px solid rgba(255,77,106,0.2)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ff4d6a" }}><AlertOctagon size={12} strokeWidth={1.75} /> KRITISKT — UTGÅR INOM 14 DAGAR</div>
             </div>
-            {section14.map((r) => <RowItem key={r.name} r={r} />)}
+            {section14.map((r) => <RowItem key={r.name} r={r} onAction={handleAction} />)}
 
             <div style={{ background: "rgba(255,209,102,0.06)", borderBottom: "1px solid rgba(255,209,102,0.2)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#ffd166" }}><AlertTriangle size={12} strokeWidth={1.75} /> VARNING — UTGÅR INOM 30 DAGAR</div>
             </div>
-            {section30.map((r) => <RowItem key={r.name} r={r} />)}
+            {section30.map((r) => <RowItem key={r.name} r={r} onAction={handleAction} />)}
 
             <div style={{ background: "rgba(125,237,184,0.04)", borderBottom: "1px solid rgba(125,237,184,0.15)", padding: "10px 20px" }}>
               <div className="mono uppercase font-bold inline-flex items-center gap-1.5" style={{ fontSize: 9, color: "#7dedb8" }}><CheckCircle2 size={12} strokeWidth={1.75} /> PLANERA — UTGÅR INOM 90 DAGAR</div>
             </div>
-            {section90.map((r, i) => <RowItem key={r.name} r={r} last={i === section90.length - 1} />)}
+            {section90.map((r, i) => <RowItem key={r.name} r={r} last={i === section90.length - 1} onAction={handleAction} />)}
           </div>
 
           {/* Bottom card */}
