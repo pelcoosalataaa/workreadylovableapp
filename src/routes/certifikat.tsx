@@ -79,6 +79,12 @@ function CertifikatPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [filter, setFilter] = useState<Filter>("Alla");
+  const [addOpen, setAddOpen] = useState(false);
+  const [cTyp, setCTyp] = useState("");
+  const [cPerson, setCPerson] = useState("");
+  const [cGodk, setCGodk] = useState("");
+  const [cUtg, setCUtg] = useState("");
+  const [cBolag, setCBolag] = useState("");
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
