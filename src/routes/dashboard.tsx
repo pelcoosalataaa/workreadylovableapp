@@ -43,7 +43,8 @@ function DashboardPage() {
       <div className="flex-1 ml-[260px] flex flex-col">
         <TopBar />
         <main className="px-8 py-7 flex flex-col gap-6">
-          <WelcomeRow />
+          <WelcomeRow dept={dept} />
+          <DepartmentBanner dept={dept} />
           <AlertBanner />
           <StatsRow />
           <div className="grid grid-cols-[3fr_2fr] gap-4">
@@ -51,6 +52,7 @@ function DashboardPage() {
             <AiActivityCard />
           </div>
           <ModulesSection />
+          {dept && <ChecklistSection dept={dept} />}
         </main>
       </div>
       <style>{`
@@ -89,17 +91,53 @@ function TopBar() {
   );
 }
 
-function WelcomeRow() {
+function WelcomeRow({ dept }: { dept?: Department }) {
   return (
     <div className="flex items-end justify-between flex-wrap gap-3">
       <div>
         <h2 className="font-display font-bold text-[26px]">Välkommen, <span style={{ color: "#7dedb8" }}>Lars</span> 👋</h2>
-        <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · 27 aktiva medarbetare</p>
+        <p className="text-sm text-muted-foreground mt-1">Byggelement AB · Ucklum{dept ? ` · ${dept.name}` : ""}</p>
       </div>
       <div className="flex gap-2">
         <span className="text-xs px-3 py-1.5 rounded-full border border-border bg-card">Partner2Work · 8 uthyrda</span>
         <span className="text-xs px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8", border: "1px solid rgba(125,237,184,0.3)" }}>AI Aktiv</span>
       </div>
+    </div>
+  );
+}
+
+function DepartmentBanner({ dept }: { dept?: Department }) {
+  const navigate = useNavigate();
+  if (!dept) return null;
+  const Icon = dept.icon;
+  return (
+    <div
+      className="flex items-center justify-between gap-3"
+      style={{
+        background: "rgba(125,237,184,0.06)",
+        border: "1px solid rgba(125,237,184,0.15)",
+        borderRadius: 8,
+        padding: "12px 20px",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <Icon size={20} strokeWidth={1.75} color={dept.iconColor} />
+        <div>
+          <div className="text-[11px] text-muted-foreground">Din avdelning:</div>
+          <div className="font-bold text-[14px]" style={{ color: "#fff" }}>{dept.name}</div>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          localStorage.removeItem(STORAGE_KEY);
+          navigate({ to: "/avdelning" });
+        }}
+        className="hover:bg-white/5 transition rounded px-2 py-1"
+        style={{ fontSize: 11, color: "#8ec8e0", background: "transparent", border: "none", cursor: "pointer" }}
+      >
+        Byt avdelning
+      </button>
     </div>
   );
 }
