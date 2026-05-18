@@ -164,7 +164,7 @@ function SpelaInPage() {
       <main className="ml-[260px] min-h-screen p-8" style={{ background: "#060f18" }}>
         <header className="mb-6">
           <h1 className="font-display font-bold text-[24px] text-foreground flex items-center gap-2"><CircleDot size={22} strokeWidth={1.75} color="#7dedb8" /> Spela in ny modul</h1>
-          <p className="text-[13px]" style={{ color: "#3d6a7a" }}>AI guidar dig genom hela inspelningen</p>
+          <p className="text-[13px]" style={{ color: "#3d6a7a" }}>AI guidar dig genom hela inspelningen · Byggelement Ucklum</p>
         </header>
 
         <div className="grid gap-6" style={{ gridTemplateColumns: "3fr 2fr" }}>

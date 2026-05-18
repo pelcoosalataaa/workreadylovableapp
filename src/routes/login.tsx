@@ -29,7 +29,8 @@ function LoginPage() {
       setError("Felaktig e-postadress eller lösenord.");
       return;
     }
-    navigate({ to: "/dashboard" });
+    const vald = typeof window !== "undefined" ? localStorage.getItem("vald_avdelning") : null;
+    navigate({ to: vald ? "/dashboard" : "/avdelning" });
   };
 
   return (
