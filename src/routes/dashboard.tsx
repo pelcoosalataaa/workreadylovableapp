@@ -311,3 +311,122 @@ function ModulesSection() {
     </section>
   );
 }
+
+function ChecklistSection({ dept }: { dept: Department }) {
+  const weeks = CHECKLISTS[dept.value];
+  const flat = weeks.flatMap((w, wi) => w.items.map((it, ii) => ({ w, wi, it, ii })));
+  const total = flat.length;
+
+  const readChecked = useCallback(() => {
+    const set: Record<number, boolean> = {};
+    flat.forEach((_, idx) => {
+      set[idx] = localStorage.getItem(checklistKey(dept.value, idx)) === "1";
+    });
+    return set;
+  }, [dept.value, flat]);
+
+  const [checked, setChecked] = useState<Record<number, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    return readChecked();
+  });
+
+  useEffect(() => {
+    setChecked(readChecked());
+  }, [readChecked]);
+
+  const toggle = (idx: number) => {
+    setChecked((prev) => {
+      const next = { ...prev, [idx]: !prev[idx] };
+      if (next[idx]) localStorage.setItem(checklistKey(dept.value, idx), "1");
+      else localStorage.removeItem(checklistKey(dept.value, idx));
+      return next;
+    });
+  };
+
+  const doneCount = Object.values(checked).filter(Boolean).length;
+  const progress = total > 0 ? (doneCount / total) * 100 : 0;
+
+  // current week = first week with unchecked items, else last
+  let currentWeekIdx = weeks.length - 1;
+  let runningIdx = 0;
+  for (let wi = 0; wi < weeks.length; wi++) {
+    const items = weeks[wi].items;
+    const anyOpen = items.some((_, ii) => !checked[runningIdx + ii]);
+    if (anyOpen) { currentWeekIdx = wi; break; }
+    runningIdx += items.length;
+  }
+  const weekStart = weeks.slice(0, currentWeekIdx).reduce((n, w) => n + w.items.length, 0);
+  const weekItems = weeks[currentWeekIdx].items;
+  const weekDone = weekItems.filter((_, ii) => checked[weekStart + ii]).length;
+
+  return (
+    <section>
+      <h3 className="font-display font-bold text-base mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
+        Upplärningschecklista — {dept.name}
+      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-muted-foreground">
+          Vecka {currentWeekIdx + 1} — {weekDone} av {total} uppgifter klara
+        </span>
+        <div style={{ width: 200, height: 6, background: "#1a3d58", borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ width: `${progress}%`, height: "100%", background: "#7dedb8", transition: "width .2s" }} />
+        </div>
+      </div>
+      <div className="rounded-[10px] border border-border overflow-hidden" style={{ background: "#0e2538", borderColor: "#1a3d58" }}>
+        <div className="px-4 py-2.5 mono text-[10px] font-bold uppercase tracking-wider" style={{ background: "rgba(125,237,184,0.06)", color: "#7dedb8" }}>
+          {dept.headerTitle}
+        </div>
+        {weeks.map((w, wi) => {
+          const startIdx = weeks.slice(0, wi).reduce((n, ww) => n + ww.items.length, 0);
+          return (
+            <div key={wi}>
+              <div className="px-4 py-2 text-[11px] font-semibold border-t border-border" style={{ color: "#8ec8e0", background: "rgba(125,237,184,0.03)" }}>
+                {w.week}
+              </div>
+              {w.items.map((it, ii) => {
+                const idx = startIdx + ii;
+                const isOn = !!checked[idx];
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => toggle(idx)}
+                    className="w-full flex items-start gap-3 px-4 py-3 border-t border-border text-left transition-colors"
+                    style={{
+                      borderColor: "#1a3d58",
+                      background: isOn ? "rgba(125,237,184,0.04)" : "transparent",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span
+                      className="shrink-0 grid place-items-center"
+                      style={{
+                        width: 18,
+                        height: 18,
+                        marginTop: 1,
+                        borderRadius: 4,
+                        border: `1px solid ${isOn ? "#7dedb8" : "#1a3d58"}`,
+                        background: isOn ? "#7dedb8" : "#060f18",
+                      }}
+                    >
+                      {isOn && <Check size={12} color="#060f18" strokeWidth={3} />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="font-bold text-[13px]"
+                        style={{ color: "#fff", textDecoration: isOn ? "line-through" : "none", opacity: isOn ? 0.7 : 1 }}
+                      >
+                        {it.title}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{it.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
