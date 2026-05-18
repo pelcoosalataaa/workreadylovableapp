@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
-import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer } from "lucide-react";
+import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer, Check } from "lucide-react";
+import { CHECKLISTS, DEPARTMENTS, STORAGE_KEY, checklistKey, getDepartment, type Department } from "@/lib/departments";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -12,14 +13,24 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [dept, setDept] = useState<Department | undefined>(undefined);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) navigate({ to: "/login" });
     });
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setReady(true);
+      if (!data.session) {
+        navigate({ to: "/login" });
+        return;
+      }
+      const vald = localStorage.getItem(STORAGE_KEY);
+      if (!vald) {
+        navigate({ to: "/avdelning" });
+        return;
+      }
+      setDept(getDepartment(vald));
+      setReady(true);
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
