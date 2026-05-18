@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
-import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer } from "lucide-react";
+import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer, Check } from "lucide-react";
+import { CHECKLISTS, DEPARTMENTS, STORAGE_KEY, checklistKey, getDepartment, type Department } from "@/lib/departments";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
@@ -12,14 +13,24 @@ export const Route = createFileRoute("/dashboard")({
 function DashboardPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [dept, setDept] = useState<Department | undefined>(undefined);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) navigate({ to: "/login" });
     });
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setReady(true);
+      if (!data.session) {
+        navigate({ to: "/login" });
+        return;
+      }
+      const vald = localStorage.getItem(STORAGE_KEY);
+      if (!vald) {
+        navigate({ to: "/avdelning" });
+        return;
+      }
+      setDept(getDepartment(vald));
+      setReady(true);
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
@@ -32,7 +43,8 @@ function DashboardPage() {
       <div className="flex-1 ml-[260px] flex flex-col">
         <TopBar />
         <main className="px-8 py-7 flex flex-col gap-6">
-          <WelcomeRow />
+          <WelcomeRow dept={dept} />
+          <DepartmentBanner dept={dept} />
           <AlertBanner />
           <StatsRow />
           <div className="grid grid-cols-[3fr_2fr] gap-4">
@@ -40,6 +52,7 @@ function DashboardPage() {
             <AiActivityCard />
           </div>
           <ModulesSection />
+          {dept && <ChecklistSection dept={dept} />}
         </main>
       </div>
       <style>{`
@@ -78,17 +91,53 @@ function TopBar() {
   );
 }
 
-function WelcomeRow() {
+function WelcomeRow({ dept }: { dept?: Department }) {
   return (
     <div className="flex items-end justify-between flex-wrap gap-3">
       <div>
         <h2 className="font-display font-bold text-[26px]">Välkommen, <span style={{ color: "#7dedb8" }}>Lars</span> 👋</h2>
-        <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · 27 aktiva medarbetare</p>
+        <p className="text-sm text-muted-foreground mt-1">Byggelement AB · Ucklum{dept ? ` · ${dept.name}` : ""}</p>
       </div>
       <div className="flex gap-2">
         <span className="text-xs px-3 py-1.5 rounded-full border border-border bg-card">Partner2Work · 8 uthyrda</span>
         <span className="text-xs px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8", border: "1px solid rgba(125,237,184,0.3)" }}>AI Aktiv</span>
       </div>
+    </div>
+  );
+}
+
+function DepartmentBanner({ dept }: { dept?: Department }) {
+  const navigate = useNavigate();
+  if (!dept) return null;
+  const Icon = dept.icon;
+  return (
+    <div
+      className="flex items-center justify-between gap-3"
+      style={{
+        background: "rgba(125,237,184,0.06)",
+        border: "1px solid rgba(125,237,184,0.15)",
+        borderRadius: 8,
+        padding: "12px 20px",
+      }}
+    >
+      <div className="flex items-center gap-3">
+        <Icon size={20} strokeWidth={1.75} color={dept.iconColor} />
+        <div>
+          <div className="text-[11px] text-muted-foreground">Din avdelning:</div>
+          <div className="font-bold text-[14px]" style={{ color: "#fff" }}>{dept.name}</div>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          localStorage.removeItem(STORAGE_KEY);
+          navigate({ to: "/avdelning" });
+        }}
+        className="hover:bg-white/5 transition rounded px-2 py-1"
+        style={{ fontSize: 11, color: "#8ec8e0", background: "transparent", border: "none", cursor: "pointer" }}
+      >
+        Byt avdelning
+      </button>
     </div>
   );
 }
@@ -258,6 +307,125 @@ function ModulesSection() {
           <div className="text-[11px] text-muted-foreground">AI bygger automatiskt</div>
           <button className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Spela in</button>
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ChecklistSection({ dept }: { dept: Department }) {
+  const weeks = CHECKLISTS[dept.value];
+  const flat = weeks.flatMap((w, wi) => w.items.map((it, ii) => ({ w, wi, it, ii })));
+  const total = flat.length;
+
+  const readChecked = useCallback(() => {
+    const set: Record<number, boolean> = {};
+    flat.forEach((_, idx) => {
+      set[idx] = localStorage.getItem(checklistKey(dept.value, idx)) === "1";
+    });
+    return set;
+  }, [dept.value, flat]);
+
+  const [checked, setChecked] = useState<Record<number, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    return readChecked();
+  });
+
+  useEffect(() => {
+    setChecked(readChecked());
+  }, [readChecked]);
+
+  const toggle = (idx: number) => {
+    setChecked((prev) => {
+      const next = { ...prev, [idx]: !prev[idx] };
+      if (next[idx]) localStorage.setItem(checklistKey(dept.value, idx), "1");
+      else localStorage.removeItem(checklistKey(dept.value, idx));
+      return next;
+    });
+  };
+
+  const doneCount = Object.values(checked).filter(Boolean).length;
+  const progress = total > 0 ? (doneCount / total) * 100 : 0;
+
+  // current week = first week with unchecked items, else last
+  let currentWeekIdx = weeks.length - 1;
+  let runningIdx = 0;
+  for (let wi = 0; wi < weeks.length; wi++) {
+    const items = weeks[wi].items;
+    const anyOpen = items.some((_, ii) => !checked[runningIdx + ii]);
+    if (anyOpen) { currentWeekIdx = wi; break; }
+    runningIdx += items.length;
+  }
+  const weekStart = weeks.slice(0, currentWeekIdx).reduce((n, w) => n + w.items.length, 0);
+  const weekItems = weeks[currentWeekIdx].items;
+  const weekDone = weekItems.filter((_, ii) => checked[weekStart + ii]).length;
+
+  return (
+    <section>
+      <h3 className="font-display font-bold text-base mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
+        Upplärningschecklista — {dept.name}
+      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs text-muted-foreground">
+          Vecka {currentWeekIdx + 1} — {weekDone} av {total} uppgifter klara
+        </span>
+        <div style={{ width: 200, height: 6, background: "#1a3d58", borderRadius: 3, overflow: "hidden" }}>
+          <div style={{ width: `${progress}%`, height: "100%", background: "#7dedb8", transition: "width .2s" }} />
+        </div>
+      </div>
+      <div className="rounded-[10px] border border-border overflow-hidden" style={{ background: "#0e2538", borderColor: "#1a3d58" }}>
+        <div className="px-4 py-2.5 mono text-[10px] font-bold uppercase tracking-wider" style={{ background: "rgba(125,237,184,0.06)", color: "#7dedb8" }}>
+          {dept.headerTitle}
+        </div>
+        {weeks.map((w, wi) => {
+          const startIdx = weeks.slice(0, wi).reduce((n, ww) => n + ww.items.length, 0);
+          return (
+            <div key={wi}>
+              <div className="px-4 py-2 text-[11px] font-semibold border-t border-border" style={{ color: "#8ec8e0", background: "rgba(125,237,184,0.03)" }}>
+                {w.week}
+              </div>
+              {w.items.map((it, ii) => {
+                const idx = startIdx + ii;
+                const isOn = !!checked[idx];
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => toggle(idx)}
+                    className="w-full flex items-start gap-3 px-4 py-3 border-t border-border text-left transition-colors"
+                    style={{
+                      borderColor: "#1a3d58",
+                      background: isOn ? "rgba(125,237,184,0.04)" : "transparent",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <span
+                      className="shrink-0 grid place-items-center"
+                      style={{
+                        width: 18,
+                        height: 18,
+                        marginTop: 1,
+                        borderRadius: 4,
+                        border: `1px solid ${isOn ? "#7dedb8" : "#1a3d58"}`,
+                        background: isOn ? "#7dedb8" : "#060f18",
+                      }}
+                    >
+                      {isOn && <Check size={12} color="#060f18" strokeWidth={3} />}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div
+                        className="font-bold text-[13px]"
+                        style={{ color: "#fff", textDecoration: isOn ? "line-through" : "none", opacity: isOn ? 0.7 : 1 }}
+                      >
+                        {it.title}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{it.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
     </section>
   );
