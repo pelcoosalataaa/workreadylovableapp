@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getDepartment, STORAGE_KEY } from "@/lib/departments";
 
 type QuizQ = { fraga: string; ratt_svar: number; alternativ: string[] };
 type Modul = { id: string; titel: string; steg: string[]; quiz: QuizQ[] };
@@ -9,10 +10,15 @@ export const Route = createFileRoute("/mobil")({
   component: MobilPage,
   validateSearch: (s: Record<string, unknown>) => ({
     personal: typeof s.personal === "string" ? s.personal : undefined,
+    avdelning: typeof s.avdelning === "string" ? s.avdelning : undefined,
   }),
 });
 
 function MobilPage() {
+  const search = Route.useSearch();
+  const deptValue = search.avdelning ?? (typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null);
+  const dept = getDepartment(deptValue ?? undefined);
+  const subtitleSuffix = dept ? dept.name : (deptValue ?? "");
   
   const [loading, setLoading] = useState(true);
   const [modul, setModul] = useState<Modul | null>(null);
@@ -95,7 +101,7 @@ function MobilPage() {
             <div className="font-display font-bold" style={{ color: "#060f18", fontSize: 16, fontFamily: "Syne, sans-serif" }}>
               {loading ? "Laddar…" : modul?.titel ?? "Ingen modul"}
             </div>
-            <div style={{ color: "rgba(0,0,0,0.6)", fontSize: 11 }}>WorkReady · Modul</div>
+            <div style={{ color: "rgba(0,0,0,0.6)", fontSize: 11 }}>Byggelement AB · Ucklum{subtitleSuffix ? ` · ${subtitleSuffix}` : ""}</div>
           </div>
           <div style={{ width: 20 }} />
         </div>
