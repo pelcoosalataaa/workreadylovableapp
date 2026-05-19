@@ -38,16 +38,17 @@ const INITIAL: Cert[] = [
   { id: "1", initials: "AJ", avatar: "green", name: "Anders Johansson", role: "Gjutare", cert: "Betongkurs", issued: "2024-11-05", expires: "2026-11-05", status: "valid" },
   { id: "2", initials: "AJ", avatar: "green", name: "Anders Johansson", role: "Gjutare", cert: "Säkerhet & Skydd", issued: "2024-11-05", expires: "2026-11-05", status: "valid" },
   { id: "3", initials: "EH", avatar: "amber", name: "Erik Holm", role: "Armerare", cert: "Traverskort", issued: "2024-05-30", expires: "2026-05-30", status: "expiring", expireDays: 14 },
-  { id: "4", initials: "PL", avatar: "amber", name: "Petter Lindgren", role: "Truckförare", cert: "Truckkort B", issued: "2024-06-15", expires: "2026-06-15", status: "expiring", expireDays: 30 },
-  { id: "5", initials: "SB", avatar: "red", name: "Sara Berg", role: "Betongarbetare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
-  { id: "6", initials: "JN", avatar: "blue", name: "Johan Nilsson", role: "Montör", cert: "Heta arbeten", issued: "—", expires: "—", status: "missing" },
-  { id: "7", initials: "MK", avatar: "green", name: "Maria Karlsson", role: "CNC-operatör", cert: "CNC-utbildning", issued: "2024-11-07", expires: "2027-11-07", status: "valid" },
+  { id: "4", initials: "KL", avatar: "green", name: "Karl Lindgren", role: "Armerare", cert: "Svetsarlicens", issued: "2024-10-01", expires: "2027-10-01", status: "valid" },
+  { id: "5", initials: "KL", avatar: "green", name: "Karl Lindgren", role: "Armerare", cert: "Betongkurs", issued: "2024-10-01", expires: "2027-10-01", status: "valid" },
+  { id: "6", initials: "SB", avatar: "red", name: "Sara Berg", role: "Betongarbetare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
+  { id: "7", initials: "LB", avatar: "red", name: "Lisa Bergström", role: "Formbyggare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
+  { id: "8", initials: "MA", avatar: "red", name: "Mohammed Al-Hassan", role: "Betongarbetare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
 ];
 
 const STATS = [
-  { label: "TOTALT", value: "24", sub: "certifikat i systemet", color: "#3b82f6" },
-  { label: "GILTIGA", value: "21", sub: "inga åtgärder behövs", color: "#10b981" },
-  { label: "UTGÅR SNART", value: "2", sub: "inom 30 dagar", color: "#f59e0b" },
+  { label: "TOTALT", value: "8", sub: "certifikat i systemet", color: "#3b82f6" },
+  { label: "GILTIGA", value: "5", sub: "inga åtgärder behövs", color: "#10b981" },
+  { label: "UTGÅR SNART", value: "1", sub: "inom 30 dagar", color: "#f59e0b" },
   { label: "SAKNAS", value: "3", sub: "kräver omedelbar åtgärd", color: "#ef4444" },
 ];
 
