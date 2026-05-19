@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtgaendeCertifikatRouteImport } from './routes/utgaende-certifikat'
+import { Route as UtbildningRouteImport } from './routes/utbildning'
 import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
@@ -29,6 +30,11 @@ import { Route as ModulIdRouteImport } from './routes/modul.$id'
 const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
   id: '/utgaende-certifikat',
   path: '/utgaende-certifikat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UtbildningRoute = UtbildningRouteImport.update({
+  id: '/utbildning',
+  path: '/utbildning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpelaInRoute = SpelaInRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   id:
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   fileRoutesById: FileRoutesById
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
   SpelaInRoute: typeof SpelaInRoute
+  UtbildningRoute: typeof UtbildningRoute
   UtgaendeCertifikatRoute: typeof UtgaendeCertifikatRoute
   ModulIdRoute: typeof ModulIdRoute
 }
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/utgaende-certifikat'
       fullPath: '/utgaende-certifikat'
       preLoaderRoute: typeof UtgaendeCertifikatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/utbildning': {
+      id: '/utbildning'
+      path: '/utbildning'
+      fullPath: '/utbildning'
+      preLoaderRoute: typeof UtbildningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/spela-in': {
@@ -370,6 +390,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
   SpelaInRoute: SpelaInRoute,
+  UtbildningRoute: UtbildningRoute,
   UtgaendeCertifikatRoute: UtgaendeCertifikatRoute,
   ModulIdRoute: ModulIdRoute,
 }
