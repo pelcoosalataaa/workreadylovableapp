@@ -83,12 +83,25 @@ function CertifikatPage() {
   const [bookType, setBookType] = useState("");
   const [bookDate, setBookDate] = useState("");
   const [bookPlace, setBookPlace] = useState("");
+  const [counts, setCounts] = useState<Record<string, number>>({ total: 0, giltig: 0, utgaar_snart: 0, saknas: 0 });
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) navigate({ to: "/login" }); });
     supabase.auth.getSession().then(({ data }) => { if (!data.session) navigate({ to: "/login" }); else setReady(true); });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!ready) return;
+    (async () => {
+      const all = supabase.from("certifikat").select("id", { count: "exact", head: true });
+      const g = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "giltig");
+      const u = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "utgaar_snart");
+      const s = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "saknas");
+      const [a, b, c, d] = await Promise.all([all, g, u, s]);
+      setCounts({ total: a.count ?? 0, giltig: b.count ?? 0, utgaar_snart: c.count ?? 0, saknas: d.count ?? 0 });
+    })();
+  }, [ready]);
 
   const visible = useMemo(() => INITIAL.filter((c) => {
     if (filter === "Alla") return true;
