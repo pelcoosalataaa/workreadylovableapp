@@ -14,6 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
+      avdelningar: {
+        Row: {
+          farg: string | null
+          foretag_id: string | null
+          id: string
+          namn: string
+          skapad_at: string
+        }
+        Insert: {
+          farg?: string | null
+          foretag_id?: string | null
+          id?: string
+          namn: string
+          skapad_at?: string
+        }
+        Update: {
+          farg?: string | null
+          foretag_id?: string | null
+          id?: string
+          namn?: string
+          skapad_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avdelningar_foretag_id_fkey"
+            columns: ["foretag_id"]
+            isOneToOne: false
+            referencedRelation: "foretag"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bemanningspartners: {
+        Row: {
+          epost: string | null
+          foretag_id: string | null
+          id: string
+          namn: string
+          ort: string | null
+          skapad_at: string
+          telefon: string | null
+        }
+        Insert: {
+          epost?: string | null
+          foretag_id?: string | null
+          id?: string
+          namn: string
+          ort?: string | null
+          skapad_at?: string
+          telefon?: string | null
+        }
+        Update: {
+          epost?: string | null
+          foretag_id?: string | null
+          id?: string
+          namn?: string
+          ort?: string | null
+          skapad_at?: string
+          telefon?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bemanningspartners_foretag_id_fkey"
+            columns: ["foretag_id"]
+            isOneToOne: false
+            referencedRelation: "foretag"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      certifikat: {
+        Row: {
+          certifikattyp: string
+          foretag_id: string | null
+          id: string
+          personal_id: string | null
+          skapad_at: string
+          status: string | null
+          utfardat: string | null
+          utgaar: string | null
+        }
+        Insert: {
+          certifikattyp: string
+          foretag_id?: string | null
+          id?: string
+          personal_id?: string | null
+          skapad_at?: string
+          status?: string | null
+          utfardat?: string | null
+          utgaar?: string | null
+        }
+        Update: {
+          certifikattyp?: string
+          foretag_id?: string | null
+          id?: string
+          personal_id?: string | null
+          skapad_at?: string
+          status?: string | null
+          utfardat?: string | null
+          utgaar?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certifikat_foretag_id_fkey"
+            columns: ["foretag_id"]
+            isOneToOne: false
+            referencedRelation: "foretag"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certifikat_personal_id_fkey"
+            columns: ["personal_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      foretag: {
+        Row: {
+          adress: string | null
+          bransch: string | null
+          epost: string | null
+          id: string
+          namn: string
+          organisationsnummer: string | null
+          skapad_at: string
+          telefon: string | null
+        }
+        Insert: {
+          adress?: string | null
+          bransch?: string | null
+          epost?: string | null
+          id?: string
+          namn: string
+          organisationsnummer?: string | null
+          skapad_at?: string
+          telefon?: string | null
+        }
+        Update: {
+          adress?: string | null
+          bransch?: string | null
+          epost?: string | null
+          id?: string
+          namn?: string
+          organisationsnummer?: string | null
+          skapad_at?: string
+          telefon?: string | null
+        }
+        Relationships: []
+      }
       moduler: {
         Row: {
           created_at: string
@@ -46,6 +197,72 @@ export type Database = {
           transkription?: string | null
         }
         Relationships: []
+      }
+      personal: {
+        Row: {
+          anstallningstyp: string | null
+          avdelning_id: string | null
+          bemanningsbolag: string | null
+          efternamn: string
+          epost: string | null
+          foretag_id: string | null
+          fornamn: string
+          framsteg: number
+          id: string
+          roll: string | null
+          skapad_at: string
+          startdatum: string | null
+          status: string
+          telefon: string | null
+        }
+        Insert: {
+          anstallningstyp?: string | null
+          avdelning_id?: string | null
+          bemanningsbolag?: string | null
+          efternamn: string
+          epost?: string | null
+          foretag_id?: string | null
+          fornamn: string
+          framsteg?: number
+          id?: string
+          roll?: string | null
+          skapad_at?: string
+          startdatum?: string | null
+          status?: string
+          telefon?: string | null
+        }
+        Update: {
+          anstallningstyp?: string | null
+          avdelning_id?: string | null
+          bemanningsbolag?: string | null
+          efternamn?: string
+          epost?: string | null
+          foretag_id?: string | null
+          fornamn?: string
+          framsteg?: number
+          id?: string
+          roll?: string | null
+          skapad_at?: string
+          startdatum?: string | null
+          status?: string
+          telefon?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personal_avdelning_id_fkey"
+            columns: ["avdelning_id"]
+            isOneToOne: false
+            referencedRelation: "avdelningar"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personal_foretag_id_fkey"
+            columns: ["foretag_id"]
+            isOneToOne: false
+            referencedRelation: "foretag"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
