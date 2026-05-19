@@ -52,9 +52,9 @@ const section14: Row[] = [
 
 const section30: Row[] = [
   {
-    initials: "PL", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8",
-    name: "Petter Lindgren", role: "Truckförare · Kväll", company: "Partner2Work AB",
-    icon: "🪪", cert: "Truckkort B", certDate: "Utfärdat: 2024-06-15",
+    initials: "LB", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8",
+    name: "Lisa Bergström", role: "Formbyggare · Dag", company: "Partner2Work AB",
+    icon: "🪪", cert: "Säkerhet & Skydd", certDate: "Utfärdat: 2024-06-15",
     badge: "30 dagar kvar", badgeBg: "rgba(255,209,102,0.15)", badgeColor: "#ffd166", badgeBorder: "rgba(255,209,102,0.3)",
     action: "Påminn →",
   },
