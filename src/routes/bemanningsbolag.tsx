@@ -31,11 +31,10 @@ type Row = {
 };
 
 const rows: Row[] = [
-  { initials: "PL", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8", name: "Petter Lindgren", role: "Truckförare · Kväll", dept: "Lager & Utskeppning", start: "2024-11-01", percent: 65, barColor: "#7dedb8", status: "Pågår" },
+  { initials: "LB", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8", name: "Lisa Bergström", role: "Formbyggare · Dag", dept: "Formavdelningen", start: "2024-11-01", percent: 65, barColor: "#7dedb8", status: "Pågår" },
   { initials: "SB", avatarBg: "rgba(255,77,106,0.12)", avatarColor: "#ff4d6a", name: "Sara Berg", role: "Betongarbetare · Dag", dept: "Gjutavdelningen", start: "2024-11-12", percent: 0, barColor: "#ff4d6a", status: "Ej start" },
   { initials: "LN", avatarBg: "rgba(0,224,150,0.12)", avatarColor: "#00e096", name: "Lisa Nordin", role: "Armerare · Dag", dept: "Armeringsavdelningen", start: "2024-10-15", percent: 100, barColor: "#00e096", status: "Godkänd" },
-  { initials: "TK", avatarBg: "rgba(0,224,150,0.12)", avatarColor: "#00e096", name: "Tommy Karlsson", role: "Truckförare · Dag", dept: "Lager & Utskeppning", start: "2024-09-01", percent: 100, barColor: "#00e096", status: "Godkänd" },
-  { initials: "BM", avatarBg: "rgba(255,209,102,0.12)", avatarColor: "#ffd166", name: "Bo Magnusson", role: "Lagermedarbetare · Dag", dept: "Lager & Utskeppning", start: "2024-11-10", percent: 25, barColor: "#ffd166", status: "Pågår" },
+  { initials: "MA", avatarBg: "rgba(255,209,102,0.12)", avatarColor: "#ffd166", name: "Mohammed Al-Hassan", role: "Betongarbetare · Dag", dept: "Gjutavdelningen", start: "2024-11-10", percent: 25, barColor: "#ffd166", status: "Pågår" },
 ];
 
 function statusStyle(s: Status): React.CSSProperties {
