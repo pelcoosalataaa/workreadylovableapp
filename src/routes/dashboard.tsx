@@ -1,19 +1,35 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppSidebar } from "@/components/AppSidebar";
+import { AppTopBar, PrimaryBtn } from "@/components/AppTopBar";
 import { InvitePersonalModal } from "@/components/InvitePersonalModal";
-import { Users, Building2, RefreshCw, Bot, CircleDot, Layers, ShieldAlert, FileText, ArrowUpFromLine, Hammer, Check } from "lucide-react";
-import { CHECKLISTS, DEPARTMENTS, STORAGE_KEY, checklistKey, getDepartment, type Department } from "@/lib/departments";
+import {
+  AlertCircle,
+  Check,
+  Clock,
+  Layers,
+  ShieldAlert,
+  FileText,
+  ArrowUp,
+  Plus,
+} from "lucide-react";
+import { STORAGE_KEY } from "@/lib/departments";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
 });
 
+const PAGE_BG = "#f0f2f5";
+const CARD_BG = "#fff";
+const CARD_BORDER = "1px solid #e5e7eb";
+const CARD_RADIUS = 10;
+const CARD_SHADOW = "0 1px 3px rgba(0,0,0,0.06)";
+
 function DashboardPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
-  const [dept, setDept] = useState<Department | undefined>(undefined);
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -29,404 +45,503 @@ function DashboardPage() {
         navigate({ to: "/avdelning" });
         return;
       }
-      setDept(getDepartment(vald));
       setReady(true);
     });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  if (!ready) return <div className="min-h-screen bg-background" />;
+  if (!ready) return <div style={{ minHeight: "100vh", background: PAGE_BG }} />;
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
+    <div style={{ minHeight: "100vh", background: PAGE_BG, display: "flex" }}>
       <AppSidebar />
-      <div className="flex-1 ml-[260px] flex flex-col">
-        <TopBar />
-        <main className="px-8 py-7 flex flex-col gap-6">
-          <WelcomeRow dept={dept} />
-          <DepartmentBanner dept={dept} />
-          <AlertBanner />
+      <div style={{ flex: 1, marginLeft: 260, display: "flex", flexDirection: "column" }}>
+        <AppTopBar
+          title="Dashboard"
+          action={
+            <PrimaryBtn onClick={() => setInviteOpen(true)}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <Plus size={14} /> Bjud in personal
+              </span>
+            </PrimaryBtn>
+          }
+        />
+        <main style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 24 }}>
+          <WelcomeRow />
+          <ActionsRequired />
           <StatsRow />
-          <div className="grid grid-cols-[3fr_2fr] gap-4">
-            <PersonalCard />
-            <AiActivityCard />
+          <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 16 }}>
+            <DepartmentReadinessCard />
+            <ActivityCard />
           </div>
-          <ModulesSection />
-          {dept && <ChecklistSection dept={dept} />}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <UpcomingOnboardingsCard />
+            <ModulesCard />
+          </div>
         </main>
+        <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
       </div>
       <style>{`
-        @keyframes livePulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,224,150,0.6)} 50%{opacity:.6;box-shadow:0 0 0 6px rgba(0,224,150,0)} }
-        @keyframes redPulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,77,106,0.5)} 50%{opacity:.5;box-shadow:0 0 0 6px rgba(255,77,106,0)} }
         @keyframes mintPulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        .live-dot{width:8px;height:8px;border-radius:999px;background:#00e096;animation:livePulse 2s infinite}
-        .red-dot{width:8px;height:8px;border-radius:999px;background:#ff4d6a;animation:redPulse 1.6s infinite}
         .mint-pulse{animation:mintPulse 1.5s infinite}
-        .shimmer-bar{background:linear-gradient(90deg,#1a3d58,#7dedb8,#1a3d58);background-size:200% 100%;animation:shimmer 2s linear infinite}
-        .mono{font-family:'Space Mono',ui-monospace,monospace;letter-spacing:.08em}
       `}</style>
     </div>
   );
 }
 
-function TopBar() {
-  const navigate = useNavigate();
-  const [inviteOpen, setInviteOpen] = useState(false);
+function WelcomeRow() {
+  const today = "lördag 16 maj";
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between px-8 py-4 border-b border-border" style={{ background: "#0b1e2d" }}>
-      <div className="flex items-center gap-3">
-        <h1 className="font-display font-bold text-[18px]">Dashboard</h1>
-        <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-full" style={{ background: "rgba(0,224,150,0.12)", color: "#00e096" }}>
-          <span className="live-dot" />Live
-        </span>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-muted-foreground">Lördag, 16 maj 2026</span>
-        <button onClick={() => setInviteOpen(true)} className="text-xs px-3 py-2 rounded-md border border-border hover:bg-white/5 transition">+ Bjud in personal</button>
-        <button onClick={() => navigate({ to: "/spela-in" })} className="text-xs font-bold px-3 py-2 rounded-md inline-flex items-center gap-1.5" style={{ background: "#7dedb8", color: "#060f18" }}><CircleDot size={14} strokeWidth={1.75} /> Ny modul</button>
-      </div>
-      <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
-    </header>
-  );
-}
-
-function WelcomeRow({ dept }: { dept?: Department }) {
-  return (
-    <div className="flex items-end justify-between flex-wrap gap-3">
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
       <div>
-        <h2 className="font-display font-bold text-[26px]">Välkommen, <span style={{ color: "#7dedb8" }}>Lars</span> 👋</h2>
-        <p className="text-sm text-muted-foreground mt-1">Byggelement AB · Ucklum{dept ? ` · ${dept.name}` : ""}</p>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "#111827", margin: 0 }}>
+          God morgon, Lars
+        </h2>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: "4px 0 0" }}>
+          Byggelement AB · Ucklum · {today}
+        </p>
       </div>
-      <div className="flex gap-2">
-        <span className="text-xs px-3 py-1.5 rounded-full border border-border bg-card">Partner2Work · 8 uthyrda</span>
-        <span className="text-xs px-3 py-1.5 rounded-full font-semibold" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8", border: "1px solid rgba(125,237,184,0.3)" }}>AI Aktiv</span>
-      </div>
+      <span
+        style={{
+          background: "#fee2e2",
+          color: "#991b1b",
+          border: "1px solid #fecaca",
+          borderRadius: 4,
+          padding: "4px 10px",
+          fontSize: 12,
+          fontWeight: 600,
+        }}
+      >
+        Åtgärder krävs
+      </span>
     </div>
   );
 }
 
-function DepartmentBanner({ dept }: { dept?: Department }) {
+type ActionItem = { text: string; to: string; search?: Record<string, string> };
+
+function ActionsRequired() {
   const navigate = useNavigate();
-  if (!dept) return null;
-  const Icon = dept.icon;
+  const items: ActionItem[] = [
+    { text: "Sara Berg har inte påbörjat sin utbildning — börjar måndag", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { text: "Erik Holms traverskort utgår om 14 dagar", to: "/certifikat", search: { filter: "utgaende" } },
+    { text: "3 personer saknar obligatorisk säkerhetsutbildning", to: "/utbildning", search: { filter: "saknas" } },
+  ];
   return (
-    <div
-      className="flex items-center justify-between gap-3"
+    <section
       style={{
-        background: "rgba(125,237,184,0.06)",
-        border: "1px solid rgba(125,237,184,0.15)",
-        borderRadius: 8,
-        padding: "12px 20px",
+        background: "#fef2f2",
+        border: "1px solid #fecaca",
+        borderRadius: CARD_RADIUS,
+        padding: "16px 20px",
       }}
     >
-      <div className="flex items-center gap-3">
-        <Icon size={20} strokeWidth={1.75} color={dept.iconColor} />
-        <div>
-          <div className="text-[11px] text-muted-foreground">Din avdelning:</div>
-          <div className="font-bold text-[14px]" style={{ color: "#fff" }}>{dept.name}</div>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <h3 style={{ fontSize: 14, fontWeight: 700, color: "#991b1b", margin: 0 }}>Åtgärder krävs nu</h3>
+        <span
+          style={{
+            background: "#ef4444",
+            color: "#fff",
+            borderRadius: 999,
+            fontSize: 11,
+            fontWeight: 700,
+            padding: "2px 8px",
+          }}
+        >
+          {items.length}
+        </span>
       </div>
-      <button
-        type="button"
-        onClick={() => {
-          localStorage.removeItem(STORAGE_KEY);
-          navigate({ to: "/avdelning" });
-        }}
-        className="hover:bg-white/5 transition rounded px-2 py-1"
-        style={{ fontSize: 11, color: "#8ec8e0", background: "transparent", border: "none", cursor: "pointer" }}
-      >
-        Byt avdelning
-      </button>
-    </div>
-  );
-}
-
-function AlertBanner() {
-  const navigate = useNavigate();
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(255,77,106,0.08)", border: "1px solid rgba(255,77,106,0.3)" }}>
-      <span className="red-dot shrink-0" />
-      <p className="text-xs flex-1">
-        <span style={{ color: "#ff4d6a", fontWeight: 600 }}>Sara Berg</span> har inte påbörjat sin utbildning — börjar måndag. <span className="text-muted-foreground mx-2">|</span> <span style={{ color: "#ff4d6a", fontWeight: 600 }}>Erik Holm</span> — traverskort utgår om 14 dagar.
-      </p>
-      <button type="button" onClick={() => navigate({ to: "/utgaende-certifikat" })} className="text-xs font-semibold whitespace-nowrap hover:underline bg-transparent border-0 p-0" style={{ color: "#7dedb8" }}>Åtgärda →</button>
-    </div>
+      {items.map((it, i) => (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 0",
+            borderBottom: i === items.length - 1 ? "none" : "1px solid #fecaca",
+          }}
+        >
+          <span style={{ width: 8, height: 8, borderRadius: 999, background: "#ef4444", flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 13, color: "#374151" }}>{it.text}</span>
+          <button
+            type="button"
+            onClick={() => navigate({ to: it.to, search: (it.search ?? {}) as never })}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#dc2626",
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            Åtgärda →
+          </button>
+        </div>
+      ))}
+    </section>
   );
 }
 
 function StatsRow() {
   const navigate = useNavigate();
   const stats = [
-    { color: "#60b0f4", label: "PERSONAL TOTALT", value: "27", sub: "↑ 3 nya denna vecka", search: undefined as string | undefined },
-    { color: "#7dedb8", label: "GODKÄNDA & REDO", value: "19", sub: "70% av alla", search: "godkanda" },
-    { color: "#ffd166", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu", search: "pagar" },
-    { color: "#ff4d6a", label: "EJ PÅBÖRJAT", value: "3", sub: "⚠ SMS skickat", search: "ej-start" },
+    { color: "#3b82f6", label: "TOTAL ARBETSKRAFT", value: "27", sub: "↑ 3 nya denna vecka", to: "/arbetskraft", search: {} },
+    { color: "#10b981", label: "REDO FÖR ARBETE", value: "19", sub: "70% av alla", to: "/arbetskraft", search: { filter: "redo" } },
+    { color: "#f59e0b", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu", to: "/arbetskraft", search: { filter: "pagande" } },
+    { color: "#ef4444", label: "EJ PÅBÖRJAT", value: "3", sub: "Kräver åtgärd", to: "/arbetskraft", search: { filter: "ej-start" } },
   ];
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
       {stats.map((s) => (
         <div
           key={s.label}
           role="button"
-          onClick={() => navigate({ to: "/personal", search: (s.search ? { filter: s.search } : {}) as never })}
-          className="stat-card relative overflow-hidden rounded-[10px] border border-border p-5"
-          style={{ background: "#0b1e2d" }}
+          tabIndex={0}
+          onClick={() => navigate({ to: s.to, search: s.search as never })}
+          style={{
+            background: CARD_BG,
+            border: CARD_BORDER,
+            borderLeft: `4px solid ${s.color}`,
+            borderRadius: CARD_RADIUS,
+            boxShadow: CARD_SHADOW,
+            padding: 20,
+            cursor: "pointer",
+            transition: "transform .15s, box-shadow .15s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 4px 10px rgba(0,0,0,0.08)")}
+          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = CARD_SHADOW)}
         >
-          <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: s.color }} />
-          <div className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none" style={{ background: `radial-gradient(circle, ${s.color}22, transparent 70%)` }} />
-          <div className="mono text-[9px] font-bold text-muted-foreground">{s.label}</div>
-          <div className="font-display font-bold text-[46px] leading-none mt-2" style={{ color: s.color }}>{s.value}</div>
-          <div className="text-[11px] text-muted-foreground mt-2">{s.sub}</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            {s.label}
+          </div>
+          <div
+            style={{
+              fontFamily: "Syne, sans-serif",
+              fontWeight: 700,
+              fontSize: 40,
+              color: s.color,
+              lineHeight: 1.1,
+              margin: "8px 0 4px",
+            }}
+          >
+            {s.value}
+          </div>
+          <div style={{ fontSize: 12, color: "#6b7280" }}>{s.sub}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function PersonRow({ initials, name, role, percent, color, status }: { initials: string; name: string; role: string; percent: number; color: string; status: string }) {
+function CardShell({ title, right, children }: { title: string; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 py-2.5">
-      <div className="w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0" style={{ background: `${color}22`, color }}>{initials}</div>
-      <div className="min-w-0 w-44">
-        <div className="text-sm font-semibold truncate">{name}</div>
-        <div className="text-[11px] truncate" style={{ color: "#8ec8e0" }}>{role}</div>
+    <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW, overflow: "hidden" }}>
+      <div
+        style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid #f3f4f6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <h3 style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 14, color: "#111827", margin: 0 }}>{title}</h3>
+        {right}
       </div>
-      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
-        <div className="h-full rounded-full" style={{ width: `${percent}%`, background: color }} />
-      </div>
-      <div className="text-xs font-semibold w-20 text-right" style={{ color: status.includes("Ej") ? "#ff4d6a" : "#8ec8e0" }}>{status}</div>
+      <div style={{ padding: "8px 20px 16px" }}>{children}</div>
     </div>
   );
 }
 
-function SectionDivider({ children }: { children: React.ReactNode }) {
+function DepartmentReadinessCard() {
+  const navigate = useNavigate();
+  const departments = [
+    { name: "Snickeriavdelning / Formbyggnad", count: 6, pct: 83, slug: "snickeri" },
+    { name: "Gul hallen", count: 8, pct: 75, slug: "gul-hallen" },
+    { name: "Rosa hallen", count: 5, pct: 60, slug: "rosa-hallen" },
+    { name: "Gröna hallen", count: 4, pct: 100, slug: "grona-hallen" },
+    { name: "Armeringsavdelning", count: 6, pct: 50, slug: "armering" },
+    { name: "Lap och Lag", count: 3, pct: 33, slug: "lap-och-lag" },
+  ];
+  const colorFor = (p: number) => (p > 80 ? "#10b981" : p >= 50 ? "#f59e0b" : "#ef4444");
   return (
-    <div className="mono text-[9px] font-bold uppercase px-3 py-1.5 mt-2 rounded" style={{ background: "rgba(125,237,184,0.08)", color: "#7dedb8" }}>{children}</div>
+    <CardShell
+      title="Beredskap per avdelning"
+      right={<span style={{ fontSize: 12, color: "#6b7280" }}>Uppdaterad nu</span>}
+    >
+      {departments.map((d) => {
+        const color = colorFor(d.pct);
+        return (
+          <div
+            key={d.slug}
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate({ to: "/arbetskraft", search: { avdelning: d.slug } as never })}
+            style={{
+              padding: "12px 0",
+              borderBottom: "1px solid #f3f4f6",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{d.name}</div>
+              <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{d.count} pers</div>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                height: 6,
+                background: "#f3f4f6",
+                borderRadius: 999,
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ width: `${d.pct}%`, height: "100%", background: color, transition: "width .2s" }} />
+            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color, width: 48, textAlign: "right" }}>{d.pct}%</div>
+          </div>
+        );
+      })}
+    </CardShell>
   );
 }
 
-function PersonalCard() {
-  return (
-    <div className="rounded-[10px] border border-border p-5" style={{ background: "#0e2538" }}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold text-base flex items-center gap-2"><Users size={18} strokeWidth={1.75} color="#7dedb8" /> Personal — Status idag</h3>
-        <div className="flex gap-2">
-          <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8" }}>P2W · 8</span>
-          <span className="text-[10px] font-semibold px-2 py-1 rounded-full border border-border text-muted-foreground">Egen · 19</span>
-        </div>
-      </div>
-
-      <SectionDivider><span className="inline-flex items-center gap-1.5"><Building2 size={12} strokeWidth={1.75} /> Egen personal — Byggelement AB</span></SectionDivider>
-      <PersonRow initials="AJ" name="Anders Johansson" role="Betongarbetare · Dag" percent={100} color="#00e096" status="100% ✓" />
-      <PersonRow initials="MK" name="Maria Karlsson" role="CNC-operatör · Dag" percent={100} color="#00e096" status="100% ✓" />
-
-      <SectionDivider><span className="inline-flex items-center gap-1.5"><RefreshCw size={12} strokeWidth={1.75} /> Inhyrd — Partner2Work AB</span></SectionDivider>
-      <PersonRow initials="PL" name="Petter Lindgren" role="Truckförare · Kväll" percent={65} color="#7dedb8" status="65%" />
-      <PersonRow initials="SB" name="Sara Berg" role="Betongarbetare · Dag" percent={0} color="#ff4d6a" status="Ej start ⚠" />
-
-
-      <button className="mt-4 w-full text-xs font-semibold py-2.5 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-primary transition">
-        + Lägg till bemanningsbolag
-      </button>
-    </div>
-  );
-}
-
-function AiActivityCard() {
+function ActivityCard() {
   const items = [
-    { icon: "✓", color: "#00e096", pulse: false, label: "Anders Johansson godkänd", sub: "Säkerhet vid gjutning · 4/4 rätt", time: "08:14" },
-    { icon: "✓", color: "#00e096", pulse: false, label: "SMS skickat — Sara Berg", sub: "Påminnelse · börjar måndag", time: "09:00" },
-    { icon: "↻", color: "#7dedb8", pulse: true, label: "Bygger modul — Traverskörning", sub: "Inspelad av Erik Svensson · ~2 min", time: "Nu" },
-    { icon: "○", color: "#3d6a7a", pulse: false, label: "Veckorapport — Lars", sub: "Alla avdelningar · fredag", time: "Fre" },
-    { icon: "○", color: "#3d6a7a", pulse: false, label: "Certifikatpåminnelse", sub: "Erik Holm · traverskort · 14 dagar", time: "Snart" },
+    { type: "ok", title: "Anders Johansson godkänd", sub: "Säkerhet · 4/4 rätt", time: "08:14" },
+    { type: "ok", title: "SMS skickat — Sara Berg", sub: "Påminnelse skickad", time: "09:00" },
+    { type: "pending", title: "AI bygger modul — Traverskörning", sub: "Pågår · ~2 min", time: "Nu" },
+    { type: "neutral", title: "Veckorapport planerad", sub: "Fredag 08:00", time: "Fre" },
+    { type: "alert", title: "Erik Holms certifikat", sub: "Traverskort · 14 dagar kvar", time: "Snart" },
+  ] as const;
+  const styleFor = (t: string) => {
+    if (t === "ok") return { bg: "#d1fae5", color: "#065f46", icon: <Check size={14} /> };
+    if (t === "pending") return { bg: "#fef3c7", color: "#92400e", icon: <Clock size={14} /> };
+    if (t === "alert") return { bg: "#fee2e2", color: "#991b1b", icon: <AlertCircle size={14} /> };
+    return { bg: "#f3f4f6", color: "#374151", icon: <Clock size={14} /> };
+  };
+  return (
+    <CardShell
+      title="Senaste aktivitet"
+      right={
+        <span
+          style={{
+            background: "#d1fae5",
+            color: "#065f46",
+            borderRadius: 4,
+            padding: "2px 8px",
+            fontSize: 11,
+            fontWeight: 600,
+          }}
+        >
+          Live
+        </span>
+      }
+    >
+      {items.map((it, i) => {
+        const s = styleFor(it.type);
+        return (
+          <div
+            key={i}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 0",
+              borderBottom: i === items.length - 1 ? "none" : "1px solid #f3f4f6",
+            }}
+          >
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 999,
+                background: s.bg,
+                color: s.color,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {s.icon}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#111827" }}>{it.title}</div>
+              <div style={{ fontSize: 11, color: "#6b7280" }}>{it.sub}</div>
+            </div>
+            <div style={{ fontSize: 11, color: "#6b7280", whiteSpace: "nowrap" }}>{it.time}</div>
+          </div>
+        );
+      })}
+    </CardShell>
+  );
+}
+
+function Badge({ children, kind }: { children: React.ReactNode; kind: "success" | "warning" | "danger" | "info" | "neutral" }) {
+  const map = {
+    success: { bg: "#d1fae5", color: "#065f46" },
+    warning: { bg: "#fef3c7", color: "#92400e" },
+    danger: { bg: "#fee2e2", color: "#991b1b" },
+    info: { bg: "#dbeafe", color: "#1e40af" },
+    neutral: { bg: "#f3f4f6", color: "#374151" },
+  } as const;
+  const s = map[kind];
+  return (
+    <span
+      style={{
+        background: s.bg,
+        color: s.color,
+        borderRadius: 4,
+        padding: "2px 8px",
+        fontSize: 11,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function UpcomingOnboardingsCard() {
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const rows = [
+    { initials: "SB", color: "#ef4444", name: "Sara Berg", role: "Betongarbetare", start: "Måndag 19 maj", status: "Ej påbörjat", kind: "danger" as const },
+    { initials: "PL", color: "#f59e0b", name: "Petter Lindgren", role: "Truckförare", start: "Tisdag 20 maj", status: "65% klar", kind: "warning" as const },
+    { initials: "JN", color: "#3b82f6", name: "Johan Nilsson", role: "Montör", start: "Onsdag 21 maj", status: "Ej skickat", kind: "neutral" as const },
   ];
   return (
-    <div className="rounded-[10px] border border-border p-5" style={{ background: "#0e2538" }}>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold text-base flex items-center gap-2"><Bot size={18} strokeWidth={1.75} color="#7dedb8" /> AI-aktivitet</h3>
-        <span className="text-[10px] font-semibold px-2 py-1 rounded-full flex items-center gap-1.5" style={{ background: "rgba(0,224,150,0.12)", color: "#00e096" }}>
-          <span className="live-dot" />Aktiv nu
-        </span>
-      </div>
-      <div className="flex flex-col">
-        {items.map((it, i) => (
-          <div key={i} className="flex items-start gap-3 py-2.5 border-b border-border last:border-0">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${it.pulse ? "mint-pulse" : ""}`} style={{ background: `${it.color}22`, color: it.color }}>{it.icon}</div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold truncate">{it.label}</div>
-              <div className="text-[11px] text-muted-foreground truncate">{it.sub}</div>
+    <>
+      <CardShell
+        title="Kommande onboardingar"
+        right={
+          <PrimaryBtn
+            onClick={() => setInviteOpen(true)}
+            style={{ padding: "6px 12px", fontSize: 12 }}
+          >
+            + Lägg till
+          </PrimaryBtn>
+        }
+      >
+        {rows.map((r) => (
+          <div
+            key={r.initials}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              padding: "10px 0",
+              borderBottom: "1px solid #f3f4f6",
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 999,
+                background: r.color,
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: 12,
+                flexShrink: 0,
+              }}
+            >
+              {r.initials}
             </div>
-            <div className="mono text-[10px] whitespace-nowrap" style={{ color: "#3d6a7a" }}>{it.time}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{r.name}</div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>{r.role}</div>
+            </div>
+            <Badge kind="neutral">{r.start}</Badge>
+            <Badge kind={r.kind}>{r.status}</Badge>
           </div>
         ))}
-      </div>
-    </div>
+        <div style={{ paddingTop: 12 }}>
+          <Link
+            to="/arbetskraft"
+            style={{ fontSize: 13, color: "#0b1e2d", fontWeight: 600, textDecoration: "none" }}
+          >
+            Visa alla →
+          </Link>
+        </div>
+      </CardShell>
+      <InvitePersonalModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+    </>
   );
 }
 
-function ModuleCard({ icon, title, sub, tagText, tagColor, percent, barColor, shimmer }: { icon: React.ReactNode; title: string; sub: string; tagText: string; tagColor: string; percent: number; barColor: string; shimmer?: boolean }) {
-  return (
-    <div className="rounded-[10px] border border-border p-4 flex flex-col gap-3" style={{ background: "#0e2538" }}>
-      <div className="flex items-start justify-between">
-        <div className="flex h-5 w-5 items-center justify-center">{icon}</div>
-        <span className="text-[10px] font-semibold px-2 py-1 rounded-full" style={{ background: `${tagColor}1a`, color: tagColor }}>{tagText}</span>
-      </div>
-      <div>
-        <div className="font-display font-bold text-sm">{title}</div>
-        <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>
-      </div>
-      <div className="h-1.5 rounded-full overflow-hidden mt-auto" style={{ background: "#1a3d58" }}>
-        {shimmer ? (
-          <div className="h-full shimmer-bar" style={{ width: `${percent}%` }} />
-        ) : (
-          <div className="h-full rounded-full" style={{ width: `${percent}%`, background: barColor }} />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function ModulesSection() {
+function ModulesCard() {
   const navigate = useNavigate();
+  const rows = [
+    { icon: <Layers size={16} />, color: "#14b8a6", title: "Introduktion betong", meta: "27/27 klara", kind: "success" as const, badge: "Klar" },
+    { icon: <ShieldAlert size={16} />, color: "#f59e0b", title: "Säkerhet & skydd", meta: "27/27 klara", kind: "success" as const, badge: "Klar" },
+    { icon: <FileText size={16} />, color: "#3b82f6", title: "Ritningsläsning", meta: "19/27 klara", kind: "warning" as const, badge: "Pågår" },
+    { icon: <ArrowUp size={16} />, color: "#6b7280", title: "Traverskörning", meta: "AI skapar...", kind: "warning" as const, badge: "Pågår" },
+  ];
   return (
-    <section>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display font-bold text-base">Utbildningsmoduler</h3>
-        <button onClick={() => navigate({ to: "/moduler" })} className="text-xs text-muted-foreground hover:text-primary">Se alla →</button>
-      </div>
-      <div className="grid grid-cols-3 gap-4">
-        <ModuleCard icon={<Layers size={20} strokeWidth={1.75} color="#7dedb8" />} title="Introduktion betong" sub="12 min · 5 steg · Quiz" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
-        <ModuleCard icon={<ShieldAlert size={20} strokeWidth={1.75} color="#ffd166" />} title="Säkerhet & skydd" sub="8 min · 4 steg · Certifiering" tagText="27/27 klara" tagColor="#00e096" percent={100} barColor="#00e096" />
-        <ModuleCard icon={<FileText size={20} strokeWidth={1.75} color="#60b0f4" />} title="Ritningsläsning" sub="20 min · 8 steg · Quiz" tagText="19/27 klara" tagColor="#ffd166" percent={70} barColor="#ffd166" />
-        <ModuleCard icon={<ArrowUpFromLine size={20} strokeWidth={1.75} color="#7dedb8" />} title="Traverskörning" sub="AI bygger just nu..." tagText="⏳ AI skapar" tagColor="#7dedb8" percent={55} barColor="#7dedb8" shimmer />
-        <ModuleCard icon={<Hammer size={20} strokeWidth={1.75} color="#ffd166" />} title="Gjutning & armering" sub="25 min · 10 steg · Certifiering" tagText="12/27 klara" tagColor="#3d6a7a" percent={44} barColor="#3d6a7a" />
-        <div className="rounded-[10px] border border-dashed border-border p-4 flex flex-col items-center justify-center gap-2 text-center" style={{ background: "rgba(125,237,184,0.03)" }}>
-          <div className="text-2xl">⏺</div>
-          <div className="font-display font-bold text-sm">Ny modul</div>
-          <div className="text-[11px] text-muted-foreground">AI bygger automatiskt</div>
-          <button className="mt-1 text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Spela in</button>
+    <CardShell
+      title="Utbildningsmoduler"
+      right={
+        <button
+          onClick={() => navigate({ to: "/utbildning" })}
+          style={{ background: "transparent", border: "none", fontSize: 13, color: "#0b1e2d", fontWeight: 600, cursor: "pointer" }}
+        >
+          Spela in ny →
+        </button>
+      }
+    >
+      {rows.map((r, i) => (
+        <div
+          key={i}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 0",
+            borderBottom: "1px solid #f3f4f6",
+          }}
+        >
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              background: `${r.color}1a`,
+              color: r.color,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            {r.icon}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{r.title}</div>
+            <div style={{ fontSize: 11, color: "#6b7280" }}>{r.meta}</div>
+          </div>
+          <Badge kind={r.kind}>
+            <span className={r.title === "Traverskörning" ? "mint-pulse" : undefined}>{r.badge}</span>
+          </Badge>
         </div>
+      ))}
+      <div style={{ paddingTop: 12 }}>
+        <Link
+          to="/utbildning"
+          style={{ fontSize: 13, color: "#0b1e2d", fontWeight: 600, textDecoration: "none" }}
+        >
+          Visa alla moduler →
+        </Link>
       </div>
-    </section>
-  );
-}
-
-function ChecklistSection({ dept }: { dept: Department }) {
-  const weeks = CHECKLISTS[dept.value];
-  const flat = weeks.flatMap((w, wi) => w.items.map((it, ii) => ({ w, wi, it, ii })));
-  const total = flat.length;
-
-  const readChecked = useCallback(() => {
-    const set: Record<number, boolean> = {};
-    flat.forEach((_, idx) => {
-      set[idx] = localStorage.getItem(checklistKey(dept.value, idx)) === "1";
-    });
-    return set;
-  }, [dept.value, flat]);
-
-  const [checked, setChecked] = useState<Record<number, boolean>>(() => {
-    if (typeof window === "undefined") return {};
-    return readChecked();
-  });
-
-  useEffect(() => {
-    setChecked(readChecked());
-  }, [readChecked]);
-
-  const toggle = (idx: number) => {
-    setChecked((prev) => {
-      const next = { ...prev, [idx]: !prev[idx] };
-      if (next[idx]) localStorage.setItem(checklistKey(dept.value, idx), "1");
-      else localStorage.removeItem(checklistKey(dept.value, idx));
-      return next;
-    });
-  };
-
-  const doneCount = Object.values(checked).filter(Boolean).length;
-  const progress = total > 0 ? (doneCount / total) * 100 : 0;
-
-  // current week = first week with unchecked items, else last
-  let currentWeekIdx = weeks.length - 1;
-  let runningIdx = 0;
-  for (let wi = 0; wi < weeks.length; wi++) {
-    const items = weeks[wi].items;
-    const anyOpen = items.some((_, ii) => !checked[runningIdx + ii]);
-    if (anyOpen) { currentWeekIdx = wi; break; }
-    runningIdx += items.length;
-  }
-  const weekStart = weeks.slice(0, currentWeekIdx).reduce((n, w) => n + w.items.length, 0);
-  const weekItems = weeks[currentWeekIdx].items;
-  const weekDone = weekItems.filter((_, ii) => checked[weekStart + ii]).length;
-
-  return (
-    <section>
-      <h3 className="font-display font-bold text-base mb-3" style={{ fontFamily: "Syne, sans-serif" }}>
-        Upplärningschecklista — {dept.name}
-      </h3>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-muted-foreground">
-          Vecka {currentWeekIdx + 1} — {weekDone} av {total} uppgifter klara
-        </span>
-        <div style={{ width: 200, height: 6, background: "#1a3d58", borderRadius: 3, overflow: "hidden" }}>
-          <div style={{ width: `${progress}%`, height: "100%", background: "#7dedb8", transition: "width .2s" }} />
-        </div>
-      </div>
-      <div className="rounded-[10px] border border-border overflow-hidden" style={{ background: "#0e2538", borderColor: "#1a3d58" }}>
-        <div className="px-4 py-2.5 mono text-[10px] font-bold uppercase tracking-wider" style={{ background: "rgba(125,237,184,0.06)", color: "#7dedb8" }}>
-          {dept.headerTitle}
-        </div>
-        {weeks.map((w, wi) => {
-          const startIdx = weeks.slice(0, wi).reduce((n, ww) => n + ww.items.length, 0);
-          return (
-            <div key={wi}>
-              <div className="px-4 py-2 text-[11px] font-semibold border-t border-border" style={{ color: "#8ec8e0", background: "rgba(125,237,184,0.03)" }}>
-                {w.week}
-              </div>
-              {w.items.map((it, ii) => {
-                const idx = startIdx + ii;
-                const isOn = !!checked[idx];
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => toggle(idx)}
-                    className="w-full flex items-start gap-3 px-4 py-3 border-t border-border text-left transition-colors"
-                    style={{
-                      borderColor: "#1a3d58",
-                      background: isOn ? "rgba(125,237,184,0.04)" : "transparent",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <span
-                      className="shrink-0 grid place-items-center"
-                      style={{
-                        width: 18,
-                        height: 18,
-                        marginTop: 1,
-                        borderRadius: 4,
-                        border: `1px solid ${isOn ? "#7dedb8" : "#1a3d58"}`,
-                        background: isOn ? "#7dedb8" : "#060f18",
-                      }}
-                    >
-                      {isOn && <Check size={12} color="#060f18" strokeWidth={3} />}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="font-bold text-[13px]"
-                        style={{ color: "#fff", textDecoration: isOn ? "line-through" : "none", opacity: isOn ? 0.7 : 1 }}
-                      >
-                        {it.title}
-                      </div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{it.desc}</div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    </section>
+    </CardShell>
   );
 }

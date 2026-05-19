@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UtgaendeCertifikatRouteImport } from './routes/utgaende-certifikat'
+import { Route as UtbildningRouteImport } from './routes/utbildning'
 import { Route as SpelaInRouteImport } from './routes/spela-in'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ModulerRouteImport } from './routes/moduler'
@@ -20,14 +21,21 @@ import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
+import { Route as BemanningspartnersRouteImport } from './routes/bemanningspartners'
 import { Route as BemanningsbolagRouteImport } from './routes/bemanningsbolag'
 import { Route as AvdelningRouteImport } from './routes/avdelning'
+import { Route as ArbetskraftRouteImport } from './routes/arbetskraft'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ModulIdRouteImport } from './routes/modul.$id'
 
 const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
   id: '/utgaende-certifikat',
   path: '/utgaende-certifikat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UtbildningRoute = UtbildningRouteImport.update({
+  id: '/utbildning',
+  path: '/utbildning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SpelaInRoute = SpelaInRouteImport.update({
@@ -80,6 +88,11 @@ const CertifikatRoute = CertifikatRouteImport.update({
   path: '/certifikat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BemanningspartnersRoute = BemanningspartnersRouteImport.update({
+  id: '/bemanningspartners',
+  path: '/bemanningspartners',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BemanningsbolagRoute = BemanningsbolagRouteImport.update({
   id: '/bemanningsbolag',
   path: '/bemanningsbolag',
@@ -88,6 +101,11 @@ const BemanningsbolagRoute = BemanningsbolagRouteImport.update({
 const AvdelningRoute = AvdelningRouteImport.update({
   id: '/avdelning',
   path: '/avdelning',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArbetskraftRoute = ArbetskraftRouteImport.update({
+  id: '/arbetskraft',
+  path: '/arbetskraft',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -103,8 +121,10 @@ const ModulIdRoute = ModulIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -115,13 +135,16 @@ export interface FileRoutesByFullPath {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -132,14 +155,17 @@ export interface FileRoutesByTo {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -150,6 +176,7 @@ export interface FileRoutesById {
   '/moduler': typeof ModulerRoute
   '/personal': typeof PersonalRoute
   '/spela-in': typeof SpelaInRoute
+  '/utbildning': typeof UtbildningRoute
   '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
   '/modul/$id': typeof ModulIdRoute
 }
@@ -157,8 +184,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -169,13 +198,16 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -186,13 +218,16 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   id:
     | '__root__'
     | '/'
+    | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -203,14 +238,17 @@ export interface FileRouteTypes {
     | '/moduler'
     | '/personal'
     | '/spela-in'
+    | '/utbildning'
     | '/utgaende-certifikat'
     | '/modul/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ArbetskraftRoute: typeof ArbetskraftRoute
   AvdelningRoute: typeof AvdelningRoute
   BemanningsbolagRoute: typeof BemanningsbolagRoute
+  BemanningspartnersRoute: typeof BemanningspartnersRoute
   CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
   InhyrdPersonalRoute: typeof InhyrdPersonalRoute
@@ -221,6 +259,7 @@ export interface RootRouteChildren {
   ModulerRoute: typeof ModulerRoute
   PersonalRoute: typeof PersonalRoute
   SpelaInRoute: typeof SpelaInRoute
+  UtbildningRoute: typeof UtbildningRoute
   UtgaendeCertifikatRoute: typeof UtgaendeCertifikatRoute
   ModulIdRoute: typeof ModulIdRoute
 }
@@ -232,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/utgaende-certifikat'
       fullPath: '/utgaende-certifikat'
       preLoaderRoute: typeof UtgaendeCertifikatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/utbildning': {
+      id: '/utbildning'
+      path: '/utbildning'
+      fullPath: '/utbildning'
+      preLoaderRoute: typeof UtbildningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/spela-in': {
@@ -304,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CertifikatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bemanningspartners': {
+      id: '/bemanningspartners'
+      path: '/bemanningspartners'
+      fullPath: '/bemanningspartners'
+      preLoaderRoute: typeof BemanningspartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bemanningsbolag': {
       id: '/bemanningsbolag'
       path: '/bemanningsbolag'
@@ -316,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/avdelning'
       fullPath: '/avdelning'
       preLoaderRoute: typeof AvdelningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/arbetskraft': {
+      id: '/arbetskraft'
+      path: '/arbetskraft'
+      fullPath: '/arbetskraft'
+      preLoaderRoute: typeof ArbetskraftRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -337,8 +397,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ArbetskraftRoute: ArbetskraftRoute,
   AvdelningRoute: AvdelningRoute,
   BemanningsbolagRoute: BemanningsbolagRoute,
+  BemanningspartnersRoute: BemanningspartnersRoute,
   CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
   InhyrdPersonalRoute: InhyrdPersonalRoute,
@@ -349,6 +411,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModulerRoute: ModulerRoute,
   PersonalRoute: PersonalRoute,
   SpelaInRoute: SpelaInRoute,
+  UtbildningRoute: UtbildningRoute,
   UtgaendeCertifikatRoute: UtgaendeCertifikatRoute,
   ModulIdRoute: ModulIdRoute,
 }
