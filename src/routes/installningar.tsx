@@ -1,34 +1,131 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { InviteUserModal } from "@/components/InviteUserModal";
-import { toast } from "sonner";
+import { LightAppShell } from "@/components/LightAppShell";
+import { PrimaryBtn, SecondaryBtn } from "@/components/AppTopBar";
 import {
-  Settings,
   Building2,
   Palette,
   Bell,
   Users,
   Plug,
   CreditCard,
-  CheckCircle,
+  Check,
   MoreHorizontal,
   AlertTriangle,
+  X,
 } from "lucide-react";
+import { toast } from "sonner";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { DEPARTMENTS } from "@/lib/departments";
 
 export const Route = createFileRoute("/installningar")({
   component: InstallningarPage,
 });
 
-const BRAND_COLORS = ["#7dedb8", "#60b0f4", "#a78bfa", "#ff6b35", "#ffd166", "#00e096"];
+/* ============ STYLES ============ */
+const CARD: React.CSSProperties = {
+  background: "#fff",
+  borderRadius: 10,
+  marginBottom: 16,
+  boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+  overflow: "visible",
+};
+const CARD_HEAD: React.CSSProperties = {
+  padding: "16px 20px",
+  borderBottom: "1px solid #f3f4f6",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+};
+const HEAD_TITLE: React.CSSProperties = {
+  fontFamily: "Inter, sans-serif",
+  fontWeight: 700,
+  fontSize: 14,
+  color: "#111827",
+};
+const LABEL: React.CSSProperties = {
+  fontFamily: "Inter, sans-serif",
+  fontSize: 11,
+  textTransform: "uppercase",
+  letterSpacing: "0.08em",
+  color: "#6b7280",
+  marginBottom: 4,
+  display: "block",
+  fontWeight: 600,
+};
+const INPUT: React.CSSProperties = {
+  border: "1px solid #e5e7eb",
+  borderRadius: 6,
+  padding: "9px 12px",
+  fontSize: 13,
+  color: "#111827",
+  width: "100%",
+  outline: "none",
+  background: "#fff",
+};
+const MUTED: React.CSSProperties = { fontSize: 12, color: "#6b7280" };
+
+function GhostSmall({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      style={{
+        background: "transparent",
+        border: "1px solid #e5e7eb",
+        color: "#374151",
+        borderRadius: 6,
+        padding: "6px 12px",
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: "pointer",
+        ...(props.style ?? {}),
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function PrimarySmall({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      style={{
+        background: "#0b1e2d",
+        color: "#fff",
+        border: "none",
+        borderRadius: 6,
+        padding: "6px 14px",
+        fontSize: 12,
+        fontWeight: 600,
+        cursor: "pointer",
+        ...(props.style ?? {}),
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Field({ label, defaultValue, type = "text", colSpan }: { label: string; defaultValue?: string; type?: string; colSpan?: number }) {
+  return (
+    <div style={colSpan ? { gridColumn: `span ${colSpan}` } : undefined}>
+      <label style={LABEL}>{label}</label>
+      <input
+        type={type}
+        defaultValue={defaultValue}
+        style={INPUT}
+        onFocus={(e) => (e.currentTarget.style.borderColor = "#0b1e2d")}
+        onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")}
+      />
+    </div>
+  );
+}
 
 function InstallningarPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
-  const [primary, setPrimary] = useState("#7dedb8");
-  const [warnDays, setWarnDays] = useState<7 | 30 | 90>(30);
-  const [toggles, setToggles] = useState({ sms: true, email: true, cert: true });
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -41,506 +138,558 @@ function InstallningarPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  if (!ready) return <div className="min-h-screen bg-background" />;
+  if (!ready) return <div style={{ minHeight: "100vh", background: "#f0f2f5" }} />;
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <AppSidebar />
-      <div className="flex-1 ml-[260px] flex flex-col">
-        <main className="px-8 py-7 flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <Settings size={24} strokeWidth={1.75} color="#7dedb8" />
-              <h1 className="font-display font-bold text-[24px] text-white">Inställningar</h1>
-            </div>
-            <p className="text-[13px]" style={{ color: "#6a9ab0" }}>
-              Hantera företagsprofil, användare och systemkonfiguration
-            </p>
-          </div>
-
-          <div className="grid grid-cols-[3fr_2fr] gap-6">
-            {/* LEFT */}
-            <div className="flex flex-col">
-              <CompanyCard />
-              <BrandCard primary={primary} setPrimary={setPrimary} />
-              <NotificationsCard
-                toggles={toggles}
-                setToggles={setToggles}
-                warnDays={warnDays}
-                setWarnDays={setWarnDays}
-              />
-              <UsersCard />
-            </div>
-
-            {/* RIGHT */}
-            <div className="flex flex-col">
-              <IntegrationsCard />
-              <SubscriptionCard />
-              <DangerCard />
-            </div>
-          </div>
-        </main>
+    <LightAppShell
+      title="Inställningar"
+      action={<PrimaryBtn onClick={() => toast.success("Alla ändringar sparade!")}>Spara alla ändringar</PrimaryBtn>}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, alignItems: "start" }}>
+        <div>
+          <CompanyCard />
+          <BrandCard />
+          <NotificationsCard />
+          <UsersCard />
+        </div>
+        <div>
+          <IntegrationsCard />
+          <SubscriptionCard />
+          <DangerCard />
+        </div>
       </div>
-      <style>{`
-        ${sidebarKeyframes}
-        .ins-input{background:#060f18;border:1px solid #1a3d58;border-radius:6px;padding:10px 14px;color:#fff;font-size:13px;width:100%;outline:none;transition:border-color .15s}
-        .ins-input:focus{border-color:#7dedb8}
-        .ins-label{font-family:'Space Mono',ui-monospace,monospace;font-size:9px;color:#6a9ab0;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;display:block}
-        .ins-card{background:#0e2538;border:1px solid #1a3d58;border-radius:10px;overflow:hidden;margin-bottom:16px}
-        .ins-head{padding:16px 20px;border-bottom:1px solid #1a3d58;display:flex;align-items:center;justify-content:space-between}
-        .ins-head-title{display:flex;align-items:center;gap:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff}
-        .ins-mint-btn{background:#7dedb8;color:#060f18;font-weight:700;font-size:12px;padding:6px 14px;border-radius:6px;border:0;cursor:pointer}
-        .ins-ghost-btn{background:transparent;color:#fff;border:1px solid #1a3d58;border-radius:6px;padding:8px 14px;font-size:12px;cursor:pointer;transition:border-color .15s}
-        .ins-ghost-btn:hover{border-color:#7dedb8}
-        .pill{padding:6px 12px;border-radius:999px;font-size:11px;border:1px solid #1a3d58;background:transparent;color:#6a9ab0;cursor:pointer;font-family:'Space Mono',ui-monospace,monospace}
-        .pill.active{background:rgba(125,237,184,0.1);color:#7dedb8;border-color:rgba(125,237,184,0.3)}
-        .toggle{width:36px;height:20px;border-radius:10px;position:relative;cursor:pointer;transition:background .15s;flex-shrink:0}
-        .toggle.on{background:#7dedb8}
-        .toggle.off{background:#1a3d58}
-        .toggle-knob{position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#060f18;transition:left .15s}
-        .toggle.on .toggle-knob{left:18px}
-        .toggle.off .toggle-knob{left:2px}
-      `}</style>
-    </div>
+    </LightAppShell>
   );
 }
 
-/* ============== CARDS ============== */
-
+/* ============ CARD 1 — COMPANY ============ */
 function CompanyCard() {
   return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <Building2 size={16} strokeWidth={1.75} color="#7dedb8" /> Företagsprofil
+    <section style={CARD}>
+      <div style={{ ...CARD_HEAD, justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Building2 size={16} color="#6b7280" />
+          <span style={HEAD_TITLE}>Företagsprofil</span>
         </div>
-        <button onClick={() => toast.success("Inställningar sparade!")} className="ins-mint-btn">Spara</button>
+        <GhostSmall onClick={() => toast.success("Företagsprofil sparad!")}>Spara</GhostSmall>
       </div>
-      <div className="p-6 grid grid-cols-2 gap-4">
+      <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Field label="Företagsnamn" defaultValue="Byggelement AB" />
         <Field label="Organisationsnummer" defaultValue="556034-2148" />
         <Field label="E-post" defaultValue="info@byggelement.se" />
         <Field label="Telefon" defaultValue="010-000 00 00" />
-        <div className="col-span-2">
-          <Field label="Adress" defaultValue="Ucklum, Sverige" />
+        <div style={{ gridColumn: "span 2" }}>
+          <label style={LABEL}>Adress</label>
+          <input defaultValue="Ucklum, Sverige" style={INPUT} onFocus={(e) => (e.currentTarget.style.borderColor = "#0b1e2d")} onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")} />
         </div>
-        <div className="col-span-2">
-          <span className="ins-label">Bransch</span>
-          <select className="ins-input" defaultValue="Betong & Prefab">
+        <div style={{ gridColumn: "span 2" }}>
+          <label style={LABEL}>Bransch</label>
+          <select defaultValue="Betong & Prefab" style={INPUT}>
             <option>Betong & Prefab</option>
+            <option>Verkstad & Industri</option>
+            <option>Lager & Logistik</option>
             <option>Bygg & Anläggning</option>
-            <option>Industri</option>
           </select>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function Field({ label, defaultValue }: { label: string; defaultValue: string }) {
-  return (
-    <div>
-      <span className="ins-label">{label}</span>
-      <input className="ins-input" defaultValue={defaultValue} />
-    </div>
-  );
-}
+/* ============ CARD 2 — BRAND ============ */
+type Hall = { id: string; dot: string; name: string };
+const INITIAL_HALLS: Hall[] = [
+  { id: "1", dot: "#10b981", name: "Snickeriavdelning / Formbyggnad" },
+  { id: "2", dot: "#f59e0b", name: "Gul hallen" },
+  { id: "3", dot: "#ec4899", name: "Rosa hallen" },
+  { id: "4", dot: "#22c55e", name: "Gröna hallen" },
+  { id: "5", dot: "#3b82f6", name: "Armeringsavdelning" },
+  { id: "6", dot: "#ef4444", name: "Lap och Lag" },
+];
 
-function BrandCard({ primary, setPrimary }: { primary: string; setPrimary: (c: string) => void }) {
+function BrandCard() {
+  const [halls, setHalls] = useState<Hall[]>(INITIAL_HALLS);
+  const updateHall = (id: string, name: string) => setHalls((p) => p.map((h) => (h.id === id ? { ...h, name } : h)));
+  const removeHall = (id: string) => setHalls((p) => p.filter((h) => h.id !== id));
+  const addHall = () => setHalls((p) => [...p, { id: String(Date.now()), dot: "#9ca3af", name: "" }]);
   return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <Palette size={16} strokeWidth={1.75} color="#7dedb8" /> Varumärke & Design
+    <section style={CARD}>
+      <div style={{ ...CARD_HEAD, justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Palette size={16} color="#6b7280" />
+          <span style={HEAD_TITLE}>Varumärke & Anpassning</span>
         </div>
+        <GhostSmall onClick={() => toast.success("Varumärke sparat!")}>Spara</GhostSmall>
       </div>
-      <div className="p-6">
-        <div className="flex items-center gap-4 mb-5">
-          <div
-            className="w-16 h-16 rounded-lg flex items-center justify-center font-display font-bold text-2xl"
-            style={{ background: "#060f18", border: "1px solid #1a3d58", color: "#7dedb8" }}
-          >
+      <div style={{ padding: 20 }}>
+        {/* Logo row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
+          <div style={{ width: 64, height: 64, background: "#0b1e2d", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 24, color: "#7dedb8" }}>
             BE
           </div>
-          <div className="flex flex-col gap-1">
-            <button className="ins-ghost-btn self-start">Byt logotyp</button>
-            <span className="text-[11px]" style={{ color: "#6a9ab0" }}>
-              Ladda upp PNG eller SVG · max 2MB
-            </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <GhostSmall onClick={() => toast.success("Ladda upp logotyp")} style={{ alignSelf: "flex-start" }}>Byt logotyp</GhostSmall>
+            <span style={{ fontSize: 11, color: "#9ca3af" }}>Ladda upp PNG eller SVG · max 2MB</span>
           </div>
         </div>
 
-        <span className="ins-label">Primärfärg</span>
-        <div className="flex gap-2 mb-5">
-          {BRAND_COLORS.map((c) => (
-            <button
-              key={c}
-              onClick={() => setPrimary(c)}
-              className="w-7 h-7 rounded-full cursor-pointer transition"
-              style={{
-                background: c,
-                boxShadow: primary === c ? "0 0 0 2px #fff" : "none",
-              }}
-              aria-label={c}
-            />
-          ))}
-        </div>
-
-        <span className="ins-label">Förhandsvisning</span>
-        <div
-          className="rounded-md flex flex-col gap-1.5"
-          style={{ height: 80, background: "#0b1e2d", border: "1px solid #1a3d58", padding: 10 }}
-        >
-          {["Dashboard", "Personal", "Moduler"].map((n) => (
-            <div key={n} className="flex items-center gap-2 text-[11px] text-white/80">
-              <span className="w-1 h-3 rounded-sm" style={{ background: primary }} />
-              <span style={{ color: primary }}>●</span>
-              <span>{n}</span>
+        {/* Halls */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 12 }}>Hallnamn & Avdelningar</div>
+          {halls.map((h) => (
+            <div key={h.id} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: 999, background: h.dot, flexShrink: 0 }} />
+              <input
+                value={h.name}
+                onChange={(e) => updateHall(h.id, e.target.value)}
+                style={{ ...INPUT, flex: 1 }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "#0b1e2d")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "#e5e7eb")}
+              />
+              <button
+                onClick={() => removeHall(h.id)}
+                aria-label="Ta bort"
+                style={{ background: "transparent", border: 0, cursor: "pointer", color: "#9ca3af", padding: 4 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#dc2626")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#9ca3af")}
+              >
+                <X size={16} />
+              </button>
             </div>
           ))}
+          <button
+            onClick={addHall}
+            style={{ background: "transparent", border: 0, color: "#0b1e2d", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "6px 0" }}
+          >
+            + Lägg till avdelning
+          </button>
+        </div>
+
+        {/* System labels */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 8 }}>Systemetiketter</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <Field label="Platsnamn" defaultValue="Ucklum" />
+          <Field label="Kundnamn (visas i systemet)" defaultValue="Byggelement AB" />
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function NotificationsCard({
-  toggles,
-  setToggles,
-  warnDays,
-  setWarnDays,
-}: {
-  toggles: { sms: boolean; email: boolean; cert: boolean };
-  setToggles: (t: { sms: boolean; email: boolean; cert: boolean }) => void;
-  warnDays: 7 | 30 | 90;
-  setWarnDays: (d: 7 | 30 | 90) => void;
-}) {
-  const rows: { key: keyof typeof toggles; title: string; sub: string }[] = [
-    { key: "sms", title: "SMS-påminnelser", sub: "Skicka SMS till personal vid nya moduler" },
-    { key: "email", title: "E-postrapporter", sub: "Veckorapport till produktionschef varje fredag" },
-    { key: "cert", title: "Certifikatvarningar", sub: "Notifiera när certifikat närmar sig utgång" },
+/* ============ CARD 3 — NOTIFICATIONS ============ */
+function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
+  return (
+    <button
+      onClick={onChange}
+      aria-pressed={on}
+      style={{
+        width: 44, height: 24, borderRadius: 12,
+        background: on ? "#0b1e2d" : "#e5e7eb",
+        border: 0, padding: 0, position: "relative", cursor: "pointer", transition: "background .15s",
+        flexShrink: 0,
+      }}
+    >
+      <span style={{
+        position: "absolute", top: 2, left: on ? 22 : 2,
+        width: 20, height: 20, borderRadius: 999, background: "#fff",
+        transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+      }} />
+    </button>
+  );
+}
+
+function NotificationsCard() {
+  const [t, setT] = useState({ sms: true, email: true, cert: true });
+  const [warn, setWarn] = useState<7 | 30 | 90>(30);
+  const rows = [
+    { key: "sms" as const, title: "SMS-påminnelser", sub: "Skicka SMS till personal vid nya moduler" },
+    { key: "email" as const, title: "E-postrapporter", sub: "Veckorapport till produktionschef varje fredag" },
+    { key: "cert" as const, title: "Certifikatvarningar", sub: "Notifiera när certifikat närmar sig utgång" },
   ];
   return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <Bell size={16} strokeWidth={1.75} color="#7dedb8" /> Notifikationer
-        </div>
+    <section style={CARD}>
+      <div style={CARD_HEAD}>
+        <Bell size={16} color="#6b7280" />
+        <span style={HEAD_TITLE}>Notifikationer</span>
       </div>
       <div>
         {rows.map((r) => (
-          <div
-            key={r.key}
-            className="flex items-center justify-between"
-            style={{ padding: "14px 20px", borderBottom: "1px solid #1a3d58" }}
-          >
+          <div key={r.key} style={{ padding: "14px 20px", borderBottom: "1px solid #f9fafb", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
-              <div className="font-bold text-[13px] text-white">{r.title}</div>
-              <div className="text-[11px]" style={{ color: "#6a9ab0" }}>{r.sub}</div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: "#111827" }}>{r.title}</div>
+              <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{r.sub}</div>
             </div>
-            <div
-              className={`toggle ${toggles[r.key] ? "on" : "off"}`}
-              onClick={() => setToggles({ ...toggles, [r.key]: !toggles[r.key] })}
-            >
-              <span className="toggle-knob" />
-            </div>
+            <Toggle on={t[r.key]} onChange={() => setT({ ...t, [r.key]: !t[r.key] })} />
           </div>
         ))}
-        <div
-          className="flex items-center justify-between"
-          style={{ padding: "14px 20px" }}
-        >
+        <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <div className="font-bold text-[13px] text-white">Varningsdagar</div>
-            <div className="text-[11px]" style={{ color: "#6a9ab0" }}>
-              Hur många dagar innan certifikat varnas
-            </div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: "#111827" }}>Varningsdagar</div>
+            <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Hur många dagar innan certifikat varnas</div>
           </div>
-          <div className="flex gap-2">
-            {([7, 30, 90] as const).map((d) => (
-              <button
-                key={d}
-                className={`pill ${warnDays === d ? "active" : ""}`}
-                onClick={() => setWarnDays(d)}
-              >
-                {d} dagar
-              </button>
-            ))}
+          <div style={{ display: "flex", gap: 6 }}>
+            {([7, 30, 90] as const).map((d) => {
+              const active = warn === d;
+              return (
+                <button
+                  key={d}
+                  onClick={() => setWarn(d)}
+                  style={{
+                    padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600,
+                    border: active ? "1px solid #0b1e2d" : "1px solid #e5e7eb",
+                    background: active ? "#0b1e2d" : "#fff",
+                    color: active ? "#fff" : "#374151",
+                    cursor: "pointer",
+                  }}
+                >
+                  {d} dagar
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
+/* ============ CARD 4 — USERS ============ */
 type UserRow = {
+  id: string;
   initials: string;
+  avatarBg: string;
+  avatarFg: string;
   name: string;
   email: string;
   badge: string;
-  bg: string;
-  fg: string;
-  avatarBg: string;
-  avatarFg: string;
-  border: string;
+  badgeBg: string;
+  badgeFg: string;
 };
 
+const INITIAL_USERS: UserRow[] = [
+  { id: "u1", initials: "LS", avatarBg: "#d1fae5", avatarFg: "#065f46", name: "Lars Svensson", email: "lars@byggelement.se", badge: "Admin", badgeBg: "#dbeafe", badgeFg: "#1e40af" },
+  { id: "u2", initials: "ES", avatarBg: "#d1fae5", avatarFg: "#065f46", name: "Erik Svensson", email: "erik@byggelement.se", badge: "Teamledare", badgeBg: "#fef3c7", badgeFg: "#92400e" },
+  { id: "u3", initials: "AB", avatarBg: "#dbeafe", avatarFg: "#1e40af", name: "Anna Berg", email: "anna@byggelement.se", badge: "Chef", badgeBg: "#ede9fe", badgeFg: "#6d28d9" },
+  { id: "u4", initials: "P2", avatarBg: "#0b1e2d", avatarFg: "#7dedb8", name: "Partner2Work AB", email: "Bemanningspartner", badge: "Partner", badgeBg: "#f3f4f6", badgeFg: "#374151" },
+];
+
+const DEPT_OPTIONS = ["Alla avdelningar", ...DEPARTMENTS.map((d) => d.name)];
+const ROLE_OPTIONS = ["Admin", "Chef", "Teamledare", "Operatör", "Partner"];
+
 function UsersCard() {
+  const [users, setUsers] = useState<UserRow[]>(INITIAL_USERS);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [editRole, setEditRole] = useState<UserRow | null>(null);
+  const [editDept, setEditDept] = useState<UserRow | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
 
   useEffect(() => {
     if (!openMenu) return;
-    const onClick = () => setOpenMenu(null);
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
+    const close = () => setOpenMenu(null);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
   }, [openMenu]);
 
-  const users: UserRow[] = [
-    { initials: "LS", name: "Lars Svensson", email: "lars@byggelement.se", badge: "Admin", bg: "rgba(125,237,184,0.1)", fg: "#7dedb8", border: "rgba(125,237,184,0.2)", avatarBg: "rgba(125,237,184,0.12)", avatarFg: "#7dedb8" },
-    { initials: "ES", name: "Erik Svensson", email: "erik@byggelement.se", badge: "Teamledare", bg: "rgba(0,224,150,0.1)", fg: "#00e096", border: "rgba(0,224,150,0.2)", avatarBg: "rgba(0,224,150,0.12)", avatarFg: "#00e096" },
-    { initials: "AB", name: "Anna Berg", email: "anna@byggelement.se", badge: "Chef", bg: "rgba(96,176,244,0.1)", fg: "#60b0f4", border: "rgba(96,176,244,0.2)", avatarBg: "rgba(96,176,244,0.12)", avatarFg: "#60b0f4" },
-    { initials: "P2", name: "Partner2Work AB", email: "Bemanningspartner", badge: "Partner", bg: "rgba(125,237,184,0.08)", fg: "#7dedb8", border: "rgba(125,237,184,0.2)", avatarBg: "#7dedb8", avatarFg: "#060f18" },
-  ];
   return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <Users size={16} strokeWidth={1.75} color="#7dedb8" /> Användare & Åtkomst
-        </div>
-        <button onClick={() => setInviteOpen(true)} className="ins-mint-btn">+ Bjud in</button>
-      </div>
-      <div>
-        {users.map((u, i) => (
-          <div key={u.initials} className="flex items-center gap-3" style={{ padding: "12px 20px", borderBottom: i === users.length - 1 ? "none" : "1px solid #1a3d58" }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: u.avatarBg, color: u.avatarFg }}>{u.initials}</div>
-            <div className="min-w-0">
-              <div className="font-bold text-[13px] text-white">{u.name}</div>
-              <div className="text-[11px]" style={{ color: "#6a9ab0" }}>{u.email}</div>
-            </div>
-            <span className="ml-auto" style={{ background: u.bg, color: u.fg, border: `1px solid ${u.border}`, padding: "4px 10px", borderRadius: 4, fontSize: 10, fontFamily: "'Space Mono', ui-monospace, monospace", letterSpacing: ".05em" }}>{u.badge}</span>
-            <div className="relative">
-              <button onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === u.initials ? null : u.initials); }} aria-label="Mer" style={{ background: "transparent", border: 0, padding: 2, cursor: "pointer" }}>
-                <MoreHorizontal size={16} strokeWidth={1.75} color="#6a9ab0" />
-              </button>
-              {openMenu === u.initials && (
-                <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 6, padding: 4, zIndex: 20, minWidth: 170, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
-                  <button onClick={() => { toast.success(`Redigera roll för ${u.name}`); setOpenMenu(null); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, color: "#edfaf4", background: "transparent", border: 0, borderRadius: 4, cursor: "pointer" }}>Redigera roll</button>
-                  <button onClick={() => { toast.success(`${u.name} borttagen`); setOpenMenu(null); }} style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", fontSize: 12, color: "#ff4d6a", background: "transparent", border: 0, borderRadius: 4, cursor: "pointer" }}>Ta bort användare</button>
-                </div>
-              )}
-            </div>
+    <>
+      <section style={CARD}>
+        <div style={{ ...CARD_HEAD, justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Users size={16} color="#6b7280" />
+            <span style={HEAD_TITLE}>Användare & Åtkomst</span>
           </div>
-        ))}
-      </div>
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
-    </div>
-  );
-}
-
-function IntegrationsCard() {
-  const rows = [
-    {
-      icon: "AI",
-      iconBg: "rgba(0,224,150,0.1)",
-      iconColor: "#00e096",
-      iconSize: 14,
-      name: "OpenAI",
-      sub: "AI-transkribering och quizgenerering",
-      connected: true,
-    },
-    {
-      icon: "SMS",
-      iconBg: "rgba(96,176,244,0.1)",
-      iconColor: "#60b0f4",
-      iconSize: 12,
-      name: "Twilio",
-      sub: "SMS-utskick till personal",
-      connected: true,
-    },
-  ];
-  return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <Plug size={16} strokeWidth={1.75} color="#7dedb8" /> Integrationer
+          <PrimarySmall onClick={() => setInviteOpen(true)}>+ Bjud in</PrimarySmall>
         </div>
-      </div>
-      <div>
-        {rows.map((r, i) => (
-          <div
-            key={r.name}
-            className="flex items-center gap-3.5"
-            style={{
-              padding: "16px 20px",
-              borderBottom: i === rows.length - 1 ? "none" : "1px solid #1a3d58",
-            }}
-          >
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center font-display font-bold"
-              style={{ background: r.iconBg, color: r.iconColor, fontSize: r.iconSize }}
-            >
-              {r.icon}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-[14px] text-white">{r.name}</div>
-              <div className="text-[11px]" style={{ color: "#6a9ab0" }}>{r.sub}</div>
-            </div>
-            {r.connected ? (
-              <div className="flex items-center gap-2">
-                <span
-                  style={{
-                    background: "rgba(0,224,150,0.1)",
-                    color: "#00e096",
-                    border: "1px solid rgba(0,224,150,0.2)",
-                    padding: "4px 10px",
-                    borderRadius: 4,
-                    fontSize: 10,
-                    fontFamily: "'Space Mono', ui-monospace, monospace",
-                  }}
-                >
-                  Ansluten
-                </span>
-                <CheckCircle size={14} strokeWidth={1.75} color="#00e096" />
+        <div>
+          {users.map((u, i) => (
+            <div key={u.id} style={{ padding: "14px 20px", borderBottom: i === users.length - 1 ? "none" : "1px solid #f9fafb", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 999, background: u.avatarBg, color: u.avatarFg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, flexShrink: 0 }}>
+                {u.initials}
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <span
-                  style={{
-                    background: "rgba(255,77,106,0.1)",
-                    color: "#ff4d6a",
-                    border: "1px solid rgba(255,77,106,0.2)",
-                    padding: "4px 10px",
-                    borderRadius: 4,
-                    fontSize: 10,
-                    fontFamily: "'Space Mono', ui-monospace, monospace",
-                  }}
-                >
-                  Ej ansluten
-                </span>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: "#111827" }}>{u.name}</div>
+                <div style={{ fontSize: 11, color: "#6b7280" }}>{u.email}</div>
+              </div>
+              <span style={{ background: u.badgeBg, color: u.badgeFg, borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>{u.badge}</span>
+              <div style={{ position: "relative" }}>
                 <button
-                  style={{ color: "#7dedb8", fontSize: 12, background: "transparent", border: 0, cursor: "pointer" }}
+                  onClick={(e) => { e.stopPropagation(); setOpenMenu(openMenu === u.id ? null : u.id); }}
+                  aria-label="Mer"
+                  style={{ background: "transparent", border: 0, cursor: "pointer", padding: 4, color: "#6b7280" }}
                 >
-                  Anslut →
+                  <MoreHorizontal size={16} />
                 </button>
+                {openMenu === u.id && (
+                  <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: 4, minWidth: 180, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 30 }}>
+                    <MenuItem onClick={() => { setEditRole(u); setOpenMenu(null); }}>Redigera roll</MenuItem>
+                    <MenuItem onClick={() => { setEditDept(u); setOpenMenu(null); }}>Byt avdelning</MenuItem>
+                    <div style={{ height: 1, background: "#f3f4f6", margin: "4px 0" }} />
+                    <MenuItem danger onClick={() => { setConfirmDelete(u); setOpenMenu(null); }}>Ta bort användare</MenuItem>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <InviteModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        onSubmit={(email) => { toast.success(`Inbjudan skickad till ${email}!`); setInviteOpen(false); }}
+      />
+
+      <EditRoleModal
+        user={editRole}
+        onClose={() => setEditRole(null)}
+        onSave={(role) => { if (editRole) { setUsers((p) => p.map((x) => x.id === editRole.id ? { ...x, badge: role } : x)); toast.success(`Roll uppdaterad till ${role}`); } setEditRole(null); }}
+      />
+
+      <EditDeptModal
+        user={editDept}
+        onClose={() => setEditDept(null)}
+        onSave={(dept) => { toast.success(`Avdelning ändrad till ${dept}`); setEditDept(null); }}
+      />
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        title="Ta bort användare?"
+        message={`Är du säker på att du vill ta bort ${confirmDelete?.name}?`}
+        confirmLabel="Ta bort"
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={() => { if (confirmDelete) { setUsers((p) => p.filter((x) => x.id !== confirmDelete.id)); toast.success(`${confirmDelete.name} borttagen`); } setConfirmDelete(null); }}
+      />
+    </>
   );
 }
 
-function SubscriptionCard() {
+function MenuItem({ children, onClick, danger }: { children: React.ReactNode; onClick: () => void; danger?: boolean }) {
   return (
-    <div className="ins-card">
-      <div className="ins-head">
-        <div className="ins-head-title">
-          <CreditCard size={16} strokeWidth={1.75} color="#7dedb8" /> Prenumeration
-        </div>
-      </div>
-      <div className="p-5">
-        <div
-          className="flex items-center justify-between"
-          style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #1a3d58" }}
-        >
-          <div>
-            <div className="font-display font-bold text-[16px] text-white">Business Plan</div>
-            <div className="text-[11px]" style={{ color: "#6a9ab0" }}>Faktureras månadsvis</div>
-          </div>
-          <div className="font-display font-bold text-[24px]" style={{ color: "#7dedb8" }}>
-            999 kr/mån
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Stat label="Aktiva användare" value="4 / 10" size={16} />
-          <Stat label="Moduler" value="5 / obegränsat" size={16} />
-          <Stat label="Nästa faktura" value="2026-06-16" size={14} mono />
-          <Stat label="Medlem sedan" value="2024-11-01" size={14} mono />
-        </div>
-        
-      </div>
-    </div>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  size,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  size: number;
-  mono?: boolean;
-}) {
-  return (
-    <div>
-      <div
-        style={{
-          color: "#6a9ab0",
-          fontSize: 10,
-          fontFamily: "'Space Mono', ui-monospace, monospace",
-          letterSpacing: ".08em",
-          textTransform: "uppercase",
-          marginBottom: 4,
-        }}
-      >
-        {label}
-      </div>
-      <div
-        className="font-bold text-white"
-        style={{
-          fontSize: size,
-          fontFamily: mono ? "'Space Mono', ui-monospace, monospace" : undefined,
-        }}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function DangerCard() {
-  return (
-    <div
+    <button
+      onClick={onClick}
       style={{
-        background: "rgba(255,77,106,0.04)",
-        border: "1px solid rgba(255,77,106,0.15)",
-        borderRadius: 10,
-        padding: 20,
+        display: "block", width: "100%", textAlign: "left",
+        padding: "8px 12px", fontSize: 13, fontWeight: 500,
+        background: "transparent", border: 0, borderRadius: 4, cursor: "pointer",
+        color: danger ? "#dc2626" : "#374151",
       }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "#f9fafb")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
     >
-      <div className="font-display font-bold text-[14px] mb-3 flex items-center gap-2" style={{ color: "#ff4d6a" }}>
-        <AlertTriangle size={16} strokeWidth={1.75} /> Farlig zon
+      {children}
+    </button>
+  );
+}
+
+/* ============ CARD 5 — INTEGRATIONS ============ */
+function IntegrationsCard() {
+  return (
+    <section style={CARD}>
+      <div style={CARD_HEAD}>
+        <Plug size={16} color="#6b7280" />
+        <span style={HEAD_TITLE}>Integrationer</span>
       </div>
-      <div
-        className="flex items-center justify-between"
-        style={{ padding: "12px 0", borderBottom: "1px solid rgba(255,77,106,0.1)" }}
-      >
-        <span className="text-[13px]" style={{ color: "#6a9ab0" }}>Exportera all data</span>
-        <button className="ins-ghost-btn">Exportera</button>
+      <IntegrationRow icon="AI" iconBg="#d1fae5" iconFg="#065f46" iconSize={14} name="OpenAI" sub="AI-transkribering och quizgenerering" status="ok" />
+      <IntegrationRow icon="SMS" iconBg="#dbeafe" iconFg="#1e40af" iconSize={12} name="Twilio" sub="SMS-utskick till personal" status="ok" />
+      <IntegrationRow icon="PAY" iconBg="#f3f4f6" iconFg="#374151" iconSize={11} name="Stripe" sub="Betalning och prenumeration" status="off" last />
+    </section>
+  );
+}
+
+function IntegrationRow({ icon, iconBg, iconFg, iconSize, name, sub, status, last }: { icon: string; iconBg: string; iconFg: string; iconSize: number; name: string; sub: string; status: "ok" | "off"; last?: boolean }) {
+  return (
+    <div style={{ padding: "16px 20px", borderBottom: last ? "none" : "1px solid #f9fafb", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ width: 40, height: 40, borderRadius: 8, background: iconBg, color: iconFg, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: iconSize, flexShrink: 0 }}>
+        {icon}
       </div>
-      <div className="flex items-center justify-between" style={{ padding: "12px 0" }}>
-        <span className="text-[13px]" style={{ color: "#6a9ab0" }}>Radera företagskonto</span>
-        <button
-          style={{
-            background: "rgba(255,77,106,0.1)",
-            color: "#ff4d6a",
-            border: "1px solid rgba(255,77,106,0.2)",
-            padding: "6px 14px",
-            borderRadius: 6,
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: "pointer",
-          }}
-        >
-          Radera
-        </button>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>{name}</div>
+        <div style={{ fontSize: 11, color: "#6b7280" }}>{sub}</div>
       </div>
+      {status === "ok" ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Check size={16} color="#10b981" />
+          <span style={{ background: "#d1fae5", color: "#065f46", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>Ansluten</span>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ background: "#fee2e2", color: "#dc2626", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>Ej ansluten</span>
+          <button onClick={() => toast.success("Öppnar Stripe-anslutning...")} style={{ background: "transparent", border: 0, color: "#0b1e2d", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Anslut →</button>
+        </div>
+      )}
     </div>
+  );
+}
+
+/* ============ CARD 6 — SUBSCRIPTION ============ */
+function SubscriptionCard() {
+  const stats = [
+    { label: "Aktiva användare", value: "4 / 10", mono: false },
+    { label: "Moduler", value: "5 / Obegränsat", mono: false },
+    { label: "Nästa faktura", value: "2026-06-16", mono: true },
+    { label: "Medlem sedan", value: "2024-11-01", mono: true },
+  ];
+  return (
+    <section style={CARD}>
+      <div style={CARD_HEAD}>
+        <CreditCard size={16} color="#6b7280" />
+        <span style={HEAD_TITLE}>Prenumeration</span>
+      </div>
+      <div style={{ padding: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #f3f4f6" }}>
+          <div>
+            <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "#111827" }}>Business Plan</div>
+            <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>Faktureras månadsvis</div>
+          </div>
+          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "#0b1e2d" }}>5 990 kr/mån</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+          {stats.map((s) => (
+            <div key={s.label} style={{ background: "#f9fafb", borderRadius: 8, padding: 12 }}>
+              <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>{s.label}</div>
+              <div style={{ fontWeight: 700, fontSize: s.value.length > 10 ? 14 : 16, color: "#111827", marginTop: 4, fontFamily: s.mono ? "ui-monospace, monospace" : undefined }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+        <SecondaryBtn style={{ width: "100%" }} onClick={() => toast.success("Öppnar planhantering...")}>Hantera prenumeration</SecondaryBtn>
+      </div>
+    </section>
+  );
+}
+
+/* ============ CARD 7 — DANGER ============ */
+function DangerCard() {
+  const [confirmDel, setConfirmDel] = useState(false);
+  return (
+    <>
+      <section style={{ ...CARD, borderLeft: "4px solid #ef4444" }}>
+        <div style={CARD_HEAD}>
+          <AlertTriangle size={16} color="#dc2626" />
+          <span style={{ ...HEAD_TITLE, color: "#dc2626" }}>Farlig zon</span>
+        </div>
+        <div>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid #f9fafb", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, color: "#374151" }}>Exportera all data</span>
+            <GhostSmall onClick={() => toast.success("Export påbörjad — du får ett e-postmeddelande när den är klar.")}>Exportera</GhostSmall>
+          </div>
+          <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, color: "#374151" }}>Radera företagskonto</span>
+            <button
+              onClick={() => setConfirmDel(true)}
+              style={{ background: "#fee2e2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+            >
+              Radera
+            </button>
+          </div>
+        </div>
+      </section>
+      <ConfirmDialog
+        open={confirmDel}
+        title="Radera företagskonto?"
+        message="Är du säker? Detta kan inte ångras."
+        confirmLabel="Radera permanent"
+        onCancel={() => setConfirmDel(false)}
+        onConfirm={() => { toast.success("Begäran om radering registrerad."); setConfirmDel(false); }}
+      />
+    </>
+  );
+}
+
+/* ============ MODALS ============ */
+function ModalShell({ children }: { children: React.ReactNode }) {
+  return (
+    <DialogContent
+      style={{ background: "#fff", maxWidth: 460, padding: 24, borderRadius: 12 }}
+      className="!gap-0"
+    >
+      {children}
+    </DialogContent>
+  );
+}
+
+function ModalTitle({ children }: { children: React.ReactNode }) {
+  return <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, color: "#111827", margin: "0 0 16px" }}>{children}</h3>;
+}
+
+function ModalFooter({ children }: { children: React.ReactNode }) {
+  return <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>{children}</div>;
+}
+
+function InviteModal({ open, onClose, onSubmit }: { open: boolean; onClose: () => void; onSubmit: (email: string) => void }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState(ROLE_OPTIONS[0]);
+  const [dept, setDept] = useState(DEPT_OPTIONS[0]);
+  useEffect(() => { if (!open) { setName(""); setEmail(""); setRole(ROLE_OPTIONS[0]); setDept(DEPT_OPTIONS[0]); } }, [open]);
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <ModalShell>
+        <ModalTitle>Bjud in användare</ModalTitle>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div><label style={LABEL}>Namn</label><input value={name} onChange={(e) => setName(e.target.value)} style={INPUT} /></div>
+          <div><label style={LABEL}>E-post</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={INPUT} /></div>
+          <div><label style={LABEL}>Roll</label><select value={role} onChange={(e) => setRole(e.target.value)} style={INPUT}>{ROLE_OPTIONS.map((r) => <option key={r}>{r}</option>)}</select></div>
+          <div><label style={LABEL}>Avdelning</label><select value={dept} onChange={(e) => setDept(e.target.value)} style={INPUT}>{DEPT_OPTIONS.map((d) => <option key={d}>{d}</option>)}</select></div>
+        </div>
+        <ModalFooter>
+          <SecondaryBtn onClick={onClose}>Avbryt</SecondaryBtn>
+          <PrimaryBtn onClick={() => { if (!email) { toast.error("E-post krävs"); return; } onSubmit(email); }}>Skicka inbjudan</PrimaryBtn>
+        </ModalFooter>
+      </ModalShell>
+    </Dialog>
+  );
+}
+
+function EditRoleModal({ user, onClose, onSave }: { user: UserRow | null; onClose: () => void; onSave: (role: string) => void }) {
+  const [role, setRole] = useState(ROLE_OPTIONS[0]);
+  useEffect(() => { if (user) setRole(user.badge); }, [user]);
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
+      <ModalShell>
+        <ModalTitle>Redigera roll</ModalTitle>
+        <div><label style={LABEL}>Roll för {user?.name}</label><select value={role} onChange={(e) => setRole(e.target.value)} style={INPUT}>{ROLE_OPTIONS.map((r) => <option key={r}>{r}</option>)}</select></div>
+        <ModalFooter>
+          <SecondaryBtn onClick={onClose}>Avbryt</SecondaryBtn>
+          <PrimaryBtn onClick={() => onSave(role)}>Spara</PrimaryBtn>
+        </ModalFooter>
+      </ModalShell>
+    </Dialog>
+  );
+}
+
+function EditDeptModal({ user, onClose, onSave }: { user: UserRow | null; onClose: () => void; onSave: (dept: string) => void }) {
+  const [dept, setDept] = useState(DEPT_OPTIONS[0]);
+  return (
+    <Dialog open={!!user} onOpenChange={(o) => !o && onClose()}>
+      <ModalShell>
+        <ModalTitle>Byt avdelning</ModalTitle>
+        <div><label style={LABEL}>Avdelning för {user?.name}</label><select value={dept} onChange={(e) => setDept(e.target.value)} style={INPUT}>{DEPT_OPTIONS.map((d) => <option key={d}>{d}</option>)}</select></div>
+        <ModalFooter>
+          <SecondaryBtn onClick={onClose}>Avbryt</SecondaryBtn>
+          <PrimaryBtn onClick={() => onSave(dept)}>Spara</PrimaryBtn>
+        </ModalFooter>
+      </ModalShell>
+    </Dialog>
+  );
+}
+
+function ConfirmDialog({ open, title, message, confirmLabel, onCancel, onConfirm }: { open: boolean; title: string; message: string; confirmLabel: string; onCancel: () => void; onConfirm: () => void }) {
+  return (
+    <Dialog open={open} onOpenChange={(o) => !o && onCancel()}>
+      <ModalShell>
+        <ModalTitle>{title}</ModalTitle>
+        <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>{message}</p>
+        <ModalFooter>
+          <SecondaryBtn onClick={onCancel}>Avbryt</SecondaryBtn>
+          <button
+            onClick={onConfirm}
+            style={{ background: "#dc2626", color: "#fff", border: 0, borderRadius: 8, padding: "10px 20px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+          >
+            {confirmLabel}
+          </button>
+        </ModalFooter>
+      </ModalShell>
+    </Dialog>
   );
 }
