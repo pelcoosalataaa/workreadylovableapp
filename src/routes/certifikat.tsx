@@ -122,7 +122,7 @@ function CertifikatPage() {
     >
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-        {STATS.map((s) => <StatCard key={s.label} {...s} />)}
+        {STAT_DEFS.map((s) => <StatCard key={s.label} label={s.label} sub={s.sub} color={s.color} value={String(counts[s.key] ?? 0)} />)}
       </div>
 
       {/* Alert banner */}
