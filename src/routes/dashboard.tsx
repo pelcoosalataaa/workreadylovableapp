@@ -130,26 +130,36 @@ function WelcomeRow() {
   const wm = weather ? weatherMeta(weather.code) : null;
 
   return (
-    <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: "20px 24px", marginBottom: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
-      <div>
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
-          {weekday} · Ucklum, Sverige
+    <div style={{ background: CARD_BG, border: "1px solid #e5e7eb", borderRadius: 12, padding: "24px 28px", marginBottom: 0, boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <MapPin size={13} color="#9ca3af" />
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            {weekday} · Ucklum, Sverige
+          </span>
         </div>
-        <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "#111827", margin: 0 }}>
+        <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 28, color: "#111827", margin: 0 }}>
           {greeting}, Lars
         </h2>
-        <div style={{ width: 32, height: 2, background: "#0b1e2d", borderRadius: 1, margin: "10px 0" }} />
-        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#6b7280" }}>
-          {stats ? `${stats.ready} av ${stats.total} medarbetare redo för dagens skift` : "Laddar..."}
+        <div style={{ width: 36, height: 3, background: "#0b1e2d", borderRadius: 2, margin: "10px 0" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Circle size={8} color="#10b981" fill="#10b981" />
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 13, color: "#6b7280" }}>
+            {stats ? `${stats.ready} av ${stats.total} medarbetare redo för dagens skift` : "Laddar..."}
+          </span>
         </div>
       </div>
-      <div style={{ textAlign: "right" }}>
-        <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 44, color: "#0b1e2d", margin: 0, lineHeight: 1 }}>
-          {weather ? `${weather.temp}°` : "—°"}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 4 }}>
-          {wm && <wm.Icon size={14} color={wm.color} />}
-          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#6b7280" }}>{wm?.label ?? ""}</span>
+      <div style={{ background: "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 24px", display: "flex", alignItems: "center", gap: 16 }}>
+        {wm && <wm.Icon size={40} color={wm.color} strokeWidth={1.75} />}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 48, color: "#111827", lineHeight: 1 }}>
+            {weather ? `${weather.temp}°` : "—°"}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+            <span style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 12, color: "#374151" }}>Ucklum</span>
+            <span style={{ color: "#d1d5db" }}>·</span>
+            <span style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#6b7280" }}>{wm?.label ?? ""}</span>
+          </div>
         </div>
       </div>
     </div>
