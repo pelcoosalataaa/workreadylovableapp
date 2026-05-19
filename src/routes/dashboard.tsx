@@ -13,6 +13,12 @@ import {
   FileText,
   ArrowUp,
   Plus,
+  Sun,
+  Cloud,
+  CloudFog,
+  CloudRain,
+  CloudLightning,
+  Snowflake,
 } from "lucide-react";
 import { STORAGE_KEY } from "@/lib/departments";
 
