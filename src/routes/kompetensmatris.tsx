@@ -1,305 +1,261 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { AppModal, Field, TextInput, SelectInput, GhostBtn, MintBtn } from "@/components/AppModal";
+import { LightAppShell } from "@/components/LightAppShell";
+import { PrimaryBtn, SecondaryBtn } from "@/components/AppTopBar";
+import { Layers, Home, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { Grid3x3, Layers } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/kompetensmatris")({
   component: KompetensmatrisPage,
 });
 
 type Cell = "ok" | "wip" | "none";
+type Tone = "green" | "amber" | "red" | "blue";
+
+const AVATAR: Record<Tone, { bg: string; color: string }> = {
+  green: { bg: "#d1fae5", color: "#065f46" },
+  amber: { bg: "#fef3c7", color: "#92400e" },
+  red: { bg: "#fee2e2", color: "#991b1b" },
+  blue: { bg: "#dbeafe", color: "#1e40af" },
+};
 
 type Row = {
-  initials: string;
-  avatarBg: string;
-  avatarColor: string;
-  name: string;
-  role: string;
-  company: string;
+  initials: string; avatar: Tone; name: string; role: string; shift: string;
+  company: string; companyTone: "blue" | "amber";
   cells: Cell[];
   certs: { label: string; tone: "ok" | "bad" }[];
 };
 
-const rows: Row[] = [
-  {
-    initials: "AJ", avatarBg: "rgba(0,224,150,0.15)", avatarColor: "#00e096",
-    name: "Anders Johansson", role: "Gjutare · Dag", company: "Byggelement AB",
-    cells: ["ok", "ok", "ok", "ok", "ok"],
-    certs: [{ label: "✓ Betongkurs", tone: "ok" }, { label: "✓ Traverskort", tone: "ok" }],
-  },
-  {
-    initials: "PL", avatarBg: "rgba(125,237,184,0.15)", avatarColor: "#7dedb8",
-    name: "Petter Lindgren", role: "Gjutare · Kväll", company: "Partner2Work",
-    cells: ["wip", "ok", "ok", "wip", "ok"],
-    certs: [{ label: "✓ Betongkurs", tone: "ok" }],
-  },
-  {
-    initials: "SB", avatarBg: "rgba(255,77,106,0.15)", avatarColor: "#ff4d6a",
-    name: "Sara Berg", role: "Gjutare · Dag", company: "Partner2Work",
-    cells: ["none", "none", "none", "none", "none"],
-    certs: [{ label: "✗ Betongkurs saknas", tone: "bad" }],
-  },
+const DEPT_HEADERS = ["GJUTNING", "VIBRERING", "AVJÄMNING", "RITNINGSLÄSNING", "SÄKERHET"];
+
+const ROWS: Row[] = [
+  { initials: "AJ", avatar: "green", name: "Anders Johansson", role: "Gjutare", shift: "Dag", company: "Byggelement AB", companyTone: "blue",
+    cells: ["ok", "ok", "ok", "ok", "ok"], certs: [{ label: "✓ Betongkurs", tone: "ok" }, { label: "✓ Traverskort", tone: "ok" }] },
+  { initials: "PL", avatar: "amber", name: "Petter Lindgren", role: "Gjutare", shift: "Kväll", company: "Partner2Work", companyTone: "amber",
+    cells: ["wip", "ok", "ok", "wip", "ok"], certs: [{ label: "✓ Betongkurs", tone: "ok" }] },
+  { initials: "SB", avatar: "red", name: "Sara Berg", role: "Gjutare", shift: "Dag", company: "Partner2Work", companyTone: "amber",
+    cells: ["none", "none", "none", "none", "none"], certs: [{ label: "✗ Betongkurs saknas", tone: "bad" }] },
 ];
 
-const competencyHeaders = ["Gjutning", "Vibrering", "Avjämning", "Ritningsläsning", "Säkerhet"];
+const DEPARTMENTS = [
+  "Alla avdelningar", "Snickeriavdelning", "Gul hallen", "Rosa hallen",
+  "Gröna hallen", "Armeringsavdelning", "Lap och Lag",
+] as const;
 
-function cellStyle(c: Cell): React.CSSProperties {
-  if (c === "ok") return { background: "rgba(0,224,150,0.12)", color: "#00e096", border: "1px solid rgba(0,224,150,0.25)" };
-  if (c === "wip") return { background: "rgba(255,209,102,0.12)", color: "#ffd166", border: "1px solid rgba(255,209,102,0.25)" };
-  return { background: "rgba(26,61,88,0.5)", color: "#3d6a7a", border: "1px solid rgba(26,61,88,0.8)" };
+const EMP_TYPES = ["Alla", "Egen personal", "Inhyrd personal"] as const;
+
+function CellDot({ c }: { c: Cell }) {
+  const style: React.CSSProperties = {
+    width: 28, height: 28, borderRadius: 999, display: "inline-flex",
+    alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700,
+    border: "1px solid",
+  };
+  if (c === "ok") return <span style={{ ...style, background: "#d1fae5", color: "#065f46", borderColor: "#a7f3d0" }}>✓</span>;
+  if (c === "wip") return <span style={{ ...style, background: "#fef3c7", color: "#92400e", borderColor: "#fde68a" }}>⏳</span>;
+  return <span style={{ ...style, background: "#f3f4f6", color: "#9ca3af", borderColor: "#e5e7eb" }}>—</span>;
 }
 
-function cellGlyph(c: Cell): string {
-  if (c === "ok") return "✓";
-  if (c === "wip") return "⏳";
-  return "—";
-}
-
-const selectStyle: React.CSSProperties = {
-  background: "#060f18",
-  border: "1px solid #1a3d58",
-  color: "#fff",
-  padding: "9px 12px",
-  borderRadius: 6,
-  fontSize: 12,
-  width: "100%",
-};
-
-const labelStyle: React.CSSProperties = {
-  fontFamily: "'Space Mono', ui-monospace, monospace",
-  fontSize: 9,
-  letterSpacing: "0.08em",
-  color: "#3d6a7a",
-  textTransform: "uppercase",
-  fontWeight: 700,
-  marginBottom: 6,
-  display: "block",
-};
+const STATS = [
+  { label: "PERSONAL", value: "27", sub: "", color: "#3b82f6" },
+  { label: "GODKÄNDA", value: "19", sub: "70%", color: "#10b981" },
+  { label: "PÅGÅR", value: "5", sub: "", color: "#f59e0b" },
+];
 
 function KompetensmatrisPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
-  const [open, setOpen] = useState(true);
+  const [dept, setDept] = useState<string>("Alla avdelningar");
+  const [emp, setEmp] = useState<string>("Alla");
+  const [q, setQ] = useState("");
+  const [collapsed, setCollapsed] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const [kName, setKName] = useState("");
-  const [kAvd, setKAvd] = useState("");
-  const [kBransch, setKBransch] = useState("");
+  const [newSkill, setNewSkill] = useState("");
+  const [addDeptOpen, setAddDeptOpen] = useState(false);
+  const [newDept, setNewDept] = useState("");
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (!session) navigate({ to: "/login" });
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) navigate({ to: "/login" });
-      else setReady(true);
-    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) navigate({ to: "/login" }); });
+    supabase.auth.getSession().then(({ data }) => { if (!data.session) navigate({ to: "/login" }); else setReady(true); });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  if (!ready) return <div className="min-h-screen bg-background" />;
+  const visible = useMemo(() => ROWS.filter((r) => {
+    if (emp === "Egen personal" && r.company !== "Byggelement AB") return false;
+    if (emp === "Inhyrd personal" && r.company === "Byggelement AB") return false;
+    return r.name.toLowerCase().includes(q.toLowerCase());
+  }), [emp, q]);
 
-  const summaryCoverage = ["Täckningsgrad", "67%", "100%", "100%", "67%", "100%"];
-  const summaryColors = ["#3d6a7a", "#ffd166", "#00e096", "#00e096", "#ffd166", "#00e096"];
+  if (!ready) return <div style={{ minHeight: "100vh", background: "#f0f2f5" }} />;
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <AppSidebar />
-      <div className="flex-1 ml-[260px] flex flex-col">
-        <main className="px-8 py-7 flex flex-col gap-5">
-          {/* Header */}
-          <div className="flex items-end justify-between flex-wrap gap-3">
-            <div>
-              <h1 className="font-display font-bold text-[24px] text-white flex items-center gap-2"><Grid3x3 size={22} strokeWidth={1.75} color="#7dedb8" /> Kompetensmatris</h1>
-              <p className="text-sm text-muted-foreground mt-1">Byggelement Ucklum · Branschsorterad kompetensöversikt</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="text-xs font-semibold px-3 py-2 rounded-md" style={{ background: "transparent", border: "1px solid #1a3d58", color: "#edfaf4" }}>⬇ Exportera</button>
-              <button onClick={() => setAddOpen(true)} className="text-xs font-bold px-3 py-2 rounded-md" style={{ background: "#7dedb8", color: "#060f18" }}>+ Lägg till kompetens</button>
-            </div>
-          </div>
-
-          {/* Filter card */}
-          <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, padding: 20 }}>
-            <div className="grid grid-cols-4 gap-4">
-              <div>
-                <span style={labelStyle}>Bransch</span>
-                <select style={selectStyle} defaultValue="alla">
-                  <option value="alla">Alla branscher</option>
-                  <option>Betong & Prefab</option>
-                  <option>⚙️ Verkstad & Industri</option>
-                  <option>Lager & Logistik</option>
-                  <option>🔨 Bygg & Anläggning</option>
-                </select>
-              </div>
-              <div>
-                <span style={labelStyle}>Avdelning</span>
-                <select style={selectStyle} defaultValue="alla">
-                  <option value="alla">Alla avdelningar</option>
-                  <option>Gjutavdelningen</option>
-                  <option>Armeringsavdelningen</option>
-                  <option>Lager & Utskeppning</option>
-                  <option>CNC-produktion</option>
-                  <option>Montering</option>
-                </select>
-              </div>
-              <div>
-                <span style={labelStyle}>Sök person</span>
-                <input style={selectStyle} placeholder="🔍 Namn eller roll..." />
-              </div>
-              <div>
-                <span style={labelStyle}>Sammanfattning</span>
-                <div className="flex items-center gap-4" style={{ padding: "6px 0" }}>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-display font-bold text-white text-[18px]">23</span>
-                    <span className="text-[10px] text-muted-foreground">Personal</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-display font-bold text-[18px]" style={{ color: "#00e096" }}>16</span>
-                    <span className="text-[10px] text-muted-foreground">Godkända</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-display font-bold text-[18px]" style={{ color: "#ffd166" }}>5</span>
-                    <span className="text-[10px] text-muted-foreground">Pågår</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="font-display font-bold text-[18px]" style={{ color: "#ff4d6a" }}>2</span>
-                    <span className="text-[10px] text-muted-foreground">Ej start</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs" style={{ marginBottom: 20 }}>
-            <span style={{ color: "#7dedb8" }}>Byggelement AB</span>
-            <span className="text-muted-foreground">→</span>
-            <span className="text-muted-foreground">Alla avdelningar</span>
-          </div>
-
-          {/* Industry section */}
-          <div>
-            <div className="flex items-center gap-3 flex-wrap" style={{ marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #1a3d58" }}>
-              <div className="flex items-center justify-center" style={{ width: 40, height: 40, background: "rgba(125,237,184,0.1)", borderRadius: 8 }}><Layers size={20} strokeWidth={1.75} color="#7dedb8" /></div>
-              <div>
-                <div className="font-display font-bold text-white text-[20px]">Betong & Prefab</div>
-                <div className="text-[12px] text-muted-foreground">Byggelement AB · Thomas Betong · SF Marina</div>
-              </div>
-              <div className="ml-auto flex items-center gap-5">
-                <div className="flex items-baseline gap-1.5"><span className="font-display font-bold text-[18px]" style={{ color: "#7dedb8" }}>8</span><span className="text-[10px] text-muted-foreground">Personal</span></div>
-                <div className="flex items-baseline gap-1.5"><span className="font-display font-bold text-[18px]" style={{ color: "#00e096" }}>6</span><span className="text-[10px] text-muted-foreground">Godkända</span></div>
-                <div className="flex items-baseline gap-1.5"><span className="font-display font-bold text-[18px]" style={{ color: "#ffd166" }}>2</span><span className="text-[10px] text-muted-foreground">Pågår</span></div>
-              </div>
-            </div>
-
-            {/* Department */}
-            <div>
-              <button
-                onClick={() => setOpen((v) => !v)}
-                className="w-full flex items-center gap-3 text-left"
-                style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: "10px 10px 0 0", padding: "14px 20px", cursor: "pointer" }}
-              >
-                <div className="flex items-center justify-center text-base shrink-0" style={{ width: 36, height: 36, background: "rgba(125,237,184,0.1)", borderRadius: 8 }}>🪣</div>
-                <div>
-                  <div className="font-display font-bold text-white text-[16px]">Gjutavdelningen</div>
-                  <div className="text-[11px] text-muted-foreground">Gjutning · Vibrering · Avjämning</div>
-                </div>
-                <div className="ml-auto flex items-center gap-3 text-[11px] font-bold">
-                  <span style={{ color: "#00e096" }}>4 Godkända</span>
-                  <span style={{ color: "#ffd166" }}>1 Pågår</span>
-                  <span style={{ color: "#ff4d6a" }}>1 Ej start</span>
-                  <span className="px-2 py-1 rounded-full" style={{ background: "rgba(125,237,184,0.12)", color: "#7dedb8", border: "1px solid rgba(125,237,184,0.25)" }}>6 pers</span>
-                  <span className="text-muted-foreground ml-2">{open ? "▼" : "▶"}</span>
-                </div>
-              </button>
-
-              {open && (
-                <div style={{ background: "#0b1e2d", border: "1px solid #1a3d58", borderTop: "none", borderRadius: "0 0 10px 10px" }}>
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr style={{ background: "rgba(0,0,0,0.2)" }}>
-                        <th className="mono text-left font-bold uppercase" style={{ color: "#3d6a7a", fontSize: 9, padding: "10px 14px" }}>Person</th>
-                        {competencyHeaders.map((h) => (
-                          <th key={h} className="mono text-center font-bold uppercase" style={{ color: "#3d6a7a", fontSize: 9, padding: "10px 14px" }}>{h}</th>
-                        ))}
-                        <th className="mono text-left font-bold uppercase" style={{ color: "#3d6a7a", fontSize: 9, padding: "10px 14px" }}>Certifikat</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rows.map((r) => (
-                        <tr key={r.initials} style={{ borderBottom: "1px solid rgba(26,61,88,0.4)" }}>
-                          <td style={{ padding: "12px 14px" }}>
-                            <div className="flex items-center gap-3">
-                              <div className="rounded-full flex items-center justify-center font-bold text-[11px] shrink-0" style={{ width: 34, height: 34, background: r.avatarBg, color: r.avatarColor }}>{r.initials}</div>
-                              <div>
-                                <div className="text-[13px] font-bold">{r.name}</div>
-                                <div className="text-[11px] text-muted-foreground">{r.role}</div>
-                                <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ background: "rgba(125,237,184,0.1)", color: "#7dedb8" }}>{r.company}</span>
-                              </div>
-                            </div>
-                          </td>
-                          {r.cells.map((c, i) => (
-                            <td key={i} style={{ padding: "12px 14px", textAlign: "center" }}>
-                              <div className="inline-flex items-center justify-center rounded-full font-bold text-[12px]" style={{ width: 28, height: 28, ...cellStyle(c) }}>{cellGlyph(c)}</div>
-                            </td>
-                          ))}
-                          <td style={{ padding: "12px 14px" }}>
-                            <div className="flex flex-wrap gap-1.5">
-                              {r.certs.map((c, i) => (
-                                <span key={i} className="text-[10px] font-bold px-2 py-1 rounded-full" style={c.tone === "ok"
-                                  ? { background: "rgba(0,224,150,0.1)", color: "#00e096", border: "1px solid rgba(0,224,150,0.2)" }
-                                  : { background: "rgba(255,77,106,0.1)", color: "#ff4d6a", border: "1px solid rgba(255,77,106,0.2)" }}>{c.label}</span>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      <tr style={{ background: "rgba(0,0,0,0.15)" }}>
-                        {summaryCoverage.map((v, i) => (
-                          <td key={i} className="mono" style={{ padding: "10px 14px", fontSize: 10, color: summaryColors[i], textAlign: i === 0 ? "left" : "center", fontWeight: 700 }}>{v}</td>
-                        ))}
-                        <td />
-                      </tr>
-                    </tbody>
-                  </table>
-
-                  {/* Legend */}
-                  <div className="flex items-center gap-5" style={{ padding: "10px 16px", background: "rgba(0,0,0,0.15)", fontSize: 11, color: "#3d6a7a", borderTop: "1px solid rgba(26,61,88,0.4)" }}>
-                    <span>✓ Godkänd</span>
-                    <span>⏳ Pågår</span>
-                    <span>— Saknas</span>
-                    <span className="ml-auto">⚠ = Certifikat utgår snart</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Add department */}
-          <button
-            className="w-full text-center text-xs transition-colors"
-            style={{ border: "1px dashed #1a3d58", borderRadius: 10, padding: 16, color: "#3d6a7a", background: "transparent" }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#7dedb8"; e.currentTarget.style.color = "#7dedb8"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#1a3d58"; e.currentTarget.style.color = "#3d6a7a"; }}
-          >
-            + Lägg till ny avdelning under Betong & Prefab
-          </button>
-        </main>
+    <LightAppShell
+      title="Kompetensmatris"
+      action={
+        <div style={{ display: "flex", gap: 8 }}>
+          <SecondaryBtn onClick={() => toast.success("Exporterar kompetensmatris...")}>⬇ Exportera</SecondaryBtn>
+          <PrimaryBtn onClick={() => setAddOpen(true)}>+ Lägg till kompetens</PrimaryBtn>
+        </div>
+      }
+    >
+      {/* Filter card */}
+      <div style={{ background: "#fff", borderRadius: 10, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.04)", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Avdelning
+          <select value={dept} onChange={(e) => setDept(e.target.value)} style={{ width: "100%", marginTop: 4, padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 13, background: "#fff" }}>
+            {DEPARTMENTS.map((d) => <option key={d}>{d}</option>)}
+          </select>
+        </label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Anställningstyp
+          <select value={emp} onChange={(e) => setEmp(e.target.value)} style={{ width: "100%", marginTop: 4, padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 13, background: "#fff" }}>
+            {EMP_TYPES.map((t) => <option key={t}>{t}</option>)}
+          </select>
+        </label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Sök
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Sök person..." style={{ width: "100%", marginTop: 4, padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 13 }} />
+        </label>
       </div>
-      <style>{sidebarKeyframes}</style>
-      <AppModal open={addOpen} onClose={() => setAddOpen(false)} title="Lägg till kompetens" footer={
-        <>
-          <GhostBtn onClick={() => setAddOpen(false)}>Avbryt</GhostBtn>
-          <MintBtn onClick={() => { toast.success("Kompetens tillagd!"); setKName(""); setKAvd(""); setKBransch(""); setAddOpen(false); }}>Lägg till</MintBtn>
-        </>
-      }>
-        <Field label="Kompetensnamn"><TextInput value={kName} onChange={(e) => setKName(e.target.value)} /></Field>
-        <Field label="Avdelning"><SelectInput options={["Gjutavdelningen", "CNC-produktion", "Lager & Utskeppning", "Montering", "Armeringsavdelningen"]} value={kAvd} onChange={(e) => setKAvd(e.target.value)} /></Field>
-        <Field label="Bransch"><SelectInput options={["Betong & Prefab", "Verkstad & Industri", "Lager & Logistik", "Bygg & Anläggning"]} value={kBransch} onChange={(e) => setKBransch(e.target.value)} /></Field>
-      </AppModal>
-    </div>
+
+      {/* Summary */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        {STATS.map((s) => (
+          <div key={s.label} style={{ background: "#fff", borderRadius: 10, padding: "20px 22px", borderLeft: `4px solid ${s.color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>{s.label}</div>
+            <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 40, color: "#111827", lineHeight: 1.1, marginTop: 6 }}>{s.value}</div>
+            {s.sub && <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>{s.sub}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Department header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 12, borderBottom: "1px solid #e5e7eb" }}>
+        <div style={{ width: 40, height: 40, borderRadius: 999, background: "#dbeafe", color: "#1e40af", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Layers size={20} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 20, color: "#111827" }}>Betong & Prefab</div>
+          <div style={{ fontSize: 12, color: "#6b7280" }}>Byggelement AB · Thomas Betong · SF Marina</div>
+        </div>
+        <div style={{ display: "flex", gap: 14, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ color: "#3b82f6" }}>8 personal</span>
+          <span style={{ color: "#10b981" }}>6 godkända</span>
+          <span style={{ color: "#f59e0b" }}>2 pågår</span>
+        </div>
+      </div>
+
+      {/* Department card */}
+      <div style={{ background: "#fff", borderRadius: 10, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <button onClick={() => setCollapsed((c) => !c)} style={{ width: "100%", padding: "14px 20px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 12, border: "none", cursor: "pointer", textAlign: "left" }}>
+          <div style={{ width: 36, height: 36, borderRadius: 999, background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Home size={16} color="#374151" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 15, color: "#111827" }}>Gjutavdelningen</div>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>Gjutning · Vibrering · Avjämning</div>
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <span style={{ background: "#d1fae5", color: "#065f46", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999 }}>4 Godkända</span>
+            <span style={{ background: "#fef3c7", color: "#92400e", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999 }}>1 Pågår</span>
+            <span style={{ background: "#fee2e2", color: "#991b1b", fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 999 }}>1 Ej start</span>
+          </div>
+          {collapsed ? <ChevronRight size={18} color="#6b7280" /> : <ChevronDown size={18} color="#6b7280" />}
+        </button>
+
+        {!collapsed && (
+          <>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", padding: "10px 14px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>PERSON</th>
+                  {DEPT_HEADERS.map((h) => (
+                    <th key={h} style={{ textAlign: "center", padding: "10px 14px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>{h}</th>
+                  ))}
+                  <th style={{ textAlign: "left", padding: "10px 14px", background: "#f9fafb", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>CERTIFIKAT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((r) => (
+                  <tr key={r.initials} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 999, background: AVATAR[r.avatar].bg, color: AVATAR[r.avatar].color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>{r.initials}</div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: "#111827" }}>{r.name}</div>
+                          <div style={{ fontSize: 11, color: "#6b7280" }}>{r.role} · {r.shift}</div>
+                          <span style={{ display: "inline-block", marginTop: 2, fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: r.companyTone === "blue" ? "#dbeafe" : "#fef3c7", color: r.companyTone === "blue" ? "#1e40af" : "#92400e" }}>{r.company}</span>
+                        </div>
+                      </div>
+                    </td>
+                    {r.cells.map((c, i) => (
+                      <td key={i} style={{ padding: "12px 14px", textAlign: "center" }}><CellDot c={c} /></td>
+                    ))}
+                    <td style={{ padding: "12px 14px" }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {r.certs.map((cert, i) => (
+                          <span key={i} style={{ fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 4, background: cert.tone === "ok" ? "#d1fae5" : "#fee2e2", color: cert.tone === "ok" ? "#065f46" : "#991b1b" }}>{cert.label}</span>
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                <tr style={{ background: "#f9fafb" }}>
+                  <td style={{ padding: "10px 14px", fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>TÄCKNINGSGRAD</td>
+                  {["67%", "100%", "100%", "67%", "100%"].map((t, i) => (
+                    <td key={i} style={{ padding: "10px 14px", textAlign: "center", fontSize: 11, fontWeight: 700, color: t === "100%" ? "#10b981" : "#f59e0b" }}>{t}</td>
+                  ))}
+                  <td style={{ padding: "10px 14px", textAlign: "center", color: "#9ca3af" }}>—</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div style={{ display: "flex", gap: 20, padding: "12px 16px", background: "#f9fafb", borderTop: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
+              <span>✓ Godkänd</span>
+              <span>⏳ Under upplärning</span>
+              <span>— Saknas</span>
+              <span style={{ marginLeft: "auto" }}>⚠ = Certifikat utgår snart</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Add department */}
+      <button
+        onClick={() => setAddDeptOpen(true)}
+        className="add-dept"
+        style={{
+          width: "100%", border: "1px dashed #e5e7eb", borderRadius: 10, padding: 16,
+          textAlign: "center", color: "#9ca3af", fontSize: 13, background: "transparent", cursor: "pointer",
+          marginTop: 12,
+        }}
+      >+ Lägg till ny avdelning</button>
+      <style>{`.add-dept:hover{border-color:#0b1e2d!important;color:#0b1e2d!important}`}</style>
+
+      {/* Modals */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent>
+          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Lägg till kompetens</div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Kompetensnamn
+            <input value={newSkill} onChange={(e) => setNewSkill(e.target.value)} style={{ width: "100%", marginTop: 4, padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 13 }} />
+          </label>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <SecondaryBtn onClick={() => setAddOpen(false)}>Avbryt</SecondaryBtn>
+            <PrimaryBtn onClick={() => { toast.success("Kompetens tillagd!"); setNewSkill(""); setAddOpen(false); }}>Spara</PrimaryBtn>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={addDeptOpen} onOpenChange={setAddDeptOpen}>
+        <DialogContent>
+          <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Lägg till ny avdelning</div>
+          <label style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>Avdelningsnamn
+            <input value={newDept} onChange={(e) => setNewDept(e.target.value)} style={{ width: "100%", marginTop: 4, padding: "8px 10px", border: "1px solid #e5e7eb", borderRadius: 6, fontSize: 13 }} />
+          </label>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }}>
+            <SecondaryBtn onClick={() => setAddDeptOpen(false)}>Avbryt</SecondaryBtn>
+            <PrimaryBtn onClick={() => { toast.success("Avdelning tillagd!"); setNewDept(""); setAddDeptOpen(false); }}>Lägg till</PrimaryBtn>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </LightAppShell>
   );
 }
