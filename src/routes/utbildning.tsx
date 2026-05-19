@@ -175,78 +175,12 @@ type ModuleCard = {
   animated?: boolean;
 };
 
-const MODULES: ModuleCard[] = [
-  {
-    id: "introduktion-betong",
-    icon: Layers,
-    iconBg: "#dbeafe",
-    iconColor: "#1e40af",
-    badge: "27/27 klara",
-    badgeBg: "#d1fae5",
-    badgeColor: "#065f46",
-    title: "Introduktion betong",
-    meta: "12 min · 5 steg · Quiz · Inspelad av Erik Svensson",
-    progress: 100,
-    progressColor: "#10b981",
-    category: "Betong & Prefab",
-  },
-  {
-    id: "sakerhet-skydd",
-    icon: ShieldAlert,
-    iconBg: "#fef3c7",
-    iconColor: "#92400e",
-    badge: "27/27 klara",
-    badgeBg: "#d1fae5",
-    badgeColor: "#065f46",
-    title: "Säkerhet & skydd",
-    meta: "8 min · 4 steg · Certifiering · Inspelad av Anna Berg",
-    progress: 100,
-    progressColor: "#10b981",
-    category: "Säkerhet",
-  },
-  {
-    id: "ritningslasning",
-    icon: FileText,
-    iconBg: "#ede9fe",
-    iconColor: "#6d28d9",
-    badge: "19/27 klara",
-    badgeBg: "#fef3c7",
-    badgeColor: "#92400e",
-    title: "Ritningsläsning",
-    meta: "20 min · 8 steg · Quiz · Inspelad av Erik Svensson",
-    progress: 70,
-    progressColor: "#f59e0b",
-    category: "Betong & Prefab",
-  },
-  {
-    id: "lap-och-lag-ytbehandling",
-    icon: Layers,
-    iconBg: "#dbeafe",
-    iconColor: "#1e40af",
-    badge: "8/8 klara",
-    badgeBg: "#d1fae5",
-    badgeColor: "#065f46",
-    title: "Lap och Lag — Ytbehandling",
-    meta: "18 min · 6 steg · Certifiering · Inspelad av Karl Lindgren",
-    progress: 100,
-    progressColor: "#10b981",
-    category: "Betong & Prefab",
-  },
-  {
-    id: "gjutning-armering",
-    icon: Hammer,
-    iconBg: "#fce7f3",
-    iconColor: "#9d174d",
-    badge: "12/27 klara",
-    badgeBg: "#f3f4f6",
-    badgeColor: "#374151",
-    title: "Gjutning & armering",
-    meta: "25 min · 10 steg · Certifiering · Inspelad av Erik Svensson",
-    progress: 44,
-    progressColor: "#9ca3af",
-    category: "Betong & Prefab",
-  },
-];
+const CATEGORY_STYLE: Record<string, { icon: LucideIcon; iconBg: string; iconColor: string }> = {
+  "Betong & Prefab": { icon: Layers, iconBg: "#dbeafe", iconColor: "#1e40af" },
+  "Säkerhet": { icon: ShieldAlert, iconBg: "#fef3c7", iconColor: "#92400e" },
+  "Maskiner": { icon: Wrench, iconBg: "#ede9fe", iconColor: "#6d28d9" },
+  "AI skapar": { icon: Hammer, iconBg: "#fce7f3", iconColor: "#9d174d" },
+};
 
 const FILTERS: ("Alla" | ModuleCategory)[] = [
   "Alla",
@@ -259,11 +193,44 @@ const FILTERS: ("Alla" | ModuleCategory)[] = [
 function ModulerTab() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Alla");
+  const [modules, setModules] = useState<ModuleCard[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("moduler")
+      .select("id, titel, kategori, skapad_av, steg, quiz")
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (!data) return;
+        const mapped: ModuleCard[] = data.map((r: any) => {
+          const cat = (r.kategori as ModuleCategory) || "Betong & Prefab";
+          const style = CATEGORY_STYLE[cat] ?? CATEGORY_STYLE["Betong & Prefab"];
+          const stegCount = Array.isArray(r.steg) ? r.steg.length : 0;
+          const quizCount = Array.isArray(r.quiz) ? r.quiz.length : 0;
+          return {
+            id: r.id,
+            icon: style.icon,
+            iconBg: style.iconBg,
+            iconColor: style.iconColor,
+            badge: `${stegCount} steg`,
+            badgeBg: "#d1fae5",
+            badgeColor: "#065f46",
+            title: r.titel,
+            meta: `${stegCount} steg · ${quizCount} frågor · Inspelad av ${r.skapad_av ?? "okänd"}`,
+            progress: 100,
+            progressColor: "#10b981",
+            category: cat,
+          };
+        });
+        setModules(mapped);
+      });
+  }, []);
 
   const filtered = useMemo(
-    () => (filter === "Alla" ? MODULES : MODULES.filter((m) => m.category === filter)),
-    [filter],
+    () => (filter === "Alla" ? modules : modules.filter((m) => m.category === filter)),
+    [filter, modules],
   );
+
 
   return (
     <div>
