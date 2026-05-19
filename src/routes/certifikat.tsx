@@ -45,12 +45,12 @@ const INITIAL: Cert[] = [
   { id: "8", initials: "MA", avatar: "red", name: "Mohammed Al-Hassan", role: "Betongarbetare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
 ];
 
-const STATS = [
-  { label: "TOTALT", value: "8", sub: "certifikat i systemet", color: "#3b82f6" },
-  { label: "GILTIGA", value: "5", sub: "inga åtgärder behövs", color: "#10b981" },
-  { label: "UTGÅR SNART", value: "1", sub: "inom 30 dagar", color: "#f59e0b" },
-  { label: "SAKNAS", value: "3", sub: "kräver omedelbar åtgärd", color: "#ef4444" },
-];
+const STAT_DEFS = [
+  { key: "total", label: "TOTALT", sub: "certifikat i systemet", color: "#3b82f6" },
+  { key: "giltig", label: "GILTIGA", sub: "inga åtgärder behövs", color: "#10b981" },
+  { key: "utgaar_snart", label: "UTGÅR SNART", sub: "inom 30 dagar", color: "#f59e0b" },
+  { key: "saknas", label: "SAKNAS", sub: "kräver omedelbar åtgärd", color: "#ef4444" },
+] as const;
 
 const FILTERS = ["Alla", "Giltiga", "Utgår snart", "Saknas"] as const;
 type Filter = typeof FILTERS[number];
