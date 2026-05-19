@@ -187,11 +187,28 @@ function ActionsRequired() {
 
 function StatsRow() {
   const navigate = useNavigate();
+  const [counts, setCounts] = useState({ total: 0, redo: 0, pagar: 0, ej: 0 });
+
+  useEffect(() => {
+    supabase
+      .from("personal")
+      .select("status")
+      .then(({ data }) => {
+        const rows = data ?? [];
+        const total = rows.length;
+        const redo = rows.filter((r) => r.status === "redo").length;
+        const pagar = rows.filter((r) => r.status === "pagaende" || r.status === "pagar").length;
+        const ej = rows.filter((r) => r.status === "ej_paborjat").length;
+        setCounts({ total, redo, pagar, ej });
+      });
+  }, []);
+
+  const pctRedo = counts.total ? Math.round((counts.redo / counts.total) * 100) : 0;
   const stats = [
-    { color: "#3b82f6", label: "TOTAL ARBETSKRAFT", value: "27", sub: "↑ 3 nya denna vecka", to: "/arbetskraft", search: {} },
-    { color: "#10b981", label: "REDO FÖR ARBETE", value: "19", sub: "70% av alla", to: "/arbetskraft", search: { filter: "redo" } },
-    { color: "#f59e0b", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu", to: "/arbetskraft", search: { filter: "pagande" } },
-    { color: "#ef4444", label: "EJ PÅBÖRJAT", value: "3", sub: "Kräver åtgärd", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { color: "#3b82f6", label: "TOTAL ARBETSKRAFT", value: String(counts.total), sub: "medarbetare", to: "/arbetskraft", search: {} },
+    { color: "#10b981", label: "REDO FÖR ARBETE", value: String(counts.redo), sub: `${pctRedo}% av alla`, to: "/arbetskraft", search: { filter: "redo" } },
+    { color: "#f59e0b", label: "UNDER UPPLÄRNING", value: String(counts.pagar), sub: "Pågår just nu", to: "/arbetskraft", search: { filter: "pagar" } },
+    { color: "#ef4444", label: "EJ PÅBÖRJAT", value: String(counts.ej), sub: "Kräver åtgärd", to: "/arbetskraft", search: { filter: "ej-start" } },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
