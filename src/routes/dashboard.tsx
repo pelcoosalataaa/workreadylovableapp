@@ -19,6 +19,8 @@ import {
   CloudRain,
   CloudLightning,
   Snowflake,
+  MapPin,
+  Circle,
 } from "lucide-react";
 import { STORAGE_KEY } from "@/lib/departments";
 
