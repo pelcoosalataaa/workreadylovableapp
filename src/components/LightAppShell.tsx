@@ -36,6 +36,7 @@ export function LightPlaceholderCard({
   legacyHref?: string;
   legacyLabel?: string;
 }) {
+  const navigate = useNavigate();
   return (
     <section
       style={{
@@ -52,21 +53,22 @@ export function LightPlaceholderCard({
       <p style={{ fontSize: 13, color: "#374151", marginTop: 8, maxWidth: 620 }}>{description}</p>
       {legacyHref && (
         <div style={{ marginTop: 20 }}>
-          <Link
-            to={legacyHref}
+          <button
+            type="button"
+            onClick={() => navigate({ to: legacyHref as never })}
             style={{
-              display: "inline-block",
               background: "#0b1e2d",
               color: "#fff",
+              border: "none",
               padding: "10px 20px",
               borderRadius: 8,
               fontSize: 13,
               fontWeight: 600,
-              textDecoration: "none",
+              cursor: "pointer",
             }}
           >
             {legacyLabel ?? "Öppna"} →
-          </Link>
+          </button>
         </div>
       )}
     </section>
