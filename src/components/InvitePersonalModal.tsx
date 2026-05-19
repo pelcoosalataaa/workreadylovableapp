@@ -31,7 +31,7 @@ export function InvitePersonalModal({ open, onClose }: { open: boolean; onClose:
         <Field label="Namn"><TextInput value={namn} onChange={(e) => setNamn(e.target.value)} required /></Field>
         <Field label="E-post"><TextInput type="email" value={epost} onChange={(e) => setEpost(e.target.value)} required /></Field>
         <Field label="Roll"><SelectInput options={ROLLER} value={roll} onChange={(e) => setRoll(e.target.value)} /></Field>
-        <Field label="Avdelning"><TextInput value={avd} onChange={(e) => setAvd(e.target.value)} /></Field>
+        <Field label="Avdelning"><SelectInput options={AVDELNINGAR} value={avd} onChange={(e) => setAvd(e.target.value)} /></Field>
         <Field label="Bemanningsbolag"><SelectInput options={BOLAG} value={bolag} onChange={(e) => setBolag(e.target.value)} /></Field>
       </form>
     </AppModal>
