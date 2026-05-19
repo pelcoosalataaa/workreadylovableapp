@@ -12,7 +12,7 @@ export const Route = createFileRoute("/personal")({
 });
 
 type Status = "Godkänd" | "Pågår" | "Ej start";
-type Company = "Byggelement AB" | "Partner2Work AB" | "Ikett Personalpartner";
+type Company = "Byggelement AB" | "Partner2Work AB";
 
 type Person = {
   initials: string;
