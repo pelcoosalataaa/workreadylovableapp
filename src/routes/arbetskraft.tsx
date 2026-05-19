@@ -17,17 +17,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  ROLES,
+  DEPARTMENTS,
+  DEPARTMENT_FILTERS,
+  STAFFING_PARTNERS,
+  fetchPersonal,
+  fetchAvdelningar,
+  fetchForetagId,
+  type PersonRow,
+} from "@/lib/workforce";
 
 export const Route = createFileRoute("/arbetskraft")({
   component: ArbetskraftPage,
 });
 
-// ---------- Data ----------
+// ---------- View types ----------
 
 type EmploymentType = "Egen personal" | "Inhyrd personal";
 type StatusKey = "redo" | "pagar" | "ej-start";
 
-interface Worker {
+type Worker = {
   id: string;
   initials: string;
   avatarColor: { bg: string; color: string };
@@ -38,135 +48,53 @@ interface Worker {
   department: string;
   employmentType: EmploymentType;
   agency?: string;
-  startDate: string; // ISO
+  startDate: string;
   progress: number;
   status: StatusKey;
   certs: { text: string; tone: "ok" | "warn" | "bad" }[];
   phone?: string;
   email?: string;
+};
+
+function avatarFor(status: StatusKey) {
+  if (status === "redo") return { bg: "#d1fae5", color: "#065f46" };
+  if (status === "pagar") return { bg: "#fef3c7", color: "#92400e" };
+  return { bg: "#fee2e2", color: "#991b1b" };
 }
 
-const DEPARTMENTS = [
-  "Snickeriavdelning",
-  "Gul hallen",
-  "Rosa hallen",
-  "Gröna hallen",
-  "Armeringsavdelning",
-  "Lap och Lag",
-  "Gjutavdelningen",
-  "CNC-produktion",
-  "Lager & Utskeppning",
-  "Montering",
-] as const;
+function statusFromDb(s: string): StatusKey {
+  if (s === "redo") return "redo";
+  if (s === "pagaende" || s === "pagar") return "pagar";
+  return "ej-start";
+}
 
-const DEPARTMENT_FILTERS = [
-  "Alla avdelningar",
-  "Snickeriavdelning",
-  "Gul hallen",
-  "Rosa hallen",
-  "Gröna hallen",
-  "Armeringsavdelning",
-  "Lap och Lag",
-] as const;
+function statusToDb(s: StatusKey): string {
+  if (s === "redo") return "redo";
+  if (s === "pagar") return "pagaende";
+  return "ej_paborjat";
+}
 
-const INITIAL_WORKERS: Worker[] = [
-  {
-    id: "aj",
-    initials: "AJ",
-    avatarColor: { bg: "#d1fae5", color: "#065f46" },
-    firstName: "Anders",
-    lastName: "Johansson",
-    role: "Gjutare",
+function rowToWorker(p: PersonRow): Worker {
+  const status = statusFromDb(p.status);
+  return {
+    id: p.id,
+    initials: ((p.fornamn[0] ?? "") + (p.efternamn[0] ?? "")).toUpperCase(),
+    avatarColor: avatarFor(status),
+    firstName: p.fornamn,
+    lastName: p.efternamn,
+    role: p.roll ?? "",
     shift: "Dag",
-    department: "Gjutavdelningen",
-    employmentType: "Egen personal",
-    startDate: "2024-11-01",
-    progress: 100,
-    status: "redo",
-    certs: [
-      { text: "✓ Betongkurs", tone: "ok" },
-      { text: "✓ Traverskort", tone: "ok" },
-    ],
-  },
-  {
-    id: "mk",
-    initials: "MK",
-    avatarColor: { bg: "#d1fae5", color: "#065f46" },
-    firstName: "Maria",
-    lastName: "Karlsson",
-    role: "CNC-operatör",
-    shift: "Dag",
-    department: "CNC-produktion",
-    employmentType: "Egen personal",
-    startDate: "2024-10-15",
-    progress: 100,
-    status: "redo",
-    certs: [{ text: "✓ CNC-utbildning", tone: "ok" }],
-  },
-  {
-    id: "pl",
-    initials: "PL",
-    avatarColor: { bg: "#fef3c7", color: "#92400e" },
-    firstName: "Petter",
-    lastName: "Lindgren",
-    role: "Truckförare",
-    shift: "Kväll",
-    department: "Lager & Utskeppning",
-    employmentType: "Inhyrd personal",
-    agency: "Partner2Work AB",
-    startDate: "2024-11-01",
-    progress: 65,
-    status: "pagar",
-    certs: [{ text: "✓ Truckkort B", tone: "ok" }],
-  },
-  {
-    id: "sb",
-    initials: "SB",
-    avatarColor: { bg: "#fee2e2", color: "#991b1b" },
-    firstName: "Sara",
-    lastName: "Berg",
-    role: "Betongarbetare",
-    shift: "Dag",
-    department: "Gjutavdelningen",
-    employmentType: "Inhyrd personal",
-    agency: "Partner2Work AB",
-    startDate: "2024-11-12",
-    progress: 0,
-    status: "ej-start",
-    certs: [{ text: "✗ Betongkurs saknas", tone: "bad" }],
-  },
-  {
-    id: "jn",
-    initials: "JN",
-    avatarColor: { bg: "#dbeafe", color: "#1e40af" },
-    firstName: "Johan",
-    lastName: "Nilsson",
-    role: "Montör",
-    shift: "Dag",
-    department: "Montering",
-    employmentType: "Inhyrd personal",
-    agency: "Ikett Personalpartner",
-    startDate: "2024-11-08",
-    progress: 40,
-    status: "pagar",
-    certs: [{ text: "✗ Heta arbeten saknas", tone: "bad" }],
-  },
-  {
-    id: "eh",
-    initials: "EH",
-    avatarColor: { bg: "#fef3c7", color: "#92400e" },
-    firstName: "Erik",
-    lastName: "Holm",
-    role: "Armerare",
-    shift: "Dag",
-    department: "Armeringsavdelningen",
-    employmentType: "Egen personal",
-    startDate: "2024-09-01",
-    progress: 100,
-    status: "redo",
-    certs: [{ text: "⚠ Traverskort 14 dagar", tone: "warn" }],
-  },
-];
+    department: p.avdelning_namn ?? "",
+    employmentType: p.anstallningstyp === "inhyrd" ? "Inhyrd personal" : "Egen personal",
+    agency: p.bemanningsbolag ?? undefined,
+    startDate: p.startdatum ?? "",
+    progress: p.framsteg ?? 0,
+    status,
+    certs: [],
+    phone: p.telefon ?? undefined,
+    email: p.epost ?? undefined,
+  };
+}
 
 type StatusFilter = "alla" | "redo" | "pagar" | "ej-start" | "egen" | "inhyrd";
 
@@ -179,7 +107,7 @@ const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
   { id: "inhyrd", label: "Inhyrd personal" },
 ];
 
-// ---------- Shared style helpers ----------
+// ---------- Shared style ----------
 
 const CARD_STYLE: React.CSSProperties = {
   background: "#fff",
@@ -210,18 +138,8 @@ function EmploymentBadge({ w }: { w: Worker }) {
       </span>
     );
   }
-  const isIkett = w.agency?.includes("Ikett");
   return (
-    <span
-      style={{
-        background: isIkett ? "#f3e8ff" : "#dbeafe",
-        color: isIkett ? "#6b21a8" : "#1e40af",
-        borderRadius: 4,
-        padding: "2px 8px",
-        fontSize: 11,
-        fontWeight: 600,
-      }}
-    >
+    <span style={{ background: "#dbeafe", color: "#1e40af", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 600 }}>
       {w.agency ?? "Inhyrd"}
     </span>
   );
@@ -244,6 +162,13 @@ function ProgressBar({ value }: { value: number }) {
 function ArbetskraftPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("alla");
+  const [deptFilter, setDeptFilter] = useState<string>("Alla avdelningar");
+  const [query, setQuery] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [detailWorker, setDetailWorker] = useState<Worker | null>(null);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -256,12 +181,21 @@ function ArbetskraftPage() {
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  const [workers, setWorkers] = useState<Worker[]>(INITIAL_WORKERS);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("alla");
-  const [deptFilter, setDeptFilter] = useState<string>("Alla avdelningar");
-  const [query, setQuery] = useState("");
-  const [addOpen, setAddOpen] = useState(false);
-  const [detailWorker, setDetailWorker] = useState<Worker | null>(null);
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const rows = await fetchPersonal();
+      setWorkers(rows.map(rowToWorker));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (ready) void reload();
+  }, [ready]);
 
   const filtered = useMemo(() => {
     return workers.filter((w) => {
@@ -270,9 +204,7 @@ function ArbetskraftPage() {
       if (statusFilter === "ej-start" && w.status !== "ej-start") return false;
       if (statusFilter === "egen" && w.employmentType !== "Egen personal") return false;
       if (statusFilter === "inhyrd" && w.employmentType !== "Inhyrd personal") return false;
-      if (deptFilter !== "Alla avdelningar" && !w.department.toLowerCase().includes(deptFilter.toLowerCase().split(" ")[0])) {
-        return false;
-      }
+      if (deptFilter !== "Alla avdelningar" && w.department !== deptFilter) return false;
       if (query.trim()) {
         const q = query.toLowerCase();
         const hay = `${w.firstName} ${w.lastName} ${w.role} ${w.department}`.toLowerCase();
@@ -282,14 +214,12 @@ function ArbetskraftPage() {
     });
   }, [workers, statusFilter, deptFilter, query]);
 
-  const totals = useMemo(() => {
-    return {
-      total: workers.length,
-      redo: workers.filter((w) => w.status === "redo").length,
-      pagar: workers.filter((w) => w.status === "pagar").length,
-      ej: workers.filter((w) => w.status === "ej-start").length,
-    };
-  }, [workers]);
+  const totals = useMemo(() => ({
+    total: workers.length,
+    redo: workers.filter((w) => w.status === "redo").length,
+    pagar: workers.filter((w) => w.status === "pagar").length,
+    ej: workers.filter((w) => w.status === "ej-start").length,
+  }), [workers]);
 
   if (!ready) return <div style={{ minHeight: "100vh", background: "#f0f2f5" }} />;
 
@@ -299,12 +229,9 @@ function ArbetskraftPage() {
       <div style={{ flex: 1, marginLeft: 260, display: "flex", flexDirection: "column" }}>
         <AppTopBar
           title="Arbetskraft"
-          action={
-            <PrimaryBtn onClick={() => setAddOpen(true)}>+ Lägg till medarbetare</PrimaryBtn>
-          }
+          action={<PrimaryBtn onClick={() => setAddOpen(true)}>+ Lägg till medarbetare</PrimaryBtn>}
         />
         <main style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Page header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
             <div>
               <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "#111827", margin: 0 }}>
@@ -316,30 +243,17 @@ function ArbetskraftPage() {
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               <div style={{ position: "relative" }}>
-                <Search
-                  size={14}
-                  style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }}
-                />
+                <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Sök namn, roll, avdelning..."
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 8,
-                    padding: "9px 12px 9px 32px",
-                    fontSize: 13,
-                    color: "#111827",
-                    width: 280,
-                    outline: "none",
-                  }}
+                  style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, padding: "9px 12px 9px 32px", fontSize: 13, color: "#111827", width: 280, outline: "none" }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Filter row */}
           <section style={{ ...CARD_STYLE, padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {STATUS_FILTERS.map((f) => (
@@ -366,83 +280,43 @@ function ArbetskraftPage() {
             </div>
           </section>
 
-          {/* Summary row */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             <MetricCard color="#3b82f6" label="TOTAL" value={String(totals.total)} sub="medarbetare" />
-            <MetricCard
-              color="#10b981"
-              label="REDO"
-              value={String(totals.redo)}
-              sub={`${totals.total ? Math.round((totals.redo / totals.total) * 100) : 0}% av alla`}
-            />
+            <MetricCard color="#10b981" label="REDO" value={String(totals.redo)} sub={`${totals.total ? Math.round((totals.redo / totals.total) * 100) : 0}% av alla`} />
             <MetricCard color="#f59e0b" label="PÅGÅR" value={String(totals.pagar)} sub="under upplärning" />
             <MetricCard color="#ef4444" label="EJ PÅBÖRJAT" value={String(totals.ej)} sub="kräver åtgärd" />
           </div>
 
-          {/* Workforce table */}
           <section style={{ ...CARD_STYLE, overflow: "hidden" }}>
-            <div
-              style={{
-                padding: "16px 20px",
-                borderBottom: "1px solid #f3f4f6",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: 0 }}>
-                Alla medarbetare ({filtered.length})
-              </h3>
-              <SecondaryBtn
-                style={{ padding: "6px 12px", fontSize: 12 }}
-                onClick={() => toast.success("Export förbereds...")}
-              >
-                Exportera
-              </SecondaryBtn>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: "#111827", margin: 0 }}>Alla medarbetare ({filtered.length})</h3>
+              <SecondaryBtn style={{ padding: "6px 12px", fontSize: 12 }} onClick={() => toast.success("Export förbereds...")}>Exportera</SecondaryBtn>
             </div>
 
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: "#f9fafb" }}>
-                    {[
-                      "MEDARBETARE",
-                      "AVDELNING",
-                      "ANSTÄLLNINGSTYP",
-                      "STARTDATUM",
-                      "FRAMSTEG",
-                      "STATUS",
-                      "CERTIFIKAT",
-                      "ÅTGÄRD",
-                    ].map((h) => (
-                      <th
-                        key={h}
-                        style={{
-                          textAlign: "left",
-                          padding: "10px 20px",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          letterSpacing: "0.08em",
-                          color: "#6b7280",
-                          textTransform: "uppercase",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {h}
-                      </th>
+                    {["MEDARBETARE", "AVDELNING", "ANSTÄLLNINGSTYP", "STARTDATUM", "FRAMSTEG", "STATUS", "ÅTGÄRD"].map((h) => (
+                      <th key={h} style={{ textAlign: "left", padding: "10px 20px", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#6b7280", textTransform: "uppercase", whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((w) => (
-                    <WorkerRow key={w.id} w={w} onOpen={() => setDetailWorker(w)} />
+                    <WorkerRow key={w.id} w={w} onOpen={() => setDetailWorker(w)} onDelete={async () => {
+                      await supabase.from("personal").delete().eq("id", w.id);
+                      toast.success(`${w.firstName} ${w.lastName} borttagen`);
+                      void reload();
+                    }} />
                   ))}
-                  {filtered.length === 0 && (
+                  {filtered.length === 0 && !loading && (
                     <tr>
-                      <td colSpan={8} style={{ padding: 40, textAlign: "center", color: "#6b7280", fontSize: 13 }}>
-                        Inga medarbetare matchar filtren.
-                      </td>
+                      <td colSpan={7} style={{ padding: 40, textAlign: "center", color: "#6b7280", fontSize: 13 }}>Inga medarbetare matchar filtren.</td>
                     </tr>
+                  )}
+                  {loading && (
+                    <tr><td colSpan={7} style={{ padding: 40, textAlign: "center", color: "#6b7280", fontSize: 13 }}>Hämtar…</td></tr>
                   )}
                 </tbody>
               </table>
@@ -454,10 +328,7 @@ function ArbetskraftPage() {
       <AddWorkerModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onAdd={(w) => {
-          setWorkers((prev) => [w, ...prev]);
-          toast.success(`${w.firstName} ${w.lastName} tillagd & SMS skickat!`);
-        }}
+        onAdded={() => { void reload(); }}
       />
       <PersonDetailModal worker={detailWorker} onClose={() => setDetailWorker(null)} />
     </div>
@@ -466,33 +337,12 @@ function ArbetskraftPage() {
 
 // ---------- Filter pill ----------
 
-function FilterPill({
-  label,
-  active,
-  activeStyle,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  activeStyle: React.CSSProperties;
-  onClick: () => void;
-}) {
+function FilterPill({ label, active, activeStyle, onClick }: { label: string; active: boolean; activeStyle: React.CSSProperties; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: 20,
-        padding: "6px 16px",
-        fontSize: 12,
-        fontWeight: 600,
-        background: "#fff",
-        color: "#374151",
-        cursor: "pointer",
-        transition: "all .15s",
-        ...(active ? activeStyle : {}),
-      }}
+      style={{ border: "1px solid #e5e7eb", borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 600, background: "#fff", color: "#374151", cursor: "pointer", transition: "all .15s", ...(active ? activeStyle : {}) }}
     >
       {label}
     </button>
@@ -501,28 +351,18 @@ function FilterPill({
 
 function pillActiveStyleFor(id: StatusFilter): React.CSSProperties {
   switch (id) {
-    case "redo":
-      return { background: "#d1fae5", color: "#065f46", borderColor: "#10b981" };
-    case "pagar":
-      return { background: "#fef3c7", color: "#92400e", borderColor: "#f59e0b" };
-    case "ej-start":
-      return { background: "#fee2e2", color: "#991b1b", borderColor: "#ef4444" };
-    default:
-      return { background: "#0b1e2d", color: "#fff", borderColor: "#0b1e2d" };
+    case "redo": return { background: "#d1fae5", color: "#065f46", borderColor: "#10b981" };
+    case "pagar": return { background: "#fef3c7", color: "#92400e", borderColor: "#f59e0b" };
+    case "ej-start": return { background: "#fee2e2", color: "#991b1b", borderColor: "#ef4444" };
+    default: return { background: "#0b1e2d", color: "#fff", borderColor: "#0b1e2d" };
   }
 }
-
-// ---------- Metric card ----------
 
 function MetricCard({ color, label, value, sub }: { color: string; label: string; value: string; sub: string }) {
   return (
     <div style={{ ...CARD_STYLE, borderLeft: `4px solid ${color}`, padding: 20 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-        {label}
-      </div>
-      <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 40, color, lineHeight: 1.1, margin: "8px 0 4px" }}>
-        {value}
-      </div>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>{label}</div>
+      <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 40, color, lineHeight: 1.1, margin: "8px 0 4px" }}>{value}</div>
       <div style={{ fontSize: 12, color: "#6b7280" }}>{sub}</div>
     </div>
   );
@@ -530,10 +370,7 @@ function MetricCard({ color, label, value, sub }: { color: string; label: string
 
 // ---------- Worker row ----------
 
-function WorkerRow({ w, onOpen }: { w: Worker; onOpen: () => void }) {
-  const certColor = (tone: "ok" | "warn" | "bad") =>
-    tone === "ok" ? "#6b7280" : tone === "warn" ? "#92400e" : "#dc2626";
-
+function WorkerRow({ w, onOpen, onDelete }: { w: Worker; onOpen: () => void; onDelete: () => void }) {
   return (
     <tr
       style={{ borderBottom: "1px solid #f9fafb", cursor: "pointer", transition: "background .15s" }}
@@ -543,66 +380,24 @@ function WorkerRow({ w, onOpen }: { w: Worker; onOpen: () => void }) {
     >
       <td style={{ padding: "14px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 999,
-              background: w.avatarColor.bg,
-              color: w.avatarColor.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 11,
-              flexShrink: 0,
-            }}
-          >
-            {w.initials}
-          </div>
+          <div style={{ width: 28, height: 28, borderRadius: 999, background: w.avatarColor.bg, color: w.avatarColor.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{w.initials}</div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>
-              {w.firstName} {w.lastName}
-            </div>
-            <div style={{ fontSize: 11, color: "#6b7280" }}>{w.role} · {w.shift}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{w.firstName} {w.lastName}</div>
+            <div style={{ fontSize: 11, color: "#6b7280" }}>{w.role}{w.shift ? ` · ${w.shift}` : ""}</div>
           </div>
         </div>
       </td>
       <td style={{ padding: "14px 20px", color: "#374151" }}>{w.department}</td>
-      <td style={{ padding: "14px 20px" }}>
-        <EmploymentBadge w={w} />
-      </td>
-      <td
-        style={{
-          padding: "14px 20px",
-          fontFamily: "'Space Mono', ui-monospace, monospace",
-          fontSize: 11,
-          color: "#6b7280",
-        }}
-      >
-        {w.startDate}
-      </td>
-      <td style={{ padding: "14px 20px" }}>
-        <ProgressBar value={w.progress} />
-      </td>
-      <td style={{ padding: "14px 20px" }}>
-        <StatusBadge status={w.status} />
-      </td>
-      <td style={{ padding: "14px 20px" }}>
-        {w.certs.map((c, i) => (
-          <span key={i} style={{ fontSize: 11, color: certColor(c.tone), marginRight: 8 }}>
-            {c.text}
-          </span>
-        ))}
-      </td>
+      <td style={{ padding: "14px 20px" }}><EmploymentBadge w={w} /></td>
+      <td style={{ padding: "14px 20px", fontFamily: "'Space Mono', ui-monospace, monospace", fontSize: 11, color: "#6b7280" }}>{w.startDate}</td>
+      <td style={{ padding: "14px 20px" }}><ProgressBar value={w.progress} /></td>
+      <td style={{ padding: "14px 20px" }}><StatusBadge status={w.status} /></td>
       <td style={{ padding: "14px 20px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-        <ActionMenu w={w} onOpenDetail={onOpen} />
+        <ActionMenu w={w} onOpenDetail={onOpen} onDelete={onDelete} />
       </td>
     </tr>
   );
 }
-
-// ---------- Action dropdown ----------
 
 function copyLinkFor(w: Worker) {
   const slug = `${w.firstName}-${w.lastName}`.toLowerCase();
@@ -611,67 +406,25 @@ function copyLinkFor(w: Worker) {
   return link;
 }
 
-function ActionMenu({ w, onOpenDetail }: { w: Worker; onOpenDetail: () => void }) {
+function ActionMenu({ w, onOpenDetail, onDelete }: { w: Worker; onOpenDetail: () => void; onDelete: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          aria-label="Åtgärder"
-          style={{
-            background: "transparent",
-            border: "none",
-            padding: 6,
-            cursor: "pointer",
-            color: "#6b7280",
-            borderRadius: 6,
-          }}
-        >
+        <button type="button" aria-label="Åtgärder" style={{ background: "transparent", border: "none", padding: 6, cursor: "pointer", color: "#6b7280", borderRadius: 6 }}>
           <MoreHorizontal size={16} />
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="end"
-        style={{
-          background: "#fff",
-          border: "1px solid #e5e7eb",
-          borderRadius: 8,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          padding: 4,
-          minWidth: 200,
-        }}
-      >
-        <DropdownMenuItem onClick={onOpenDetail} style={{ fontSize: 13, cursor: "pointer" }}>
-          Visa profil
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            copyLinkFor(w);
-            toast.success("Utbildningslänk kopierad!");
-          }}
-          style={{ fontSize: 13, cursor: "pointer" }}
-        >
+      <DropdownMenuContent align="end" style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.1)", padding: 4, minWidth: 200 }}>
+        <DropdownMenuItem onClick={onOpenDetail} style={{ fontSize: 13, cursor: "pointer" }}>Visa profil</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => { copyLinkFor(w); toast.success("Utbildningslänk kopierad!"); }} style={{ fontSize: 13, cursor: "pointer" }}>
           Kopiera utbildningslänk
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => toast.success("SMS skickat!")}
-          style={{ fontSize: 13, cursor: "pointer" }}
-        >
+        <DropdownMenuItem onClick={() => toast.success("SMS skickat!")} style={{ fontSize: 13, cursor: "pointer" }}>
           Skicka SMS-påminnelse
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => toast("Redigeringsläge öppnas...")}
-          style={{ fontSize: 13, cursor: "pointer" }}
-        >
-          Redigera
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => toast("Redigeringsläge öppnas...")} style={{ fontSize: 13, cursor: "pointer" }}>Redigera</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => toast.error(`${w.firstName} ${w.lastName} borttagen`)}
-          style={{ fontSize: 13, cursor: "pointer", color: "#dc2626" }}
-        >
-          Ta bort
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onDelete} style={{ fontSize: 13, cursor: "pointer", color: "#dc2626" }}>Ta bort</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -701,71 +454,23 @@ function PersonDetailModal({ worker, onClose }: { worker: Worker | null; onClose
 
   return (
     <Dialog open={!!worker} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        className="max-w-[560px] p-0 border-0"
-        style={{ background: "#fff", borderRadius: 12, padding: 32 }}
-      >
-        {/* Header */}
+      <DialogContent className="max-w-[560px] p-0 border-0" style={{ background: "#fff", borderRadius: 12, padding: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 999,
-              background: worker.avatarColor.bg,
-              color: worker.avatarColor.color,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 16,
-            }}
-          >
-            {worker.initials}
-          </div>
+          <div style={{ width: 48, height: 48, borderRadius: 999, background: worker.avatarColor.bg, color: worker.avatarColor.color, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 16 }}>{worker.initials}</div>
           <div style={{ flex: 1 }}>
-            <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 20, color: "#111827", margin: 0 }}>
-              {worker.firstName} {worker.lastName}
-            </h3>
-            <p style={{ fontSize: 12, color: "#6b7280", margin: "2px 0 0" }}>
-              {worker.role} · {worker.shift}
-            </p>
+            <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 20, color: "#111827", margin: 0 }}>{worker.firstName} {worker.lastName}</h3>
+            <p style={{ fontSize: 12, color: "#6b7280", margin: "2px 0 0" }}>{worker.role}{worker.shift ? ` · ${worker.shift}` : ""}</p>
           </div>
-          <button
-            onClick={onClose}
-            type="button"
-            style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280" }}
-            aria-label="Stäng"
-          >
+          <button onClick={onClose} type="button" style={{ background: "transparent", border: "none", cursor: "pointer", color: "#6b7280" }} aria-label="Stäng">
             <X size={18} />
           </button>
         </div>
 
-        {/* Tabs */}
         <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #e5e7eb", marginBottom: 20 }}>
-          {([
-            ["oversikt", "Översikt"],
-            ["utbildning", "Utbildning"],
-            ["certifikat", "Certifikat"],
-          ] as const).map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setTab(id)}
-              style={{
-                background: "transparent",
-                border: "none",
-                padding: "8px 14px",
-                fontSize: 13,
-                fontWeight: 600,
-                color: tab === id ? "#0b1e2d" : "#6b7280",
-                borderBottom: tab === id ? "2px solid #0b1e2d" : "2px solid transparent",
-                cursor: "pointer",
-                marginBottom: -1,
-              }}
-            >
-              {label}
-            </button>
+          {([["oversikt", "Översikt"], ["utbildning", "Utbildning"], ["certifikat", "Certifikat"]] as const).map(([id, label]) => (
+            <button key={id} type="button" onClick={() => setTab(id)}
+              style={{ background: "transparent", border: "none", padding: "8px 14px", fontSize: 13, fontWeight: 600, color: tab === id ? "#0b1e2d" : "#6b7280", borderBottom: tab === id ? "2px solid #0b1e2d" : "2px solid transparent", cursor: "pointer", marginBottom: -1 }}
+            >{label}</button>
           ))}
         </div>
 
@@ -780,85 +485,26 @@ function PersonDetailModal({ worker, onClose }: { worker: Worker | null; onClose
           </div>
         )}
 
-        {tab === "utbildning" && (
-          <div style={{ fontSize: 13, color: "#374151" }}>
-            {worker.certs.map((c, i) => (
-              <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}>
-                {c.text}
-              </div>
-            ))}
+        {(tab === "utbildning" || tab === "certifikat") && (
+          <div style={{ fontSize: 13, color: "#6b7280" }}>
+            Visa certifikat och kursresultat i översikten /certifikat.
           </div>
         )}
 
-        {tab === "certifikat" && (
-          <div style={{ fontSize: 13, color: "#374151" }}>
-            {worker.certs.map((c, i) => (
-              <div key={i} style={{ padding: "10px 0", borderBottom: "1px solid #f3f4f6" }}>
-                {c.text}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Link row */}
         <div style={{ marginTop: 20 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#9ca3af",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-              marginBottom: 6,
-            }}
-          >
-            Utbildningslänk
-          </div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Utbildningslänk</div>
           <div style={{ display: "flex", gap: 8 }}>
-            <input
-              readOnly
-              value={link}
-              style={{
-                flex: 1,
-                background: "#f9fafb",
-                border: "1px solid #e5e7eb",
-                borderRadius: 8,
-                padding: "9px 12px",
-                fontSize: 12,
-                color: "#374151",
-                fontFamily: "'Space Mono', ui-monospace, monospace",
-                outline: "none",
-              }}
-            />
-            <button
-              type="button"
-              onClick={copy}
-              style={{
-                background: "#7dedb8",
-                color: "#0b1e2d",
-                border: "none",
-                borderRadius: 8,
-                padding: "0 14px",
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
+            <input readOnly value={link} style={{ flex: 1, background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "9px 12px", fontSize: 12, color: "#374151", fontFamily: "'Space Mono', ui-monospace, monospace", outline: "none" }} />
+            <button type="button" onClick={copy} style={{ background: "#7dedb8", color: "#0b1e2d", border: "none", borderRadius: 8, padding: "0 14px", fontSize: 13, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
               {copied ? <Check size={14} /> : <Copy size={14} />}
               {copied ? "Kopierad" : "Kopiera"}
             </button>
           </div>
         </div>
 
-        {/* Footer */}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
           <SecondaryBtn onClick={onClose}>Stäng</SecondaryBtn>
-          <PrimaryBtn onClick={() => toast.success("SMS med utbildningslänk skickat!")}>
-            Skicka utbildningslänk via SMS
-          </PrimaryBtn>
+          <PrimaryBtn onClick={() => toast.success("SMS med utbildningslänk skickat!")}>Skicka utbildningslänk via SMS</PrimaryBtn>
         </div>
       </DialogContent>
     </Dialog>
@@ -868,34 +514,15 @@ function PersonDetailModal({ worker, onClose }: { worker: Worker | null; onClose
 function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <div
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#9ca3af",
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          marginBottom: 4,
-        }}
-      >
-        {label}
-      </div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 13, color: "#111827", fontWeight: 500 }}>{value}</div>
     </div>
   );
 }
 
-// ---------- Add worker modal ----------
+// ---------- Add worker modal (Supabase INSERT) ----------
 
-function AddWorkerModal({
-  open,
-  onClose,
-  onAdd,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onAdd: (w: Worker) => void;
-}) {
+function AddWorkerModal({ open, onClose, onAdded }: { open: boolean; onClose: () => void; onAdded: () => void }) {
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");
   const [phone, setPhone] = useState("");
@@ -903,56 +530,59 @@ function AddWorkerModal({
   const [role, setRole] = useState("");
   const [department, setDepartment] = useState<string>("");
   const [employment, setEmployment] = useState<EmploymentType>("Egen personal");
-  const [agency, setAgency] = useState("");
+  const [agency, setAgency] = useState<string>("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [saving, setSaving] = useState(false);
+  const [avdelningar, setAvdelningar] = useState<{ id: string; namn: string }[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    void fetchAvdelningar().then(setAvdelningar);
+  }, [open]);
 
   const reset = () => {
-    setFirst("");
-    setLast("");
-    setPhone("");
-    setEmail("");
-    setRole("");
-    setDepartment("");
-    setEmployment("Egen personal");
-    setAgency("");
-    setStartDate(undefined);
+    setFirst(""); setLast(""); setPhone(""); setEmail(""); setRole("");
+    setDepartment(""); setEmployment("Egen personal"); setAgency(""); setStartDate(undefined);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!first || !last || !role || !department || !startDate) {
       toast.error("Fyll i alla obligatoriska fält");
       return;
     }
-    const initials = (first[0] + last[0]).toUpperCase();
-    const w: Worker = {
-      id: `${first}-${last}-${Date.now()}`.toLowerCase(),
-      initials,
-      avatarColor: { bg: "#dbeafe", color: "#1e40af" },
-      firstName: first,
-      lastName: last,
-      role,
-      shift: "Dag",
-      department,
-      employmentType: employment,
-      agency: employment === "Inhyrd personal" ? agency || "Inhyrd" : undefined,
-      startDate: format(startDate, "yyyy-MM-dd"),
-      progress: 0,
-      status: "ej-start",
-      certs: [{ text: "✗ Utbildning ej påbörjad", tone: "bad" }],
-      phone,
-      email,
-    };
-    onAdd(w);
-    reset();
-    onClose();
+    setSaving(true);
+    try {
+      const foretagId = await fetchForetagId();
+      const avd = avdelningar.find((a) => a.namn === department);
+      const { error } = await supabase.from("personal").insert({
+        foretag_id: foretagId,
+        avdelning_id: avd?.id ?? null,
+        fornamn: first,
+        efternamn: last,
+        roll: role,
+        telefon: phone || null,
+        epost: email || null,
+        anstallningstyp: employment === "Inhyrd personal" ? "inhyrd" : "egen",
+        bemanningsbolag: employment === "Inhyrd personal" ? (agency || null) : null,
+        startdatum: format(startDate, "yyyy-MM-dd"),
+        framsteg: 0,
+        status: statusToDb("ej-start"),
+      });
+      if (error) throw error;
+      toast.success(`${first} ${last} tillagd & SMS skickat!`);
+      onAdded();
+      reset();
+      onClose();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        className="max-w-[560px] p-0 border-0"
-        style={{ background: "#fff", borderRadius: 12, padding: 32 }}
-      >
+      <DialogContent className="max-w-[560px] p-0 border-0" style={{ background: "#fff", borderRadius: 12, padding: 32 }}>
         <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 20, color: "#111827", margin: "0 0 20px" }}>
           Lägg till medarbetare
         </h3>
@@ -962,68 +592,47 @@ function AddWorkerModal({
           <FormInput label="Efternamn *" value={last} onChange={setLast} placeholder="Andersson" />
           <FormInput label="Telefonnummer (för SMS)" value={phone} onChange={setPhone} placeholder="+46 70 123 45 67" />
           <FormInput label="E-post" value={email} onChange={setEmail} placeholder="anna@exempel.se" />
-          <div style={{ gridColumn: "1 / -1" }}>
-            <FormInput label="Roll *" value={role} onChange={setRole} placeholder="Betongarbetare" />
+          <div>
+            <FormLabel>Roll *</FormLabel>
+            <select value={role} onChange={(e) => setRole(e.target.value)} style={selectStyle}>
+              <option value="">Välj roll...</option>
+              {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
           </div>
           <div>
             <FormLabel>Avdelning *</FormLabel>
-            <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              style={selectStyle}
-            >
+            <select value={department} onChange={(e) => setDepartment(e.target.value)} style={selectStyle}>
               <option value="">Välj avdelning...</option>
-              {DEPARTMENTS.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
+              {DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
             <FormLabel>Anställningstyp *</FormLabel>
-            <select
-              value={employment}
-              onChange={(e) => setEmployment(e.target.value as EmploymentType)}
-              style={selectStyle}
-            >
+            <select value={employment} onChange={(e) => setEmployment(e.target.value as EmploymentType)} style={selectStyle}>
               <option value="Egen personal">Egen personal</option>
               <option value="Inhyrd personal">Inhyrd personal</option>
             </select>
           </div>
           {employment === "Inhyrd personal" && (
-            <div style={{ gridColumn: "1 / -1" }}>
-              <FormInput label="Bemanningsbolag" value={agency} onChange={setAgency} placeholder="Partner2Work AB" />
+            <div>
+              <FormLabel>Bemanningsbolag</FormLabel>
+              <select value={agency} onChange={(e) => setAgency(e.target.value)} style={selectStyle}>
+                <option value="">Välj bolag...</option>
+                {STAFFING_PARTNERS.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
             </div>
           )}
           <div style={{ gridColumn: "1 / -1" }}>
             <FormLabel>Startdatum *</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  style={{
-                    ...selectStyle,
-                    textAlign: "left",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    color: startDate ? "#111827" : "#9ca3af",
-                  }}
-                >
+                <button type="button" style={{ ...selectStyle, textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", color: startDate ? "#111827" : "#9ca3af" }}>
                   <span>{startDate ? format(startDate, "yyyy-MM-dd") : "Välj datum"}</span>
                   <CalendarIcon size={14} />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
+                <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus className={cn("p-3 pointer-events-auto")} />
               </PopoverContent>
             </Popover>
           </div>
@@ -1031,7 +640,7 @@ function AddWorkerModal({
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 24 }}>
           <SecondaryBtn onClick={() => { reset(); onClose(); }}>Avbryt</SecondaryBtn>
-          <PrimaryBtn onClick={submit}>Lägg till & Skicka SMS</PrimaryBtn>
+          <PrimaryBtn onClick={submit} disabled={saving}>{saving ? "Sparar..." : "Lägg till & Skicka SMS"}</PrimaryBtn>
         </div>
       </DialogContent>
     </Dialog>
@@ -1039,56 +648,23 @@ function AddWorkerModal({
 }
 
 const selectStyle: React.CSSProperties = {
-  width: "100%",
-  background: "#fff",
-  border: "1px solid #e5e7eb",
-  borderRadius: 8,
-  padding: "9px 12px",
-  fontSize: 13,
-  color: "#111827",
-  outline: "none",
-  fontFamily: "Inter, sans-serif",
+  width: "100%", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+  padding: "9px 12px", fontSize: 13, color: "#111827", outline: "none", fontFamily: "Inter, sans-serif",
 };
 
 function FormLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label
-      style={{
-        display: "block",
-        fontSize: 11,
-        fontWeight: 700,
-        color: "#9ca3af",
-        textTransform: "uppercase",
-        letterSpacing: "0.08em",
-        marginBottom: 6,
-      }}
-    >
+    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
       {children}
     </label>
   );
 }
 
-function FormInput({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-}) {
+function FormInput({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
     <div>
       <FormLabel>{label}</FormLabel>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={selectStyle}
-      />
+      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={selectStyle} />
     </div>
   );
 }
