@@ -80,7 +80,7 @@ function MobilPage() {
     }
   }
 
-  const passed = total > 0 && correctCount / total >= 0.75;
+  const passed = total > 0 && correctCount / total >= 0.8;
 
   return (
     <div
