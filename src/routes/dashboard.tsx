@@ -123,9 +123,10 @@ type ActionItem = { text: string; to: string; search?: Record<string, string> };
 function ActionsRequired() {
   const navigate = useNavigate();
   const items: ActionItem[] = [
-    { text: "Sara Berg har inte påbörjat sin utbildning — börjar måndag", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { text: "Sara Berg har inte påbörjat sin utbildning", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { text: "Lisa Bergström är 45% klar — börjar snart", to: "/arbetskraft", search: { filter: "pagar" } },
+    { text: "Mohammed Al-Hassan har inte påbörjat sin utbildning", to: "/arbetskraft", search: { filter: "ej-start" } },
     { text: "Erik Holms traverskort utgår om 14 dagar", to: "/certifikat", search: { filter: "utgaende" } },
-    { text: "3 personer saknar obligatorisk säkerhetsutbildning", to: "/utbildning", search: { filter: "saknas" } },
   ];
   return (
     <section
@@ -186,11 +187,28 @@ function ActionsRequired() {
 
 function StatsRow() {
   const navigate = useNavigate();
+  const [counts, setCounts] = useState({ total: 0, redo: 0, pagar: 0, ej: 0 });
+
+  useEffect(() => {
+    supabase
+      .from("personal")
+      .select("status")
+      .then(({ data }) => {
+        const rows = data ?? [];
+        const total = rows.length;
+        const redo = rows.filter((r) => r.status === "redo").length;
+        const pagar = rows.filter((r) => r.status === "pagaende" || r.status === "pagar").length;
+        const ej = rows.filter((r) => r.status === "ej_paborjat").length;
+        setCounts({ total, redo, pagar, ej });
+      });
+  }, []);
+
+  const pctRedo = counts.total ? Math.round((counts.redo / counts.total) * 100) : 0;
   const stats = [
-    { color: "#3b82f6", label: "TOTAL ARBETSKRAFT", value: "27", sub: "↑ 3 nya denna vecka", to: "/arbetskraft", search: {} },
-    { color: "#10b981", label: "REDO FÖR ARBETE", value: "19", sub: "70% av alla", to: "/arbetskraft", search: { filter: "redo" } },
-    { color: "#f59e0b", label: "UNDER UPPLÄRNING", value: "5", sub: "Pågår just nu", to: "/arbetskraft", search: { filter: "pagande" } },
-    { color: "#ef4444", label: "EJ PÅBÖRJAT", value: "3", sub: "Kräver åtgärd", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { color: "#3b82f6", label: "TOTAL ARBETSKRAFT", value: String(counts.total), sub: "medarbetare", to: "/arbetskraft", search: {} },
+    { color: "#10b981", label: "REDO FÖR ARBETE", value: String(counts.redo), sub: `${pctRedo}% av alla`, to: "/arbetskraft", search: { filter: "redo" } },
+    { color: "#f59e0b", label: "UNDER UPPLÄRNING", value: String(counts.pagar), sub: "Pågår just nu", to: "/arbetskraft", search: { filter: "pagar" } },
+    { color: "#ef4444", label: "EJ PÅBÖRJAT", value: String(counts.ej), sub: "Kräver åtgärd", to: "/arbetskraft", search: { filter: "ej-start" } },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
@@ -413,8 +431,8 @@ function UpcomingOnboardingsCard() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const rows = [
     { initials: "SB", color: "#ef4444", name: "Sara Berg", role: "Betongarbetare", start: "Måndag 19 maj", status: "Ej påbörjat", kind: "danger" as const },
-    { initials: "PL", color: "#f59e0b", name: "Petter Lindgren", role: "Truckförare", start: "Tisdag 20 maj", status: "65% klar", kind: "warning" as const },
-    { initials: "JN", color: "#3b82f6", name: "Johan Nilsson", role: "Montör", start: "Onsdag 21 maj", status: "Ej skickat", kind: "neutral" as const },
+    { initials: "LB", color: "#f59e0b", name: "Lisa Bergström", role: "Formbyggare", start: "Tisdag 20 maj", status: "45% klar", kind: "warning" as const },
+    { initials: "MA", color: "#ef4444", name: "Mohammed Al-Hassan", role: "Betongarbetare", start: "Onsdag 21 maj", status: "Ej påbörjat", kind: "danger" as const },
   ];
   return (
     <>

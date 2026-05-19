@@ -33,10 +33,10 @@ const DEPT_HEADERS = ["GJUTNING", "VIBRERING", "AVJÄMNING", "RITNINGSLÄSNING",
 const ROWS: Row[] = [
   { initials: "AJ", avatar: "green", name: "Anders Johansson", role: "Gjutare", shift: "Dag", company: "Byggelement AB", companyTone: "blue",
     cells: ["ok", "ok", "ok", "ok", "ok"], certs: [{ label: "✓ Betongkurs", tone: "ok" }, { label: "✓ Traverskort", tone: "ok" }] },
-  { initials: "PL", avatar: "amber", name: "Petter Lindgren", role: "Gjutare", shift: "Kväll", company: "Partner2Work", companyTone: "amber",
-    cells: ["wip", "ok", "ok", "wip", "ok"], certs: [{ label: "✓ Betongkurs", tone: "ok" }] },
-  { initials: "SB", avatar: "red", name: "Sara Berg", role: "Gjutare", shift: "Dag", company: "Partner2Work", companyTone: "amber",
+  { initials: "SB", avatar: "red", name: "Sara Berg", role: "Betongarbetare", shift: "Dag", company: "Partner2Work", companyTone: "amber",
     cells: ["none", "none", "none", "none", "none"], certs: [{ label: "✗ Betongkurs saknas", tone: "bad" }] },
+  { initials: "KL", avatar: "green", name: "Karl Lindgren", role: "Armerare", shift: "Dag", company: "Byggelement AB", companyTone: "blue",
+    cells: ["ok", "ok", "ok", "ok", "ok"], certs: [{ label: "✓ Betongkurs", tone: "ok" }, { label: "✓ Svetsarlicens", tone: "ok" }] },
 ];
 
 const DEPARTMENTS = [

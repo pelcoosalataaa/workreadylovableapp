@@ -1,4 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
   Users,
@@ -10,9 +12,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const navItems: { Icon: LucideIcon; label: string; to: string; badge?: number }[] = [
+type NavItem = { Icon: LucideIcon; label: string; to: string; badge?: number };
+
+const baseNavItems: NavItem[] = [
   { Icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { Icon: Users, label: "Arbetskraft", to: "/arbetskraft", badge: 3 },
+  { Icon: Users, label: "Arbetskraft", to: "/arbetskraft" },
   { Icon: GraduationCap, label: "Utbildning & Onboarding", to: "/utbildning" },
   { Icon: Grid3x3, label: "Kompetensmatris", to: "/kompetensmatris" },
   { Icon: ShieldCheck, label: "Certifikat & Efterlevnad", to: "/certifikat" },
@@ -22,6 +26,25 @@ const navItems: { Icon: LucideIcon; label: string; to: string; badge?: number }[
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [ejBadge, setEjBadge] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { count } = await supabase
+        .from("personal")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "ej_paborjat");
+      if (!cancelled) setEjBadge(count ?? 0);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [pathname]);
+
+  const navItems: NavItem[] = baseNavItems.map((item) =>
+    item.to === "/arbetskraft" && ejBadge && ejBadge > 0 ? { ...item, badge: ejBadge } : item
+  );
+
 
   return (
     <aside
