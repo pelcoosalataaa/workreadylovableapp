@@ -37,7 +37,7 @@ const people: Person[] = [
   { initials: "EH", name: "Erik Holm", role: "Armerare · Dag", dept: "Armeringsavdelningen", company: "Byggelement AB", percent: 100, barColor: "#00e096", avatarBg: "rgba(255,209,102,0.12)", avatarColor: "#ffd166", status: "Godkänd", certs: "⚠ Traverskort 14 dagar" },
 ];
 
-const filters = ["Alla", "Egen personal", "Partner2Work", "Ikett", "Godkända", "Ej påbörjat"] as const;
+const filters = ["Alla", "Egen personal", "Partner2Work", "Godkända", "Ej påbörjat"] as const;
 type Filter = typeof filters[number];
 
 function matchesFilter(p: Person, f: Filter): boolean {
@@ -45,7 +45,6 @@ function matchesFilter(p: Person, f: Filter): boolean {
     case "Alla": return true;
     case "Egen personal": return p.company === "Byggelement AB";
     case "Partner2Work": return p.company === "Partner2Work AB";
-    case "Ikett": return p.company === "Ikett Personalpartner";
     case "Godkända": return p.status === "Godkänd";
     case "Ej påbörjat": return p.status === "Ej start";
   }
