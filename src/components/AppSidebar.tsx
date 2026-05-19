@@ -26,6 +26,25 @@ const baseNavItems: NavItem[] = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [ejBadge, setEjBadge] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { count } = await supabase
+        .from("personal")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "ej_paborjat");
+      if (!cancelled) setEjBadge(count ?? 0);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [pathname]);
+
+  const navItems: NavItem[] = baseNavItems.map((item) =>
+    item.to === "/arbetskraft" && ejBadge && ejBadge > 0 ? { ...item, badge: ejBadge } : item
+  );
+
 
   return (
     <aside
