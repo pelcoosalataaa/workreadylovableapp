@@ -431,8 +431,8 @@ function UpcomingOnboardingsCard() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const rows = [
     { initials: "SB", color: "#ef4444", name: "Sara Berg", role: "Betongarbetare", start: "Måndag 19 maj", status: "Ej påbörjat", kind: "danger" as const },
-    { initials: "PL", color: "#f59e0b", name: "Petter Lindgren", role: "Truckförare", start: "Tisdag 20 maj", status: "65% klar", kind: "warning" as const },
-    { initials: "JN", color: "#3b82f6", name: "Johan Nilsson", role: "Montör", start: "Onsdag 21 maj", status: "Ej skickat", kind: "neutral" as const },
+    { initials: "LB", color: "#f59e0b", name: "Lisa Bergström", role: "Formbyggare", start: "Tisdag 20 maj", status: "45% klar", kind: "warning" as const },
+    { initials: "MA", color: "#ef4444", name: "Mohammed Al-Hassan", role: "Betongarbetare", start: "Onsdag 21 maj", status: "Ej påbörjat", kind: "danger" as const },
   ];
   return (
     <>
