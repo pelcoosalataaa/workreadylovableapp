@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
+import { LightAppShell } from "@/components/LightAppShell";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/modul/$id")({
@@ -33,126 +33,160 @@ function ModulDetailPage() {
   useEffect(() => {
     if (!ready) return;
     (async () => {
-      const { data: row } = await supabase.from("moduler").select("titel, steg, quiz").eq("id", id).maybeSingle();
-      if (row) setData({ titel: row.titel, steg: (row.steg as Steg[]) ?? [], quiz: (row.quiz as Quiz[]) ?? [] });
+      const { data: row } = await supabase
+        .from("moduler")
+        .select("titel, steg, quiz")
+        .eq("id", id)
+        .maybeSingle();
+      if (row) {
+        setData({
+          titel: row.titel,
+          steg: (row.steg as unknown as Steg[]) ?? [],
+          quiz: (row.quiz as unknown as Quiz[]) ?? [],
+        });
+      }
       setLoading(false);
     })();
   }, [ready, id]);
 
-  if (!ready) return <div className="min-h-screen bg-background" />;
+  if (!ready) return <div style={{ minHeight: "100vh", background: "#f0f2f5" }} />;
 
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <AppSidebar />
-      <div className="flex-1 ml-[260px] flex flex-col">
-        <main className="px-8 py-7 flex flex-col gap-6">
-          <Link to="/moduler" className="inline-flex items-center gap-2 text-xs font-semibold w-fit" style={{ color: "#7dedb8" }}>
-            <ArrowLeft size={14} strokeWidth={2} /> Tillbaka
-          </Link>
+    <LightAppShell
+      title="Utbildning & Onboarding"
+      action={
+        <Link
+          to="/utbildning"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8,
+            padding: "8px 14px", fontSize: 13, fontWeight: 600, color: "#374151",
+            textDecoration: "none",
+          }}
+        >
+          <ArrowLeft size={14} /> Tillbaka
+        </Link>
+      }
+    >
+      {loading && <div style={{ fontSize: 13, color: "#6b7280" }}>Laddar modul...</div>}
 
-          {loading && <div className="text-sm text-muted-foreground">Laddar modul...</div>}
+      {!loading && !data && (
+        <div style={{ background: "#fff", borderRadius: 10, padding: 24, fontSize: 13, color: "#6b7280", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          Modulen kunde inte hittas.
+        </div>
+      )}
 
-          {!loading && !data && <div className="text-sm text-muted-foreground">Modulen kunde inte hittas.</div>}
+      {data && (
+        <>
+          <h1 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 24, color: "#111827", margin: 0 }}>
+            {data.titel}
+          </h1>
 
-          {data && (
-            <>
-              <h1 className="font-display font-bold text-white" style={{ fontSize: 24 }}>{data.titel}</h1>
-
-              <div className="grid grid-cols-[3fr_2fr] gap-6">
-                <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, padding: 24 }}>
-                  <h2 className="font-display font-bold text-white text-[16px] mb-4">Steg</h2>
-                  <div className="flex flex-col gap-4">
-                    {data.steg.length === 0 && <div className="text-xs text-muted-foreground">Inga steg.</div>}
-                    {data.steg.map((s, i) => {
-                      const rubrik = typeof s === "string" ? "" : s.rubrik;
-                      const text = typeof s === "string" ? s : s.text;
-                      return (
-                        <div key={i} className="flex gap-3">
-                          <div className="shrink-0 flex items-center justify-center font-bold" style={{ width: 32, height: 32, borderRadius: 999, background: "#7dedb8", color: "#060f18", fontSize: 13 }}>{i + 1}</div>
-                          <div className="flex-1 min-w-0">
-                            {rubrik && <div className="font-bold text-white text-[14px] mb-1">{rubrik}</div>}
-                            <div className="text-[13px] text-foreground/90">{text}</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 10, padding: 24 }}>
-                  <h2 className="font-display font-bold text-white text-[16px] mb-4">Quiz</h2>
-                  <div className="flex flex-col gap-5">
-                    {data.quiz.length === 0 && <div className="text-xs text-muted-foreground">Inga frågor.</div>}
-                    {data.quiz.map((q, qi) => {
-                      const picked = answers[qi];
-                      const answered = picked !== undefined;
-                      const correctIdx = Number(q.ratt_svar ?? q.ratt);
-                      return (
-                        <div key={qi}>
-                          <div className="font-bold text-white text-[13px] mb-2">{qi + 1}. {q.fraga}</div>
-                          <div className="flex flex-col gap-2">
-                            {q.alternativ.map((alt, ai) => {
-                              const isCorrect = ai === correctIdx;
-                              const isPicked = picked === ai;
-                              let bg = "transparent";
-                              let border = "1px solid #1a3d58";
-                              let color = "white";
-                              if (answered) {
-                                if (isCorrect) { bg = "rgba(0,224,150,0.2)"; border = "1px solid #00e096"; color = "#00e096"; }
-                                else if (isPicked) { bg = "rgba(255,77,106,0.2)"; border = "1px solid #ff4d6a"; color = "#ff4d6a"; }
-                              }
-                              return (
-                                <button
-                                  key={ai}
-                                  disabled={answered}
-                                  onClick={() => setAnswers((p) => ({ ...p, [qi]: ai }))}
-                                  style={{ background: bg, border, color, borderRadius: 6, padding: "10px 14px", fontSize: 13, textAlign: "left", cursor: answered ? "default" : "pointer" }}
-                                >
-                                  {alt}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          {answered && picked === correctIdx && (
-                            <div className="text-[12px] mt-2 font-semibold" style={{ color: "#00e096" }}>✅ Rätt!</div>
-                          )}
-                          {answered && picked !== correctIdx && (
-                            <div className="text-[12px] mt-2 font-semibold" style={{ color: "#ff4d6a" }}>❌ Fel! Rätt svar: {q.alternativ[correctIdx]}</div>
-                          )}
-                        </div>
-                      );
-                    })}
-                    {data.quiz.length > 0 && Object.keys(answers).length === data.quiz.length && (() => {
-                      const total = data.quiz.length;
-                      const score = data.quiz.reduce((acc, q, i) => acc + (answers[i] === Number(q.ratt_svar ?? q.ratt) ? 1 : 0), 0);
-                      const passed = score >= 3;
-                      return (
-                        <div style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid #1a3d58" }} className="flex flex-col gap-2">
-                          <div className="font-bold text-white text-[14px]">Du fick {score} av {total} rätt</div>
-                          {passed ? (
-                            <div className="text-[13px] font-semibold" style={{ color: "#00e096" }}>✅ Godkänd!</div>
-                          ) : (
-                            <>
-                              <div className="text-[13px] font-semibold" style={{ color: "#ff4d6a" }}>❌ Försök igen</div>
-                              <button
-                                onClick={() => setAnswers({})}
-                                style={{ background: "transparent", border: "1px solid #7dedb8", color: "#7dedb8", borderRadius: 6, padding: "8px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", width: "fit-content" }}
-                              >
-                                Gör om quiz
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 16 }}>
+            {/* Steg */}
+            <div style={{ background: "#fff", borderRadius: 10, padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              <h2 style={{ fontWeight: 700, fontSize: 16, color: "#111827", marginBottom: 16 }}>Steg</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                {data.steg.length === 0 && <div style={{ fontSize: 12, color: "#6b7280" }}>Inga steg.</div>}
+                {data.steg.map((s, i) => {
+                  const rubrik = typeof s === "string" ? "" : s.rubrik;
+                  const text = typeof s === "string" ? s : s.text;
+                  return (
+                    <div key={i} style={{ display: "flex", gap: 12 }}>
+                      <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 999, background: "#0b1e2d", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>
+                        {i + 1}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {rubrik && <div style={{ fontWeight: 700, fontSize: 14, color: "#111827", marginBottom: 4 }}>{rubrik}</div>}
+                        <div style={{ fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{text}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            </>
-          )}
-        </main>
-      </div>
-      <style>{sidebarKeyframes}</style>
-    </div>
+            </div>
+
+            {/* Quiz */}
+            <div style={{ background: "#fff", borderRadius: 10, padding: 24, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+              <h2 style={{ fontWeight: 700, fontSize: 16, color: "#111827", marginBottom: 16 }}>Quiz</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                {data.quiz.length === 0 && <div style={{ fontSize: 12, color: "#6b7280" }}>Inga frågor.</div>}
+                {data.quiz.map((q, qi) => {
+                  const picked = answers[qi];
+                  const answered = picked !== undefined;
+                  const correctIdx = Number(q.ratt_svar ?? q.ratt);
+                  return (
+                    <div key={qi}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#111827", marginBottom: 8 }}>
+                        {qi + 1}. {q.fraga}
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {q.alternativ.map((alt, ai) => {
+                          const isCorrect = ai === correctIdx;
+                          const isPicked = picked === ai;
+                          let bg = "#fff";
+                          let border = "1px solid #e5e7eb";
+                          let color = "#374151";
+                          if (answered) {
+                            if (isCorrect) { bg = "#d1fae5"; border = "1px solid #10b981"; color = "#065f46"; }
+                            else if (isPicked) { bg = "#fee2e2"; border = "1px solid #ef4444"; color = "#991b1b"; }
+                          }
+                          return (
+                            <button
+                              key={ai}
+                              disabled={answered}
+                              onClick={() => setAnswers((p) => ({ ...p, [qi]: ai }))}
+                              style={{ background: bg, border, color, borderRadius: 6, padding: "10px 14px", fontSize: 13, textAlign: "left", cursor: answered ? "default" : "pointer", fontWeight: 500 }}
+                            >
+                              {alt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {answered && picked === correctIdx && (
+                        <div style={{ fontSize: 12, marginTop: 8, fontWeight: 600, color: "#065f46" }}>✅ Rätt!</div>
+                      )}
+                      {answered && picked !== correctIdx && (
+                        <div style={{ fontSize: 12, marginTop: 8, fontWeight: 600, color: "#991b1b" }}>
+                          ❌ Fel! Rätt svar: {q.alternativ[correctIdx]}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {data.quiz.length > 0 && Object.keys(answers).length === data.quiz.length && (() => {
+                  const total = data.quiz.length;
+                  const score = data.quiz.reduce(
+                    (acc, q, i) => acc + (answers[i] === Number(q.ratt_svar ?? q.ratt) ? 1 : 0),
+                    0,
+                  );
+                  const passed = score >= Math.ceil(total * 0.6);
+                  return (
+                    <div style={{ marginTop: 8, paddingTop: 16, borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>
+                        Du fick {score} av {total} rätt
+                      </div>
+                      {passed ? (
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#065f46" }}>✅ Godkänd!</div>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#991b1b" }}>❌ Försök igen</div>
+                          <button
+                            onClick={() => setAnswers({})}
+                            style={{ background: "#0b1e2d", color: "#fff", border: "none", borderRadius: 6, padding: "8px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", width: "fit-content" }}
+                          >
+                            Gör om quiz
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </LightAppShell>
   );
 }

@@ -45,17 +45,17 @@ const INITIAL: Cert[] = [
   { id: "8", initials: "MA", avatar: "red", name: "Mohammed Al-Hassan", role: "Betongarbetare", cert: "Betongkurs", issued: "—", expires: "—", status: "missing" },
 ];
 
-const STATS = [
-  { label: "TOTALT", value: "8", sub: "certifikat i systemet", color: "#3b82f6" },
-  { label: "GILTIGA", value: "5", sub: "inga åtgärder behövs", color: "#10b981" },
-  { label: "UTGÅR SNART", value: "1", sub: "inom 30 dagar", color: "#f59e0b" },
-  { label: "SAKNAS", value: "3", sub: "kräver omedelbar åtgärd", color: "#ef4444" },
-];
+const STAT_DEFS = [
+  { key: "total", label: "TOTALT", sub: "certifikat i systemet", color: "#3b82f6" },
+  { key: "giltig", label: "GILTIGA", sub: "inga åtgärder behövs", color: "#10b981" },
+  { key: "utgaar_snart", label: "UTGÅR SNART", sub: "inom 30 dagar", color: "#f59e0b" },
+  { key: "saknas", label: "SAKNAS", sub: "kräver omedelbar åtgärd", color: "#ef4444" },
+] as const;
 
 const FILTERS = ["Alla", "Giltiga", "Utgår snart", "Saknas"] as const;
 type Filter = typeof FILTERS[number];
 
-function StatCard({ label, value, sub, color }: typeof STATS[number]) {
+function StatCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   return (
     <div style={{ background: "#fff", borderRadius: 10, padding: "20px 22px", borderLeft: `4px solid ${color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>{label}</div>
@@ -83,12 +83,25 @@ function CertifikatPage() {
   const [bookType, setBookType] = useState("");
   const [bookDate, setBookDate] = useState("");
   const [bookPlace, setBookPlace] = useState("");
+  const [counts, setCounts] = useState<Record<string, number>>({ total: 0, giltig: 0, utgaar_snart: 0, saknas: 0 });
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) navigate({ to: "/login" }); });
     supabase.auth.getSession().then(({ data }) => { if (!data.session) navigate({ to: "/login" }); else setReady(true); });
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
+
+  useEffect(() => {
+    if (!ready) return;
+    (async () => {
+      const all = supabase.from("certifikat").select("id", { count: "exact", head: true });
+      const g = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "giltig");
+      const u = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "utgaar_snart");
+      const s = supabase.from("certifikat").select("id", { count: "exact", head: true }).eq("status", "saknas");
+      const [a, b, c, d] = await Promise.all([all, g, u, s]);
+      setCounts({ total: a.count ?? 0, giltig: b.count ?? 0, utgaar_snart: c.count ?? 0, saknas: d.count ?? 0 });
+    })();
+  }, [ready]);
 
   const visible = useMemo(() => INITIAL.filter((c) => {
     if (filter === "Alla") return true;
@@ -109,7 +122,7 @@ function CertifikatPage() {
     >
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-        {STATS.map((s) => <StatCard key={s.label} {...s} />)}
+        {STAT_DEFS.map((s) => <StatCard key={s.label} label={s.label} sub={s.sub} color={s.color} value={String(counts[s.key] ?? 0)} />)}
       </div>
 
       {/* Alert banner */}
