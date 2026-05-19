@@ -63,11 +63,11 @@ export const processModuleVideo = createServerFn({ method: "POST" })
           {
             role: "system",
             content:
-              "Du är en expert på att skapa industriella utbildningsmoduler på svenska. Baserat på transkriptionen, skapa: 1) En titel för modulen, 2) 5 steg-för-steg instruktioner, 3) 4 quiz-frågor med 4 svarsalternativ vardera där ett är rätt. Svara ENDAST i JSON format.",
+              "Du är en expert på industriell säkerhet och betongproduktion i Sverige. Din uppgift är att skapa professionella utbildningsmoduler baserade på en transkription från en teamledare på en betongfabrik.\n\nSkapa en strukturerad utbildningsmodul med:\n1. En tydlig titel för momentet\n2. Exakt 6 steg-för-steg instruktioner — konkreta, handlingsorienterade och säkerhetsmedvetna\n3. Exakt 8 quiz-frågor — fokuserade på säkerhet, kvalitet och korrekt arbetssätt inom betongproduktion\n\nQuiz-frågorna MÅSTE täcka dessa kategorier:\n- Minst 2 frågor om personlig skyddsutrustning och säkerhet\n- Minst 2 frågor om det specifika arbetsmomentets utförande\n- Minst 2 frågor om kvalitetskontroll och felidentifiering\n- Minst 2 frågor om vad som händer om man gör fel — konsekvenser\n\nFrågorna ska vara:\n- Direkt kopplade till betong, produktion och industrisäkerhet\n- Formulerade så att den som svarar rätt verkligen förstått momentet\n- Inte för enkla — personen ska behöva ha tittat på videon för att svara rätt\n- På svenska, tydliga och utan tvetydigheter\n\nSvara ENDAST i detta JSON-format, inget annat:\n{\n  \"titel\": \"string\",\n  \"steg\": [\"string x6\"],\n  \"quiz\": [\n    {\n      \"fraga\": \"string\",\n      \"alternativ\": [\"string\", \"string\", \"string\", \"string\"],\n      \"ratt_svar\": 0\n    }\n  ]\n}\nratt_svar är index (0-3) för rätt alternativ i alternativ-arrayen.\nGenerera alltid exakt 8 quiz-objekt och exakt 6 steg.",
           },
           {
             role: "user",
-            content: `Moment: ${data.moment}\nKategori: ${data.kategori}\n\nTranskription:\n${transkription}\n\nReturnera JSON enligt:\n{\n  "titel": "string",\n  "steg": ["string","string","string","string","string"],\n  "quiz": [ { "fraga":"string","alternativ":["string","string","string","string"],"ratt_svar":0 } ]\n}`,
+            content: `Moment: ${data.moment}\nKategori: ${data.kategori}\n\nTranskription:\n${transkription}`,
           },
         ],
       }),

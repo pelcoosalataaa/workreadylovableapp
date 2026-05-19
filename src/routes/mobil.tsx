@@ -80,7 +80,7 @@ function MobilPage() {
     }
   }
 
-  const passed = total > 0 && correctCount / total >= 0.75;
+  const passed = total > 0 && correctCount / total >= 0.8;
 
   return (
     <div
@@ -216,17 +216,14 @@ function MobilPage() {
 
         {!loading && modul && phase === "klar" && (
           <div style={{ background: "#0e2538", border: "1px solid #1a3d58", borderRadius: 16, padding: 24, textAlign: "center" }}>
-            <div style={{ fontSize: 13, color: "#3d6a7a", marginBottom: 8 }}>
-              {correctCount} av {total} rätt
-            </div>
             {passed ? (
               <div className="font-display font-bold" style={{ color: "#00e096", fontSize: 18, fontFamily: "Syne, sans-serif" }}>
-                ✅ Godkänd! Certifikat sparat.
+                ✅ Godkänd! Du fick {correctCount} av 8 rätt — certifikat sparat.
               </div>
             ) : (
               <>
-                <div className="font-display font-bold" style={{ color: "#ff4d6a", fontSize: 18, fontFamily: "Syne, sans-serif", marginBottom: 16 }}>
-                  ❌ Försök igen
+                <div className="font-display font-bold" style={{ color: "#ff4d6a", fontSize: 16, fontFamily: "Syne, sans-serif", marginBottom: 16, lineHeight: 1.4 }}>
+                  ❌ Försök igen. Du fick {correctCount} av 8 rätt. Du behöver minst 7 rätt för att bli godkänd.
                 </div>
                 <button
                   onClick={resetQuiz}
