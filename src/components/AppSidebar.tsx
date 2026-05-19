@@ -1,4 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   LayoutDashboard,
   Users,
@@ -10,9 +12,11 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-const navItems: { Icon: LucideIcon; label: string; to: string; badge?: number }[] = [
+type NavItem = { Icon: LucideIcon; label: string; to: string; badge?: number };
+
+const baseNavItems: NavItem[] = [
   { Icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-  { Icon: Users, label: "Arbetskraft", to: "/arbetskraft", badge: 3 },
+  { Icon: Users, label: "Arbetskraft", to: "/arbetskraft" },
   { Icon: GraduationCap, label: "Utbildning & Onboarding", to: "/utbildning" },
   { Icon: Grid3x3, label: "Kompetensmatris", to: "/kompetensmatris" },
   { Icon: ShieldCheck, label: "Certifikat & Efterlevnad", to: "/certifikat" },
