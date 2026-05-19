@@ -1,6 +1,6 @@
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppTopBar } from "@/components/AppTopBar";
-import { Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 export function LightAppShell({
