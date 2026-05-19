@@ -55,7 +55,7 @@ const STAT_DEFS = [
 const FILTERS = ["Alla", "Giltiga", "Utgår snart", "Saknas"] as const;
 type Filter = typeof FILTERS[number];
 
-function StatCard({ label, value, sub, color }: typeof STATS[number]) {
+function StatCard({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
   return (
     <div style={{ background: "#fff", borderRadius: 10, padding: "20px 22px", borderLeft: `4px solid ${color}`, boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5 }}>{label}</div>
