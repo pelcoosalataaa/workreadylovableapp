@@ -21,6 +21,7 @@ import { Route as InstallningarRouteImport } from './routes/installningar'
 import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CertifikatRouteImport } from './routes/certifikat'
+import { Route as BemanningspartnersRouteImport } from './routes/bemanningspartners'
 import { Route as BemanningsbolagRouteImport } from './routes/bemanningsbolag'
 import { Route as AvdelningRouteImport } from './routes/avdelning'
 import { Route as ArbetskraftRouteImport } from './routes/arbetskraft'
@@ -87,6 +88,11 @@ const CertifikatRoute = CertifikatRouteImport.update({
   path: '/certifikat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BemanningspartnersRoute = BemanningspartnersRouteImport.update({
+  id: '/bemanningspartners',
+  path: '/bemanningspartners',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BemanningsbolagRoute = BemanningsbolagRouteImport.update({
   id: '/bemanningsbolag',
   path: '/bemanningsbolag',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/arbetskraft': typeof ArbetskraftRoute
   '/avdelning': typeof AvdelningRoute
   '/bemanningsbolag': typeof BemanningsbolagRoute
+  '/bemanningspartners': typeof BemanningspartnersRoute
   '/certifikat': typeof CertifikatRoute
   '/dashboard': typeof DashboardRoute
   '/inhyrd-personal': typeof InhyrdPersonalRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/arbetskraft'
     | '/avdelning'
     | '/bemanningsbolag'
+    | '/bemanningspartners'
     | '/certifikat'
     | '/dashboard'
     | '/inhyrd-personal'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   ArbetskraftRoute: typeof ArbetskraftRoute
   AvdelningRoute: typeof AvdelningRoute
   BemanningsbolagRoute: typeof BemanningsbolagRoute
+  BemanningspartnersRoute: typeof BemanningspartnersRoute
   CertifikatRoute: typeof CertifikatRoute
   DashboardRoute: typeof DashboardRoute
   InhyrdPersonalRoute: typeof InhyrdPersonalRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CertifikatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bemanningspartners': {
+      id: '/bemanningspartners'
+      path: '/bemanningspartners'
+      fullPath: '/bemanningspartners'
+      preLoaderRoute: typeof BemanningspartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bemanningsbolag': {
       id: '/bemanningsbolag'
       path: '/bemanningsbolag'
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArbetskraftRoute: ArbetskraftRoute,
   AvdelningRoute: AvdelningRoute,
   BemanningsbolagRoute: BemanningsbolagRoute,
+  BemanningspartnersRoute: BemanningspartnersRoute,
   CertifikatRoute: CertifikatRoute,
   DashboardRoute: DashboardRoute,
   InhyrdPersonalRoute: InhyrdPersonalRoute,
