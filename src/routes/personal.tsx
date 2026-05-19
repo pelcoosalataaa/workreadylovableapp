@@ -30,10 +30,10 @@ type Person = {
 
 const people: Person[] = [
   { initials: "AJ", name: "Anders Johansson", role: "Gjutare · Dag", dept: "Gjutavdelningen", company: "Byggelement AB", percent: 100, barColor: "#00e096", avatarBg: "rgba(0,224,150,0.12)", avatarColor: "#00e096", status: "Godkänd", certs: "✓ Betongkurs  ✓ Traverskort" },
-  { initials: "MK", name: "Maria Karlsson", role: "CNC-operatör · Dag", dept: "CNC-produktion", company: "Byggelement AB", percent: 100, barColor: "#00e096", avatarBg: "rgba(0,224,150,0.12)", avatarColor: "#00e096", status: "Godkänd", certs: "✓ CNC-utbildning" },
-  { initials: "PL", name: "Petter Lindgren", role: "Truckförare · Kväll", dept: "Lager & Utskeppning", company: "Partner2Work AB", percent: 65, barColor: "#7dedb8", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8", status: "Pågår", certs: "✓ Truckkort B" },
+  { initials: "KL", name: "Karl Lindgren", role: "Armerare · Dag", dept: "Armeringsavdelningen", company: "Byggelement AB", percent: 100, barColor: "#00e096", avatarBg: "rgba(0,224,150,0.12)", avatarColor: "#00e096", status: "Godkänd", certs: "✓ Svetsarlicens  ✓ Betongkurs" },
+  { initials: "LB", name: "Lisa Bergström", role: "Formbyggare · Dag", dept: "Formavdelningen", company: "Partner2Work AB", percent: 65, barColor: "#7dedb8", avatarBg: "rgba(125,237,184,0.12)", avatarColor: "#7dedb8", status: "Pågår", certs: "✓ Säkerhet & Skydd" },
   { initials: "SB", name: "Sara Berg", role: "Betongarbetare · Dag", dept: "Gjutavdelningen", company: "Partner2Work AB", percent: 0, barColor: "#ff4d6a", avatarBg: "rgba(255,77,106,0.12)", avatarColor: "#ff4d6a", status: "Ej start", certs: "✗ Betongkurs saknas" },
-  { initials: "JN", name: "Johan Nilsson", role: "Montör · Dag", dept: "Montering", company: "Ikett Personalpartner", percent: 40, barColor: "#38b6ff", avatarBg: "rgba(56,182,255,0.12)", avatarColor: "#38b6ff", status: "Pågår", certs: "✗ Heta arbeten saknas" },
+  { initials: "MA", name: "Mohammed Al-Hassan", role: "Betongarbetare · Dag", dept: "Gjutavdelningen", company: "Partner2Work AB", percent: 40, barColor: "#38b6ff", avatarBg: "rgba(56,182,255,0.12)", avatarColor: "#38b6ff", status: "Pågår", certs: "✗ Betongkurs saknas" },
   { initials: "EH", name: "Erik Holm", role: "Armerare · Dag", dept: "Armeringsavdelningen", company: "Byggelement AB", percent: 100, barColor: "#00e096", avatarBg: "rgba(255,209,102,0.12)", avatarColor: "#ffd166", status: "Godkänd", certs: "⚠ Traverskort 14 dagar" },
 ];
 
