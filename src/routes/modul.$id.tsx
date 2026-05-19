@@ -331,7 +331,7 @@ function QuizView({
 }) {
   if (finished) {
     const pct = totalQ ? score / totalQ : 0;
-    const passed = pct >= 0.75;
+    const passed = pct >= 0.8;
     return (
       <>
         <h2 style={sectionTitle()}>Quiz</h2>
@@ -348,14 +348,14 @@ function QuizView({
             style={{
               fontFamily: "Syne, sans-serif",
               fontWeight: 700,
-              fontSize: 20,
+              fontSize: 17,
               color: passed ? "#065f46" : "#991b1b",
+              lineHeight: 1.4,
             }}
           >
-            {passed ? "✅ Godkänd!" : "❌ Försök igen"}
-          </div>
-          <div style={{ fontSize: 13, color: "#6b7280", marginTop: 6 }}>
-            Du fick {score} av {totalQ} rätt
+            {passed
+              ? `✅ Godkänd! Du fick ${score} av 8 rätt — certifikat sparat.`
+              : `❌ Försök igen. Du fick ${score} av 8 rätt. Du behöver minst 7 rätt för att bli godkänd.`}
           </div>
           {!passed && (
             <button onClick={onRetry} style={{ ...primaryBtnStyle(), marginTop: 16 }}>
