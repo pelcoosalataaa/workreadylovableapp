@@ -90,30 +90,62 @@ function DashboardPage() {
 }
 
 function WelcomeRow() {
-  const today = "lördag 16 maj";
+  const [weather, setWeather] = useState<{ temp: number; code: number } | null>(null);
+  const [stats, setStats] = useState<{ ready: number; total: number } | null>(null);
+
+  useEffect(() => {
+    fetch("https://api.open-meteo.com/v1/forecast?latitude=58.07&longitude=12.02&current=temperature_2m,weathercode&timezone=Europe/Stockholm")
+      .then((r) => r.json())
+      .then((d) => setWeather({ temp: Math.round(d.current.temperature_2m), code: d.current.weathercode }))
+      .catch(() => {});
+    supabase.from("personal").select("status", { count: "exact" }).then(({ data }) => {
+      if (!data) return;
+      const total = data.length;
+      const ready = data.filter((r: { status: string }) => r.status === "redo").length;
+      setStats({ ready, total });
+    });
+  }, []);
+
+  const now = new Date();
+  const weekdays = ["Söndag", "Måndag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lördag"];
+  const weekday = weekdays[now.getDay()];
+  const h = now.getHours();
+  const greeting = h < 6 ? "God natt" : h < 12 ? "God morgon" : h < 18 ? "God eftermiddag" : "God kväll";
+
+  const weatherMeta = (code: number): { Icon: typeof Sun; color: string; label: string } => {
+    if (code === 0) return { Icon: Sun, color: "#f59e0b", label: "Klart" };
+    if ([1, 2, 3].includes(code)) return { Icon: Cloud, color: "#6b7280", label: "Lätt molnigt" };
+    if ([45, 48].includes(code)) return { Icon: CloudFog, color: "#9ca3af", label: "Dimma" };
+    if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { Icon: CloudRain, color: "#3b82f6", label: code >= 80 ? "Regnskurar" : "Regn" };
+    if ([71, 73, 75, 77].includes(code)) return { Icon: Snowflake, color: "#60b0f4", label: "Snö" };
+    if ([95, 96, 99].includes(code)) return { Icon: CloudLightning, color: "#6d28d9", label: "Åska" };
+    return { Icon: Cloud, color: "#6b7280", label: "—" };
+  };
+  const wm = weather ? weatherMeta(weather.code) : null;
+
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+    <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: CARD_RADIUS, padding: "20px 24px", marginBottom: 0, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
       <div>
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
+          {weekday} · Ucklum, Sverige
+        </div>
         <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 22, color: "#111827", margin: 0 }}>
-          God morgon, Lars
+          {greeting}, Lars
         </h2>
-        <p style={{ fontSize: 13, color: "#6b7280", margin: "4px 0 0" }}>
-          Byggelement AB · Ucklum · {today}
-        </p>
+        <div style={{ width: 32, height: 2, background: "#0b1e2d", borderRadius: 1, margin: "10px 0" }} />
+        <div style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#6b7280" }}>
+          {stats ? `${stats.ready} av ${stats.total} medarbetare redo för dagens skift` : "Laddar..."}
+        </div>
       </div>
-      <span
-        style={{
-          background: "#fee2e2",
-          color: "#991b1b",
-          border: "1px solid #fecaca",
-          borderRadius: 4,
-          padding: "4px 10px",
-          fontSize: 12,
-          fontWeight: 600,
-        }}
-      >
-        Åtgärder krävs
-      </span>
+      <div style={{ textAlign: "right" }}>
+        <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 44, color: "#0b1e2d", margin: 0, lineHeight: 1 }}>
+          {weather ? `${weather.temp}°` : "—°"}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 4 }}>
+          {wm && <wm.Icon size={14} color={wm.color} />}
+          <span style={{ fontFamily: "Inter, sans-serif", fontSize: 11, color: "#6b7280" }}>{wm?.label ?? ""}</span>
+        </div>
+      </div>
     </div>
   );
 }
