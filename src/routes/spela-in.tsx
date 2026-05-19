@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppSidebar, sidebarKeyframes } from "@/components/AppSidebar";
-import { CircleDot, Layers, ShieldAlert, FileText, Check, Loader2 } from "lucide-react";
+import { LightAppShell } from "@/components/LightAppShell";
+import { Layers, ShieldAlert, FileText, Check, Loader2 } from "lucide-react";
 import { processModuleVideo } from "@/lib/moduler.functions";
 import { toast } from "sonner";
 
@@ -14,15 +14,55 @@ const momentOptions = ["Välj moment...", "Gjutning", "Armering", "Traverskörni
 const categoryOptions = ["Betong & Prefab", "Verkstad & Industri", "Lager & Logistik", "Bygg & Anläggning"];
 
 const previousModules = [
-  { icon: <Layers size={20} strokeWidth={1.75} color="#7dedb8" />, title: "Introduktion betong", author: "Erik Svensson", tag: "27/27", color: "#00e096" },
-  { icon: <ShieldAlert size={20} strokeWidth={1.75} color="#ffd166" />, title: "Säkerhet & skydd", author: "Anna Berg", tag: "27/27", color: "#00e096" },
-  { icon: <FileText size={20} strokeWidth={1.75} color="#60b0f4" />, title: "Ritningsläsning", author: "Erik Svensson", tag: "19/27", color: "#ffd166" },
+  { icon: <Layers size={18} strokeWidth={1.75} color="#0b1e2d" />, title: "Introduktion betong", author: "Erik Svensson", tag: "27/27", tone: "green" as const },
+  { icon: <ShieldAlert size={18} strokeWidth={1.75} color="#0b1e2d" />, title: "Säkerhet & skydd", author: "Anna Berg", tag: "27/27", tone: "green" as const },
+  { icon: <FileText size={18} strokeWidth={1.75} color="#0b1e2d" />, title: "Ritningsläsning", author: "Erik Svensson", tag: "19/27", tone: "amber" as const },
 ];
 
 type StepState = "pending" | "active" | "done";
 type Phase = "idle" | "uploading" | "transcribing" | "generating-steps" | "generating-quiz" | "done" | "error";
 
 const MAX_SIZE = 500 * 1024 * 1024;
+
+const CARD: React.CSSProperties = {
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  borderRadius: 10,
+  padding: 24,
+};
+
+const SELECT: React.CSSProperties = {
+  background: "#fff",
+  border: "1px solid #e5e7eb",
+  color: "#111827",
+  borderRadius: 8,
+  padding: "10px 12px",
+  fontSize: 13,
+  width: "100%",
+  outline: "none",
+};
+
+function StepBadge({ n }: { n: number }) {
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0b1e2d",
+        color: "#fff",
+        width: 26,
+        height: 26,
+        borderRadius: 999,
+        fontFamily: "Syne, sans-serif",
+        fontWeight: 700,
+        fontSize: 12,
+      }}
+    >
+      {n}
+    </div>
+  );
+}
 
 function SpelaInPage() {
   const navigate = useNavigate();
@@ -46,11 +86,7 @@ function SpelaInPage() {
     return () => { mounted = false; };
   }, [navigate]);
 
-  if (!ready) return null;
-
-  const cardCls = "rounded-[10px] border border-border p-6";
-  const cardStyle = { background: "#0e2538" } as const;
-  const selectStyle = { background: "#060f18", border: "1px solid #1a3d58", color: "#edfaf4" } as const;
+  if (!ready) return <div style={{ minHeight: "100vh", background: "#f0f2f5" }} />;
 
   const stepStates: { label: string; state: StepState }[] = [
     { label: "Video uppladdad", state: phase === "idle" || phase === "uploading" ? (phase === "uploading" ? "active" : "pending") : "done" },
@@ -87,7 +123,6 @@ function SpelaInPage() {
     try {
       setPhase("uploading");
       setUploadPct(0);
-      // Simulated progress while uploading (supabase-js doesn't expose progress events natively)
       const tick = window.setInterval(() => {
         setUploadPct((p) => (p < 90 ? p + Math.random() * 8 : p));
       }, 250);
@@ -105,10 +140,8 @@ function SpelaInPage() {
       setUploadPct(100);
 
       setPhase("transcribing");
-      // GPT phase is one server call; split UI into two stages for perceived progress
       const serverPromise = processModuleVideo({ data: { videoPath, kategori, moment } });
 
-      // After ~when whisper typically finishes, optimistically move UI forward
       const moveToSteps = window.setTimeout(() => setPhase((p) => (p === "transcribing" ? "generating-steps" : p)), 8000);
       const moveToQuiz = window.setTimeout(() => setPhase((p) => (p === "generating-steps" ? "generating-quiz" : p)), 16000);
 
@@ -119,7 +152,6 @@ function SpelaInPage() {
         setPhase("done");
         setSuccessMsg("Modulen är klar och har skickats till all personal!");
 
-        // Send SMS notification to test number
         try {
           const { data: smsData, error: smsErr } = await supabase.functions.invoke("send-sms", {
             body: {
@@ -157,181 +189,239 @@ function SpelaInPage() {
   const triggerFilePick = () => fileInputRef.current?.click();
   const processing = phase !== "idle" && phase !== "done" && phase !== "error";
 
+  const tagBadge = (tone: "green" | "amber") => ({
+    background: tone === "green" ? "#d1fae5" : "#fef3c7",
+    color: tone === "green" ? "#065f46" : "#92400e",
+    fontSize: 10,
+    fontWeight: 700,
+    padding: "3px 8px",
+    borderRadius: 999,
+  });
+
+  const submitBtn = (
+    <button
+      type="button"
+      onClick={() => !processing && triggerFilePick()}
+      disabled={processing || moment === momentOptions[0]}
+      style={{
+        background: "#0b1e2d",
+        color: "#fff",
+        border: "none",
+        borderRadius: 8,
+        padding: "10px 18px",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: processing || moment === momentOptions[0] ? "not-allowed" : "pointer",
+        opacity: processing || moment === momentOptions[0] ? 0.6 : 1,
+      }}
+    >
+      Låt AI bygga modulen
+    </button>
+  );
+
   return (
-    <>
-      <style>{sidebarKeyframes}</style>
-      <AppSidebar />
-      <main className="ml-[260px] min-h-screen p-8" style={{ background: "#060f18" }}>
-        <header className="mb-6">
-          <h1 className="font-display font-bold text-[24px] text-foreground flex items-center gap-2"><CircleDot size={22} strokeWidth={1.75} color="#7dedb8" /> Spela in ny modul</h1>
-          <p className="text-[13px]" style={{ color: "#3d6a7a" }}>AI guidar dig genom hela inspelningen · Byggelement Ucklum</p>
-        </header>
+    <LightAppShell title="Spela in ny modul" action={submitBtn}>
+      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "3fr 2fr" }}>
+        {/* LEFT */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Step 1 */}
+          <section style={CARD}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <StepBadge n={1} />
+              <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, color: "#111827", margin: 0 }}>
+                Välj moment att spela in
+              </h2>
+            </div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5, textTransform: "uppercase" }}>Moment</label>
+            <select value={moment} onChange={(e) => setMoment(e.target.value)} style={{ ...SELECT, marginTop: 6, marginBottom: 14 }}>
+              {momentOptions.map((o) => <option key={o}>{o}</option>)}
+            </select>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: 0.5, textTransform: "uppercase" }}>Branschkategori</label>
+            <select value={kategori} onChange={(e) => setKategori(e.target.value)} style={{ ...SELECT, marginTop: 6 }}>
+              {categoryOptions.map((o) => <option key={o}>{o}</option>)}
+            </select>
+          </section>
 
-        <div className="grid gap-6" style={{ gridTemplateColumns: "3fr 2fr" }}>
-          {/* LEFT */}
-          <div className="flex flex-col gap-5">
-            {/* Step 1 */}
-            <section className={cardCls} style={cardStyle}>
-              <div className="font-mono text-[9px] tracking-wider" style={{ color: "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 1</div>
-              <h2 className="font-display font-bold text-[18px] mt-1 mb-4">Välj moment att spela in</h2>
-              <label className="text-[11px] uppercase tracking-wider" style={{ color: "#3d6a7a" }}>Moment</label>
-              <select value={moment} onChange={(e) => setMoment(e.target.value)} className="w-full rounded-md mt-1 mb-4 px-3 py-3 text-sm outline-none" style={selectStyle}>
-                {momentOptions.map((o) => <option key={o} style={{ background: "#060f18" }}>{o}</option>)}
-              </select>
-              <label className="text-[11px] uppercase tracking-wider" style={{ color: "#3d6a7a" }}>Branschkategori</label>
-              <select value={kategori} onChange={(e) => setKategori(e.target.value)} className="w-full rounded-md mt-1 px-3 py-3 text-sm outline-none" style={selectStyle}>
-                {categoryOptions.map((o) => <option key={o} style={{ background: "#060f18" }}>{o}</option>)}
-              </select>
-            </section>
+          {/* Step 2 */}
+          <section style={CARD}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <StepBadge n={2} />
+              <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, color: "#111827", margin: 0 }}>
+                Ladda upp din video
+              </h2>
+            </div>
 
-            {/* Step 2 */}
-            <section className={cardCls} style={cardStyle}>
-              <div className="font-mono text-[9px] tracking-wider" style={{ color: "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 2</div>
-              <h2 className="font-display font-bold text-[18px] mt-1 mb-4">Ladda upp din video</h2>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4,video/quicktime,video/*"
+              style={{ display: "none" }}
+              onChange={(e) => handleFiles(e.target.files)}
+            />
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="video/mp4,video/quicktime,video/*"
-                className="hidden"
-                onChange={(e) => handleFiles(e.target.files)}
-              />
+            <div
+              onMouseEnter={() => setUploadHover(true)}
+              onMouseLeave={() => setUploadHover(false)}
+              onClick={() => !processing && triggerFilePick()}
+              onDragOver={(e) => { e.preventDefault(); setUploadHover(true); }}
+              onDragLeave={() => setUploadHover(false)}
+              onDrop={(e) => { e.preventDefault(); setUploadHover(false); if (!processing) handleFiles(e.dataTransfer.files); }}
+              style={{
+                border: `2px dashed ${uploadHover ? "#0b1e2d" : "#e5e7eb"}`,
+                borderRadius: 10,
+                padding: 40,
+                background: "#fff",
+                textAlign: "center",
+                cursor: processing ? "not-allowed" : "pointer",
+                opacity: processing ? 0.6 : 1,
+                transition: "border-color 0.15s",
+              }}
+            >
+              <div style={{ fontSize: 40 }}>📹</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "#111827", marginTop: 8 }}>Dra & släpp video här</div>
+              <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+                Eller klicka för att välja · MP4, MOV · max 500MB
+              </div>
+            </div>
 
-              <div
-                onMouseEnter={() => setUploadHover(true)}
-                onMouseLeave={() => setUploadHover(false)}
-                onClick={() => !processing && triggerFilePick()}
-                onDragOver={(e) => { e.preventDefault(); setUploadHover(true); }}
-                onDragLeave={() => setUploadHover(false)}
-                onDrop={(e) => { e.preventDefault(); setUploadHover(false); if (!processing) handleFiles(e.dataTransfer.files); }}
-                className="rounded-lg text-center transition-all"
-                style={{
-                  border: `2px dashed ${uploadHover ? "#7dedb8" : "#1a3d58"}`,
-                  padding: "40px",
-                  background: uploadHover ? "rgba(125,237,184,0.05)" : "rgba(125,237,184,0.02)",
-                  cursor: processing ? "not-allowed" : "pointer",
-                  opacity: processing ? 0.6 : 1,
-                }}
-              >
-                <div style={{ fontSize: 40 }}>📹</div>
-                <div className="text-[16px] font-bold text-foreground mt-2">Dra & släpp video här</div>
-                <div className="text-[13px] mt-1" style={{ color: "#3d6a7a" }}>
-                  Eller klicka för att välja · MP4, MOV · max 500MB
+            {phase === "uploading" && (
+              <div style={{ marginTop: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b7280", marginBottom: 6 }}>
+                  <span>Laddar upp video...</span>
+                  <span>{Math.round(uploadPct)}%</span>
+                </div>
+                <div style={{ height: 8, background: "#f3f4f6", borderRadius: 999, overflow: "hidden" }}>
+                  <div style={{ width: `${uploadPct}%`, height: "100%", background: "#0b1e2d", transition: "width 0.2s" }} />
                 </div>
               </div>
+            )}
 
-              {phase === "uploading" && (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between text-[12px] mb-2" style={{ color: "#3d6a7a" }}>
-                    <span>Laddar upp video...</span>
-                    <span>{Math.round(uploadPct)}%</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "#1a3d58" }}>
-                    <div className="h-full transition-all" style={{ width: `${uploadPct}%`, background: "#7dedb8" }} />
-                  </div>
-                </div>
-              )}
-
-              {errorMsg && (
-                <div className="mt-4 rounded-md text-[12px] px-3 py-2" style={{ background: "rgba(255,77,106,0.08)", border: "1px solid rgba(255,77,106,0.3)", color: "#ff4d6a" }}>
-                  {errorMsg}
-                </div>
-              )}
-
-              <div className="mt-4 rounded-md text-[12px]" style={{ background: "rgba(125,237,184,0.05)", border: "1px solid rgba(125,237,184,0.15)", padding: "12px", color: "#3d6a7a" }}>
-                💡 Tips: Filma det viktigaste momentet. 5–10 minuter räcker. Prata naturligt — AI fixar resten.
+            {errorMsg && (
+              <div style={{ marginTop: 14, borderRadius: 8, padding: "10px 12px", background: "#fee2e2", border: "1px solid #fecaca", color: "#991b1b", fontSize: 12 }}>
+                {errorMsg}
               </div>
-            </section>
+            )}
 
-            {/* Step 3 — progress / status */}
-            <section className={cardCls} style={{ ...cardStyle, opacity: phase === "idle" ? 0.5 : 1 }}>
-              <div className="font-mono text-[9px] tracking-wider" style={{ color: phase === "idle" ? "#3d6a7a" : "#7dedb8", fontFamily: "'Space Mono', monospace" }}>STEG 3</div>
-              <h2 className="font-display font-bold text-[18px] mt-1 mb-4">AI bygger utbildningen</h2>
+            <div style={{ marginTop: 14, borderRadius: 8, padding: 12, background: "#f9fafb", border: "1px solid #e5e7eb", color: "#6b7280", fontSize: 12 }}>
+              💡 Tips: Filma det viktigaste momentet. 5–10 minuter räcker. Prata naturligt — AI fixar resten.
+            </div>
+          </section>
 
-              {phase === "idle" ? (
-                <p className="text-[13px]" style={{ color: "#3d6a7a" }}>
-                  Ladda upp din video i steg 2 för att aktivera AI-bearbetningen.
-                </p>
-              ) : (
-                <ol className="flex flex-col gap-3">
-                  {stepStates.map((s, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <div className="flex items-center justify-center shrink-0" style={{ width: 22, height: 22, borderRadius: 999, background: s.state === "done" ? "#00e096" : s.state === "active" ? "transparent" : "transparent", border: s.state === "pending" ? "1px solid #3d6a7a" : s.state === "active" ? "1px solid #7dedb8" : "none" }}>
-                        {s.state === "done" && <Check size={14} strokeWidth={3} color="#060f18" />}
-                        {s.state === "active" && <Loader2 size={14} strokeWidth={2.5} color="#7dedb8" className="animate-spin" />}
+          {/* Step 3 */}
+          <section style={{ ...CARD, opacity: phase === "idle" ? 0.6 : 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <StepBadge n={3} />
+              <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, color: "#111827", margin: 0 }}>
+                AI bygger utbildningen
+              </h2>
+            </div>
+
+            {phase === "idle" ? (
+              <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>
+                Ladda upp din video i steg 2 för att aktivera AI-bearbetningen.
+              </p>
+            ) : (
+              <ol style={{ display: "flex", flexDirection: "column", gap: 10, margin: 0, padding: 0, listStyle: "none" }}>
+                {stepStates.map((s, i) => {
+                  const bg = s.state === "done" ? "#d1fae5" : s.state === "active" ? "#0b1e2d" : "#f3f4f6";
+                  const color = s.state === "done" ? "#065f46" : s.state === "active" ? "#fff" : "#9ca3af";
+                  return (
+                    <li key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: 24, height: 24, borderRadius: 999, background: bg, color, fontSize: 11, fontWeight: 700 }}>
+                        {s.state === "done" && <Check size={14} strokeWidth={3} />}
+                        {s.state === "active" && <Loader2 size={14} strokeWidth={2.5} className="animate-spin" />}
+                        {s.state === "pending" && (i + 1)}
                       </div>
-                      <span className="text-[13px]" style={{ color: s.state === "pending" ? "#3d6a7a" : "#edfaf4", fontWeight: s.state === "active" ? 600 : 400 }}>{s.label}</span>
+                      <span style={{ fontSize: 13, color: s.state === "pending" ? "#9ca3af" : "#111827", fontWeight: s.state === "active" ? 600 : 500 }}>{s.label}</span>
                     </li>
-                  ))}
-                </ol>
-              )}
-
-              {successMsg && (
-                <div className="mt-5 rounded-md text-[13px] px-4 py-3 font-semibold" style={{ background: "rgba(125,237,184,0.1)", border: "1px solid rgba(125,237,184,0.3)", color: "#7dedb8" }}>
-                  ✓ {successMsg}
-                </div>
-              )}
-            </section>
-          </div>
-
-          {/* RIGHT */}
-          <div className="flex flex-col gap-5">
-            <section className={cardCls} style={cardStyle}>
-              <h2 className="font-display font-bold text-[16px] mb-4">Hur det fungerar</h2>
-              <ol className="flex flex-col gap-3">
-                {[
-                  { mark: "✓", title: "Du väljer moment", desc: "Vilket arbetsmoment ska läras ut?" },
-                  { mark: "✓", title: "Du laddar upp video", desc: "5–10 minuter räcker. AI hanterar resten." },
-                  { mark: "", title: "AI transkriberar", desc: "Omvandlar tal till text automatiskt" },
-                  { mark: "○", title: "AI skapar steg & quiz", desc: "Strukturerar och bygger utbildningen" },
-                  { mark: "○", title: "Personal får SMS", desc: "Länk skickas direkt till ny personal" },
-                ].map((s, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <div className="flex items-center justify-center text-[10px] font-bold shrink-0" style={{ width: 20, height: 20, borderRadius: 999, background: s.mark === "✓" ? "#00e096" : s.mark === "" ? "#7dedb8" : "transparent", border: s.mark === "○" ? "1px solid #3d6a7a" : "none", color: "#060f18" }}>
-                      {s.mark}
-                    </div>
-                    <div>
-                      <div className="text-[13px] font-semibold text-foreground">{s.title}</div>
-                      <div className="text-[12px]" style={{ color: "#3d6a7a" }}>{s.desc}</div>
-                    </div>
-                  </li>
-                ))}
+                  );
+                })}
               </ol>
-              <div className="my-5 h-px" style={{ background: "#1a3d58" }} />
-              <div className="grid grid-cols-3 text-center">
-                {[
-                  { v: "5 min", l: "Inspelningstid" },
-                  { v: "30 sek", l: "AI-bearbetning" },
-                  { v: "Dag 0", l: "Personal redo" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <div className="font-display font-bold text-[18px]" style={{ color: "#7dedb8" }}>{s.v}</div>
-                    <div className="text-[10px] uppercase tracking-wider mt-1" style={{ color: "#3d6a7a" }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
+            )}
 
-            <section className="rounded-[10px] border border-border p-5" style={cardStyle}>
-              <h2 className="font-display font-bold text-[14px] mb-3">Tidigare moduler</h2>
-              <div className="flex flex-col gap-2">
-                {previousModules.map((m) => (
-                  <div key={m.title} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                    <div className="flex h-5 w-5 items-center justify-center">{m.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[13px] font-semibold text-foreground truncate">{m.title}</div>
-                      <div className="text-[11px]" style={{ color: "#3d6a7a" }}>{m.author}</div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-1 rounded" style={{ background: `${m.color}1a`, color: m.color, border: `1px solid ${m.color}33` }}>
-                      {m.tag}
-                    </span>
-                  </div>
-                ))}
+            {successMsg && (
+              <div style={{ marginTop: 16, borderRadius: 8, padding: "12px 14px", background: "#d1fae5", border: "1px solid #10b981", color: "#065f46", fontSize: 13, fontWeight: 600 }}>
+                ✓ {successMsg}
               </div>
-            </section>
-          </div>
+            )}
+          </section>
         </div>
-      </main>
-    </>
+
+        {/* RIGHT */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <section style={CARD}>
+            <h2 style={{ fontWeight: 700, fontSize: 14, color: "#111827", margin: 0, marginBottom: 16 }}>Hur det fungerar</h2>
+            <ol style={{ display: "flex", flexDirection: "column", gap: 12, margin: 0, padding: 0, listStyle: "none" }}>
+              {[
+                { title: "Du väljer moment", desc: "Vilket arbetsmoment ska läras ut?" },
+                { title: "Du laddar upp video", desc: "5–10 minuter räcker. AI hanterar resten." },
+                { title: "AI transkriberar", desc: "Omvandlar tal till text automatiskt" },
+                { title: "AI skapar steg & quiz", desc: "Strukturerar och bygger utbildningen" },
+                { title: "Personal får SMS", desc: "Länk skickas direkt till ny personal" },
+              ].map((s, i) => (
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, width: 22, height: 22, borderRadius: 999, background: "#0b1e2d", color: "#fff", fontSize: 11, fontFamily: "Syne, sans-serif", fontWeight: 700 }}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{s.title}</div>
+                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{s.desc}</div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div style={{ height: 1, background: "#f3f4f6", margin: "18px 0" }} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              {[
+                { v: "5 min", l: "Inspelningstid" },
+                { v: "30 sek", l: "AI-bearbetning" },
+                { v: "Dag 0", l: "Personal redo" },
+              ].map((s) => (
+                <div
+                  key={s.l}
+                  style={{
+                    background: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 8,
+                    padding: "12px 8px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 18, color: "#0b1e2d" }}>{s.v}</div>
+                  <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: "#6b7280", marginTop: 4 }}>{s.l}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={CARD}>
+            <h2 style={{ fontWeight: 700, fontSize: 14, color: "#111827", margin: 0, marginBottom: 12 }}>Tidigare moduler</h2>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {previousModules.map((m, i) => (
+                <div
+                  key={m.title}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 0",
+                    borderBottom: i === previousModules.length - 1 ? "none" : "1px solid #f3f4f6",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 8, background: "#f9fafb", border: "1px solid #e5e7eb" }}>
+                    {m.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{m.title}</div>
+                    <div style={{ fontSize: 11, color: "#6b7280" }}>{m.author}</div>
+                  </div>
+                  <span style={tagBadge(m.tone)}>{m.tag}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </LightAppShell>
   );
 }
