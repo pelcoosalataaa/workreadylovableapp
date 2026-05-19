@@ -123,9 +123,10 @@ type ActionItem = { text: string; to: string; search?: Record<string, string> };
 function ActionsRequired() {
   const navigate = useNavigate();
   const items: ActionItem[] = [
-    { text: "Sara Berg har inte påbörjat sin utbildning — börjar måndag", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { text: "Sara Berg har inte påbörjat sin utbildning", to: "/arbetskraft", search: { filter: "ej-start" } },
+    { text: "Lisa Bergström är 45% klar — börjar snart", to: "/arbetskraft", search: { filter: "pagar" } },
+    { text: "Mohammed Al-Hassan har inte påbörjat sin utbildning", to: "/arbetskraft", search: { filter: "ej-start" } },
     { text: "Erik Holms traverskort utgår om 14 dagar", to: "/certifikat", search: { filter: "utgaende" } },
-    { text: "3 personer saknar obligatorisk säkerhetsutbildning", to: "/utbildning", search: { filter: "saknas" } },
   ];
   return (
     <section
