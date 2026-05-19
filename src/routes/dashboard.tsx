@@ -141,7 +141,7 @@ function WelcomeRow() {
           </span>
         </div>
         <h2 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 28, color: "#111827", margin: 0 }}>
-          {greeting}, Lars
+          {greeting}, Johan
         </h2>
         <div style={{ width: 36, height: 3, background: "#0b1e2d", borderRadius: 2, margin: "10px 0" }} />
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
