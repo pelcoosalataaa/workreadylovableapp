@@ -2,14 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
-import { hamtaKursForVisning, lamnaInQuiz } from "@/lib/kurs.functions";
+import { hamtaKursForVisning, lamnaInQuiz, kontrolleraSvar } from "@/lib/kurs.functions";
 import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/kurs/$id")({ component: KursVisning });
 
-type QuizFraga = { fraga: string; alternativ: string[]; ratt_svar: number };
+type QuizFraga = { fraga: string; alternativ: string[] };
 type Kurs = { id: string; titel: string; steg: string[]; quiz: QuizFraga[] };
 
 type Fas = "steg" | "quiz" | "resultat";
@@ -20,13 +20,15 @@ function KursVisning() {
   const navigate = useNavigate();
   const hamta = useServerFn(hamtaKursForVisning);
   const lamnaIn = useServerFn(lamnaInQuiz);
+  const kontrollera = useServerFn(kontrolleraSvar);
   const [kurs, setKurs] = useState<Kurs | null>(null);
   const [fas, setFas] = useState<Fas>("steg");
   const [stegIdx, setStegIdx] = useState(0);
   const [quizIdx, setQuizIdx] = useState(0);
   const [svar, setSvar] = useState<number[]>([]);
   const [valt, setValt] = useState<number | null>(null);
-  const [visarFacit, setVisarFacit] = useState(false);
+  const [rattSvar, setRattSvar] = useState<number | null>(null);
+  const [kontrollerar, setKontrollerar] = useState(false);
   const [resultat, setResultat] = useState<{ poang: number; antal: number; godkand: boolean } | null>(null);
   const [skickar, setSkickar] = useState(false);
 
@@ -75,7 +77,8 @@ function KursVisning() {
               <div className="space-y-2">
                 {q.alternativ.map((a, i) => {
                   const isValt = i === valt;
-                  const isRatt = i === q.ratt_svar;
+                  const visarFacit = rattSvar !== null;
+                  const isRatt = i === rattSvar;
                   let klass = "border-border hover:bg-accent";
                   if (visarFacit) {
                     if (isRatt) klass = "border-green-600 bg-green-600/10 text-green-700 dark:text-green-400";
@@ -97,9 +100,22 @@ function KursVisning() {
                 })}
               </div>
               <div className="flex justify-end">
-                {!visarFacit ? (
-                  <Button disabled={valt === null} onClick={() => setVisarFacit(true)}>
-                    Kontrollera svar
+                {rattSvar === null ? (
+                  <Button
+                    disabled={valt === null || kontrollerar}
+                    onClick={async () => {
+                      setKontrollerar(true);
+                      try {
+                        const res = await kontrollera({ data: { kurs_id: kurs.id, fraga_idx: quizIdx } });
+                        setRattSvar(res.ratt_svar);
+                      } catch {
+                        toast.error("Kunde inte kontrollera svar");
+                      } finally {
+                        setKontrollerar(false);
+                      }
+                    }}
+                  >
+                    {kontrollerar ? "Kontrollerar…" : "Kontrollera svar"}
                   </Button>
                 ) : (
                   <Button
@@ -109,7 +125,7 @@ function KursVisning() {
                       if (!sista) {
                         setSvar(nyaSvar);
                         setValt(null);
-                        setVisarFacit(false);
+                        setRattSvar(null);
                         setQuizIdx(quizIdx + 1);
                       } else {
                         setSkickar(true);
@@ -149,7 +165,7 @@ function KursVisning() {
                   onClick={() => {
                     setSvar([]);
                     setValt(null);
-                    setVisarFacit(false);
+                    setRattSvar(null);
                     setQuizIdx(0);
                     setStegIdx(0);
                     setResultat(null);
