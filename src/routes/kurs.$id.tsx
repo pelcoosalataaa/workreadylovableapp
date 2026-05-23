@@ -26,7 +26,7 @@ function KursVisning() {
   const [quizIdx, setQuizIdx] = useState(0);
   const [svar, setSvar] = useState<number[]>([]);
   const [valt, setValt] = useState<number | null>(null);
-  const [resultat, setResultat] = useState<{ poang: number; antal: number; godkand: boolean } | null>(null);
+  const [visarFacit, setVisarFacit] = useState(false);
   const [skickar, setSkickar] = useState(false);
 
   useEffect(() => {
