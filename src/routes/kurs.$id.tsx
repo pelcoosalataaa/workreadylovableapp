@@ -20,6 +20,7 @@ function KursVisning() {
   const navigate = useNavigate();
   const hamta = useServerFn(hamtaKursForVisning);
   const lamnaIn = useServerFn(lamnaInQuiz);
+  const kontrollera = useServerFn(kontrolleraSvar);
   const [kurs, setKurs] = useState<Kurs | null>(null);
   const [fas, setFas] = useState<Fas>("steg");
   const [stegIdx, setStegIdx] = useState(0);
