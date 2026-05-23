@@ -13,7 +13,9 @@ import { Route as RegistreraRouteImport } from './routes/registrera'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaddaUppRouteImport } from './routes/ladda-upp'
 import { Route as KurserRouteImport } from './routes/kurser'
+import { Route as GlomtLosenordRouteImport } from './routes/glomt-losenord'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AterstallLosenordRouteImport } from './routes/aterstall-losenord'
 import { Route as AnstalldaRouteImport } from './routes/anstallda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KursIdRouteImport } from './routes/kurs.$id'
@@ -38,9 +40,19 @@ const KurserRoute = KurserRouteImport.update({
   path: '/kurser',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GlomtLosenordRoute = GlomtLosenordRouteImport.update({
+  id: '/glomt-losenord',
+  path: '/glomt-losenord',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AterstallLosenordRoute = AterstallLosenordRouteImport.update({
+  id: '/aterstall-losenord',
+  path: '/aterstall-losenord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AnstalldaRoute = AnstalldaRouteImport.update({
@@ -62,7 +74,9 @@ const KursIdRoute = KursIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
+  '/aterstall-losenord': typeof AterstallLosenordRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -72,7 +86,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
+  '/aterstall-losenord': typeof AterstallLosenordRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -83,7 +99,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
+  '/aterstall-losenord': typeof AterstallLosenordRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -95,7 +113,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/anstallda'
+    | '/aterstall-losenord'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -105,7 +125,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/anstallda'
+    | '/aterstall-losenord'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -115,7 +137,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/anstallda'
+    | '/aterstall-losenord'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -126,7 +150,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnstalldaRoute: typeof AnstalldaRoute
+  AterstallLosenordRoute: typeof AterstallLosenordRoute
   DashboardRoute: typeof DashboardRoute
+  GlomtLosenordRoute: typeof GlomtLosenordRoute
   KurserRoute: typeof KurserRoute
   LaddaUppRoute: typeof LaddaUppRoute
   LoginRoute: typeof LoginRoute
@@ -164,11 +190,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KurserRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/glomt-losenord': {
+      id: '/glomt-losenord'
+      path: '/glomt-losenord'
+      fullPath: '/glomt-losenord'
+      preLoaderRoute: typeof GlomtLosenordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aterstall-losenord': {
+      id: '/aterstall-losenord'
+      path: '/aterstall-losenord'
+      fullPath: '/aterstall-losenord'
+      preLoaderRoute: typeof AterstallLosenordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/anstallda': {
@@ -198,7 +238,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnstalldaRoute: AnstalldaRoute,
+  AterstallLosenordRoute: AterstallLosenordRoute,
   DashboardRoute: DashboardRoute,
+  GlomtLosenordRoute: GlomtLosenordRoute,
   KurserRoute: KurserRoute,
   LaddaUppRoute: LaddaUppRoute,
   LoginRoute: LoginRoute,
