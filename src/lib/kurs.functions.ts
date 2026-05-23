@@ -184,5 +184,5 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
       }
     }
 
-    return { poang, antal: quiz.length, godkand };
+    return { poang, antal: rattSvar.length, godkand };
   });
