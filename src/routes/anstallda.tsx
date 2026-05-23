@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/anstallda")({ component: Anstallda });
 
-type Rad = { id: string; namn: string; epost: string; klarade: number };
+type Rad = { id: string; namn: string; epost: string; klarade: string[] };
 
 function Anstallda() {
   const { loading, user, profil } = useAuth();
@@ -32,11 +32,21 @@ function Anstallda() {
       .eq("foretag_id", profil.foretag_id)
       .eq("roll", "anstalld");
     if (!anst) return;
-    const { data: res } = await supabase.from("resultat").select("anvandare_id,godkand").eq("godkand", true);
-    const counts = new Map<string, number>();
-    res?.forEach((r) => counts.set(r.anvandare_id, (counts.get(r.anvandare_id) ?? 0) + 1));
-    setLista(anst.map((a) => ({ ...a, klarade: counts.get(a.id) ?? 0 })));
+    const { data: res } = await supabase
+      .from("resultat")
+      .select("anvandare_id, kurser!inner(titel)")
+      .eq("godkand", true);
+    const titlar = new Map<string, string[]>();
+    (res ?? []).forEach((r: { anvandare_id: string; kurser: { titel: string } | { titel: string }[] | null }) => {
+      const k = Array.isArray(r.kurser) ? r.kurser[0] : r.kurser;
+      if (!k) return;
+      const arr = titlar.get(r.anvandare_id) ?? [];
+      arr.push(k.titel);
+      titlar.set(r.anvandare_id, arr);
+    });
+    setLista(anst.map((a) => ({ ...a, klarade: titlar.get(a.id) ?? [] })));
   };
+
 
   useEffect(() => {
     if (loading) return;
