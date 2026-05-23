@@ -2,17 +2,33 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { taBortKurs } from "@/lib/kurs.functions";
 import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
-import { Upload, UserPlus } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Upload, UserPlus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
 function Dashboard() {
   const { loading, user, profil } = useAuth();
   const navigate = useNavigate();
+  const raderaFn = useServerFn(taBortKurs);
   const [stats, setStats] = useState({ kurser: 0, anstallda: 0, godkanda: 0 });
   const [senaste, setSenaste] = useState<Array<{ id: string; titel: string; skapad_at: string }>>([]);
+  const [raderar, setRaderar] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -35,6 +51,20 @@ function Dashboard() {
   }, [loading, user, profil, navigate]);
 
   if (loading || !profil) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Laddar…</div>;
+
+  const radera = async (id: string) => {
+    try {
+      setRaderar(id);
+      await raderaFn({ data: { kurs_id: id } });
+      toast.success("Kursen är borttagen");
+      setSenaste((l) => l.filter((k) => k.id !== id));
+      setStats((s) => ({ ...s, kurser: Math.max(0, s.kurser - 1) }));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Kunde inte radera");
+    } finally {
+      setRaderar(null);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -76,9 +106,30 @@ function Dashboard() {
                 {senaste.map((k) => (
                   <li key={k.id} className="flex items-center justify-between px-4 py-3">
                     <span className="font-medium">{k.titel}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(k.skapad_at).toLocaleDateString("sv-SE")}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(k.skapad_at).toLocaleDateString("sv-SE")}
+                      </span>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" disabled={raderar === k.id} aria-label="Ta bort kurs">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ta bort kursen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              "{k.titel}" och alla resultat för kursen tas bort permanent.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => radera(k.id)}>Ta bort</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </li>
                 ))}
               </ul>
