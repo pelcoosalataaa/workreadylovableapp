@@ -139,6 +139,7 @@ function Anstallda() {
                     <div className="min-w-0">
                       <div className="font-medium">{a.namn}</div>
                       <div className="text-xs text-muted-foreground">{a.epost}</div>
+                      {a.bolag && <div className="text-xs text-muted-foreground">Bolag: {a.bolag}</div>}
                     </div>
                     <span className="shrink-0 text-sm font-medium text-primary">{a.klarade.length} klarade</span>
                   </div>
