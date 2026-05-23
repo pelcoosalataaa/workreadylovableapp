@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { skapaForetagsChef } from "@/lib/registrera.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,16 +29,20 @@ function Registrera() {
       return toast.error(error?.message ?? "Kunde inte skapa konto");
     }
     const uid = data.user.id;
-    const { error: pErr } = await supabase.from("anvandare").insert({
-      id: uid,
-      foretag_id: uid,
-      foretag_namn: form.foretag,
-      namn: form.namn,
-      epost: form.epost,
-      roll: "chef",
-    });
+    try {
+      await skapaForetagsChef({
+        data: {
+          userId: uid,
+          foretagNamn: form.foretag,
+          namn: form.namn,
+          epost: form.epost,
+        },
+      });
+    } catch (err) {
+      setLaddar(false);
+      return toast.error(err instanceof Error ? err.message : "Kunde inte skapa profil");
+    }
     setLaddar(false);
-    if (pErr) return toast.error(pErr.message);
     if (!data.session) {
       toast.success("✅ Kolla din e-post och klicka på länken för att aktivera ditt konto.");
       return;
