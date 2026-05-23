@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/kurs/$id")({ component: KursVisning });
 
-type QuizFraga = { fraga: string; alternativ: string[] };
+type QuizFraga = { fraga: string; alternativ: string[]; ratt_svar: number };
 type Kurs = { id: string; titel: string; steg: string[]; quiz: QuizFraga[] };
 
 type Fas = "steg" | "quiz" | "resultat";
