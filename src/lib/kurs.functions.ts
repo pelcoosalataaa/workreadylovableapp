@@ -157,7 +157,7 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
     const godkand = poang >= 6;
 
     if (godkand) {
-      const { data: redan } = await supabase
+      const { data: redan } = await supabaseAdmin
         .from("resultat")
         .select("id")
         .eq("kurs_id", kurs.id)
@@ -165,7 +165,7 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
         .eq("godkand", true)
         .maybeSingle();
       if (!redan) {
-        await supabase.from("resultat").insert({
+        await supabaseAdmin.from("resultat").insert({
           kurs_id: kurs.id,
           anvandare_id: userId,
           godkand,
