@@ -283,3 +283,21 @@ export const skapaKursMedDokument = createServerFn({ method: "POST" })
 
     return { kurs_id: rad.id };
   });
+
+// --- Ta bort kurs (endast chef som äger kursen) ---
+export const taBortKurs = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ kurs_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: kurs, error: kErr } = await supabase
+      .from("kurser").select("id, chef_id").eq("id", data.kurs_id).maybeSingle();
+    if (kErr || !kurs) throw new Error("Kurs hittades inte");
+    if (kurs.chef_id !== userId) throw new Error("Endast kursens chef kan radera den");
+
+    await supabaseAdmin.from("resultat").delete().eq("kurs_id", data.kurs_id);
+    await supabaseAdmin.from("kurs_facit").delete().eq("kurs_id", data.kurs_id);
+    const { error: dErr } = await supabase.from("kurser").delete().eq("id", data.kurs_id);
+    if (dErr) throw new Error("Kunde inte radera kurs: " + dErr.message);
+    return { ok: true };
+  });
