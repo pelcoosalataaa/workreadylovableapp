@@ -81,3 +81,73 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
 
     return { kurs_id: rad.id };
   });
+
+// --- Hämta kurs utan facit (rätt svar exponeras aldrig till klienten) ---
+export const hamtaKursForVisning = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ kurs_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: kurs, error } = await supabase
+      .from("kurser")
+      .select("id, titel, steg, quiz")
+      .eq("id", data.kurs_id)
+      .maybeSingle();
+    if (error || !kurs) throw new Error("Kurs hittades inte");
+    const quiz = (kurs.quiz as unknown as Array<{ fraga: string; alternativ: string[]; ratt_svar: number }>)
+      .map((q) => ({ fraga: q.fraga, alternativ: q.alternativ }));
+    return {
+      id: kurs.id,
+      titel: kurs.titel,
+      steg: kurs.steg as unknown as string[],
+      quiz,
+    };
+  });
+
+// --- Lämna in quiz: rättning sker på servern ---
+export const lamnaInQuiz = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      kurs_id: z.string().uuid(),
+      svar: z.array(z.number().int().min(0).max(10)).min(1).max(20),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: kurs, error } = await supabase
+      .from("kurser")
+      .select("id, quiz")
+      .eq("id", data.kurs_id)
+      .maybeSingle();
+    if (error || !kurs) throw new Error("Kurs hittades inte");
+
+    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
+    if (data.svar.length !== quiz.length) throw new Error("Felaktigt antal svar");
+
+    let poang = 0;
+    for (let i = 0; i < quiz.length; i++) {
+      if (data.svar[i] === quiz[i].ratt_svar) poang++;
+    }
+    const godkand = poang >= 6;
+
+    if (godkand) {
+      const { data: redan } = await supabase
+        .from("resultat")
+        .select("id")
+        .eq("kurs_id", kurs.id)
+        .eq("anvandare_id", userId)
+        .eq("godkand", true)
+        .maybeSingle();
+      if (!redan) {
+        await supabase.from("resultat").insert({
+          kurs_id: kurs.id,
+          anvandare_id: userId,
+          godkand,
+          poang,
+        });
+      }
+    }
+
+    return { poang, antal: quiz.length, godkand };
+  });
