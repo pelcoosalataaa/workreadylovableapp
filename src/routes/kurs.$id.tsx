@@ -2,14 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth";
-import { hamtaKursForVisning, lamnaInQuiz } from "@/lib/kurs.functions";
+import { hamtaKursForVisning, lamnaInQuiz, kontrolleraSvar } from "@/lib/kurs.functions";
 import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/kurs/$id")({ component: KursVisning });
 
-type QuizFraga = { fraga: string; alternativ: string[]; ratt_svar: number };
+type QuizFraga = { fraga: string; alternativ: string[] };
 type Kurs = { id: string; titel: string; steg: string[]; quiz: QuizFraga[] };
 
 type Fas = "steg" | "quiz" | "resultat";
