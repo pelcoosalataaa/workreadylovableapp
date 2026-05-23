@@ -28,30 +28,46 @@ function Kurser() {
 
   if (loading || !profil) return <div className="flex min-h-screen items-center justify-center text-muted-foreground">Laddar…</div>;
 
+  const attGora = lista.filter((k) => !k.klar);
+  const klarade = lista.filter((k) => k.klar);
+
   return (
     <div className="min-h-screen">
       <Topbar />
-      <main className="mx-auto max-w-3xl space-y-6 px-6 py-10">
+      <main className="mx-auto max-w-3xl space-y-8 px-6 py-10">
         <h1 className="text-3xl font-bold text-primary">Mina kurser</h1>
-        <div className="space-y-3">
-          {lista.length === 0 ? (
-            <p className="text-muted-foreground">Inga kurser tillgängliga ännu.</p>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Att göra</h2>
+          {attGora.length === 0 ? (
+            <p className="text-muted-foreground">Inga kurser att göra just nu.</p>
           ) : (
-            lista.map((k) => (
+            attGora.map((k) => (
               <div key={k.id} className="card-shadow flex items-center justify-between rounded-2xl bg-card p-5">
                 <span className="font-medium">{k.titel}</span>
-                {k.klar ? (
-                  <span className="font-semibold text-primary">✅ Klar</span>
-                ) : (
-                  <Button asChild>
-                    <Link to="/kurs/$id" params={{ id: k.id }}>Starta</Link>
-                  </Button>
-                )}
+                <Button asChild>
+                  <Link to="/kurs/$id" params={{ id: k.id }}>Starta</Link>
+                </Button>
               </div>
             ))
           )}
-        </div>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-xl font-semibold">Klarade</h2>
+          {klarade.length === 0 ? (
+            <p className="text-muted-foreground">Du har inte klarat några kurser ännu.</p>
+          ) : (
+            klarade.map((k) => (
+              <div key={k.id} className="card-shadow flex items-center justify-between rounded-2xl bg-card p-5">
+                <span className="font-medium">{k.titel}</span>
+                <span className="font-semibold text-primary">✅ Klar</span>
+              </div>
+            ))
+          )}
+        </section>
       </main>
     </div>
   );
 }
+
