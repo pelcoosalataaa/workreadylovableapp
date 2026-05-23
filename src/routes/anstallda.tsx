@@ -21,7 +21,7 @@ function Anstallda() {
   const navigate = useNavigate();
   const bjud = useServerFn(bjudInAnstalld);
   const [oppen, setOppen] = useState(false);
-  const [form, setForm] = useState({ namn: "", epost: "" });
+  const [form, setForm] = useState<{ namn: string; epost: string; typ: "egen" | "inhyrd"; bolag: string }>({ namn: "", epost: "", typ: "egen", bolag: "" });
   const [skickar, setSkickar] = useState(false);
   const [lista, setLista] = useState<Rad[]>([]);
 
@@ -29,7 +29,7 @@ function Anstallda() {
     if (!profil) return;
     const { data: anst } = await supabase
       .from("anvandare")
-      .select("id,namn,epost")
+      .select("id,namn,epost,bolag")
       .eq("foretag_id", profil.foretag_id)
       .eq("roll", "anstalld");
     if (!anst) return;
@@ -45,7 +45,7 @@ function Anstallda() {
       arr.push(k.titel);
       titlar.set(r.anvandare_id, arr);
     });
-    setLista(anst.map((a) => ({ ...a, klarade: titlar.get(a.id) ?? [] })));
+    setLista(anst.map((a) => ({ ...a, bolag: a.bolag ?? null, klarade: titlar.get(a.id) ?? [] })));
   };
 
 
