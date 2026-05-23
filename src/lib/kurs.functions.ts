@@ -97,13 +97,36 @@ export const hamtaKursForVisning = createServerFn({ method: "POST" })
       .eq("id", data.kurs_id)
       .maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
-    const quiz = kurs.quiz as unknown as Array<{ fraga: string; alternativ: string[]; ratt_svar: number }>;
+    const quiz = (kurs.quiz as unknown as Array<{ fraga: string; alternativ: string[]; ratt_svar: number }>)
+      .map((q) => ({ fraga: q.fraga, alternativ: q.alternativ }));
     return {
       id: kurs.id,
       titel: kurs.titel,
       steg: kurs.steg as unknown as string[],
       quiz,
     };
+  });
+
+// --- Kontrollera ett enskilt svar (server-side facit) ---
+export const kontrolleraSvar = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      kurs_id: z.string().uuid(),
+      fraga_idx: z.number().int().min(0).max(50),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: kurs, error } = await supabase
+      .from("kurser")
+      .select("quiz")
+      .eq("id", data.kurs_id)
+      .maybeSingle();
+    if (error || !kurs) throw new Error("Kurs hittades inte");
+    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
+    if (data.fraga_idx >= quiz.length) throw new Error("Ogiltig fråga");
+    return { ratt_svar: quiz[data.fraga_idx].ratt_svar };
   });
 
 // --- Lämna in quiz: rättning sker på servern ---
