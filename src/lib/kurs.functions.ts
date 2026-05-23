@@ -96,8 +96,7 @@ export const hamtaKursForVisning = createServerFn({ method: "POST" })
       .eq("id", data.kurs_id)
       .maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
-    const quiz = (kurs.quiz as unknown as Array<{ fraga: string; alternativ: string[]; ratt_svar: number }>)
-      .map((q) => ({ fraga: q.fraga, alternativ: q.alternativ }));
+    const quiz = kurs.quiz as unknown as Array<{ fraga: string; alternativ: string[]; ratt_svar: number }>;
     return {
       id: kurs.id,
       titel: kurs.titel,
