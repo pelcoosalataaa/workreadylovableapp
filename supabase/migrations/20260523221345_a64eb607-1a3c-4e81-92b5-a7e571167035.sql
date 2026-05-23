@@ -1,0 +1,1 @@
+ALTER TABLE public.anvandare ADD COLUMN IF NOT EXISTS bolag text;

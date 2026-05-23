@@ -6,6 +6,8 @@ import { createClient } from "@supabase/supabase-js";
 const inputSchema = z.object({
   namn: z.string().min(1).max(100),
   epost: z.string().email().max(255),
+  typ: z.enum(["egen", "inhyrd"]),
+  bolag: z.string().max(150).optional(),
 });
 
 export const bjudInAnstalld = createServerFn({ method: "POST" })
@@ -17,6 +19,11 @@ export const bjudInAnstalld = createServerFn({ method: "POST" })
     const { data: chef } = await supabase
       .from("anvandare").select("*").eq("id", userId).maybeSingle();
     if (!chef || chef.roll !== "chef") throw new Error("Endast chefer kan bjuda in.");
+
+    const bolag =
+      data.typ === "inhyrd"
+        ? (data.bolag?.trim() || "Inhyrd personal")
+        : chef.foretag_namn;
 
     const SUPABASE_URL = process.env.SUPABASE_URL!;
     const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -34,6 +41,7 @@ export const bjudInAnstalld = createServerFn({ method: "POST" })
       namn: data.namn,
       epost: data.epost,
       roll: "anstalld",
+      bolag,
     });
     if (pErr) throw new Error("Kunde inte spara användare: " + pErr.message);
 

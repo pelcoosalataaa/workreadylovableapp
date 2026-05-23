@@ -9,18 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/anstallda")({ component: Anstallda });
 
-type Rad = { id: string; namn: string; epost: string; klarade: string[] };
+type Rad = { id: string; namn: string; epost: string; bolag: string | null; klarade: string[] };
 
 function Anstallda() {
   const { loading, user, profil } = useAuth();
   const navigate = useNavigate();
   const bjud = useServerFn(bjudInAnstalld);
   const [oppen, setOppen] = useState(false);
-  const [form, setForm] = useState({ namn: "", epost: "" });
+  const [form, setForm] = useState<{ namn: string; epost: string; typ: "egen" | "inhyrd"; bolag: string }>({ namn: "", epost: "", typ: "egen", bolag: "" });
   const [skickar, setSkickar] = useState(false);
   const [lista, setLista] = useState<Rad[]>([]);
 
@@ -28,7 +29,7 @@ function Anstallda() {
     if (!profil) return;
     const { data: anst } = await supabase
       .from("anvandare")
-      .select("id,namn,epost")
+      .select("id,namn,epost,bolag")
       .eq("foretag_id", profil.foretag_id)
       .eq("roll", "anstalld");
     if (!anst) return;
@@ -44,7 +45,7 @@ function Anstallda() {
       arr.push(k.titel);
       titlar.set(r.anvandare_id, arr);
     });
-    setLista(anst.map((a) => ({ ...a, klarade: titlar.get(a.id) ?? [] })));
+    setLista(anst.map((a) => ({ ...a, bolag: a.bolag ?? null, klarade: titlar.get(a.id) ?? [] })));
   };
 
 
@@ -60,10 +61,17 @@ function Anstallda() {
     e.preventDefault();
     setSkickar(true);
     try {
-      await bjud({ data: form });
+      await bjud({
+        data: {
+          namn: form.namn,
+          epost: form.epost,
+          typ: form.typ,
+          bolag: form.typ === "inhyrd" ? form.bolag : undefined,
+        },
+      });
       toast.success("Inbjudan skickad!");
       setOppen(false);
-      setForm({ namn: "", epost: "" });
+      setForm({ namn: "", epost: "", typ: "egen", bolag: "" });
       await ladda();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Fel");
@@ -90,6 +98,25 @@ function Anstallda() {
                   <Input required value={form.namn} onChange={(e) => setForm({ ...form, namn: e.target.value })} />
                 </div>
                 <div>
+                  <Label>Bolag</Label>
+                  <Select value={form.typ} onValueChange={(v) => setForm({ ...form, typ: v as "egen" | "inhyrd" })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="egen">Egen anställd</SelectItem>
+                      <SelectItem value="inhyrd">Inhyrd personal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.typ === "inhyrd" && (
+                    <Input
+                      className="mt-2"
+                      placeholder="Vilket bolag?"
+                      required
+                      value={form.bolag}
+                      onChange={(e) => setForm({ ...form, bolag: e.target.value })}
+                    />
+                  )}
+                </div>
+                <div>
                   <Label>E-post</Label>
                   <Input type="email" required value={form.epost} onChange={(e) => setForm({ ...form, epost: e.target.value })} />
                 </div>
@@ -112,6 +139,7 @@ function Anstallda() {
                     <div className="min-w-0">
                       <div className="font-medium">{a.namn}</div>
                       <div className="text-xs text-muted-foreground">{a.epost}</div>
+                      {a.bolag && <div className="text-xs text-muted-foreground">Bolag: {a.bolag}</div>}
                     </div>
                     <span className="shrink-0 text-sm font-medium text-primary">{a.klarade.length} klarade</span>
                   </div>

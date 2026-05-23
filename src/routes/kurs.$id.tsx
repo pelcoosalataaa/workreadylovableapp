@@ -7,7 +7,10 @@ import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/kurs/$id")({ component: KursVisning });
+export const Route = createFileRoute("/kurs/$id")({
+  component: KursVisning,
+  validateSearch: (s: Record<string, unknown>) => ({ repetera: s.repetera === 1 || s.repetera === "1" ? 1 : undefined }),
+});
 
 type QuizFraga = { fraga: string; alternativ: string[] };
 type Kurs = { id: string; titel: string; steg: string[]; quiz: QuizFraga[] };
@@ -16,6 +19,7 @@ type Fas = "steg" | "quiz" | "resultat";
 
 function KursVisning() {
   const { id } = Route.useParams();
+  const { repetera } = Route.useSearch();
   const { loading, user } = useAuth();
   const navigate = useNavigate();
   const hamta = useServerFn(hamtaKursForVisning);
@@ -52,6 +56,11 @@ function KursVisning() {
       <Topbar />
       <main className="mx-auto max-w-2xl space-y-6 px-6 py-10">
         <h1 className="text-3xl font-bold text-primary">{kurs.titel}</h1>
+        {repetera && (
+          <div className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-primary">
+            Repetition – ditt resultat påverkas inte.
+          </div>
+        )}
 
         {fas === "steg" && (
           <div className="card-shadow space-y-6 rounded-2xl bg-card p-8">

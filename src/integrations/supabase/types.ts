@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       anvandare: {
         Row: {
+          bolag: string | null
           epost: string
           foretag_id: string
           foretag_namn: string
@@ -25,6 +26,7 @@ export type Database = {
           skapad_at: string
         }
         Insert: {
+          bolag?: string | null
           epost: string
           foretag_id: string
           foretag_namn: string
@@ -34,6 +36,7 @@ export type Database = {
           skapad_at?: string
         }
         Update: {
+          bolag?: string | null
           epost?: string
           foretag_id?: string
           foretag_namn?: string
