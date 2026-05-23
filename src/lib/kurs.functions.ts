@@ -73,14 +73,24 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
       throw new Error("Ogiltigt JSON-svar från AI");
     }
 
+    const quizUtanFacit = kurs.quiz.map((q) => ({ fraga: q.fraga, alternativ: q.alternativ }));
+    const rattSvar = kurs.quiz.map((q) => q.ratt_svar);
+
     const { data: rad, error: iErr } = await supabase.from("kurser").insert({
       foretag_id: userId,
+      chef_id: userId,
       titel: data.kursnamn || kurs.titel,
       steg: kurs.steg as unknown as never,
-      quiz: kurs.quiz as unknown as never,
+      quiz: quizUtanFacit as unknown as never,
       transkription,
     }).select("id").single();
     if (iErr) throw new Error("Kunde inte spara kurs: " + iErr.message);
+
+    const { error: fErr } = await supabaseAdmin.from("kurs_facit").insert({
+      kurs_id: rad.id,
+      ratt_svar: rattSvar,
+    });
+    if (fErr) throw new Error("Kunde inte spara facit: " + fErr.message);
 
     return { kurs_id: rad.id };
   });
