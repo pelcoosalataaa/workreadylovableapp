@@ -151,18 +151,18 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: kurs, error } = await supabase
-      .from("kurser")
-      .select("id, quiz")
-      .eq("id", data.kurs_id)
-      .maybeSingle();
+      .from("kurser").select("id").eq("id", data.kurs_id).maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
 
-    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
-    if (data.svar.length !== quiz.length) throw new Error("Felaktigt antal svar");
+    const { data: facit, error: fErr } = await supabaseAdmin
+      .from("kurs_facit").select("ratt_svar").eq("kurs_id", data.kurs_id).maybeSingle();
+    if (fErr || !facit) throw new Error("Facit saknas");
+    const rattSvar = facit.ratt_svar;
+    if (data.svar.length !== rattSvar.length) throw new Error("Felaktigt antal svar");
 
     let poang = 0;
-    for (let i = 0; i < quiz.length; i++) {
-      if (data.svar[i] === quiz[i].ratt_svar) poang++;
+    for (let i = 0; i < rattSvar.length; i++) {
+      if (data.svar[i] === rattSvar[i]) poang++;
     }
     const godkand = poang >= 6;
 
