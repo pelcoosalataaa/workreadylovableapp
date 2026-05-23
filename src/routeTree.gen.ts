@@ -9,53 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UtgaendeCertifikatRouteImport } from './routes/utgaende-certifikat'
-import { Route as UtbildningRouteImport } from './routes/utbildning'
-import { Route as SpelaInRouteImport } from './routes/spela-in'
-import { Route as PersonalRouteImport } from './routes/personal'
-import { Route as ModulerRouteImport } from './routes/moduler'
-import { Route as MobilRouteImport } from './routes/mobil'
+import { Route as RegistreraRouteImport } from './routes/registrera'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as KompetensmatrisRouteImport } from './routes/kompetensmatris'
-import { Route as InstallningarRouteImport } from './routes/installningar'
-import { Route as InhyrdPersonalRouteImport } from './routes/inhyrd-personal'
+import { Route as LaddaUppRouteImport } from './routes/ladda-upp'
+import { Route as KurserRouteImport } from './routes/kurser'
 import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as CertifikatRouteImport } from './routes/certifikat'
-import { Route as BemanningspartnersRouteImport } from './routes/bemanningspartners'
-import { Route as BemanningsbolagRouteImport } from './routes/bemanningsbolag'
-import { Route as AvdelningRouteImport } from './routes/avdelning'
-import { Route as ArbetskraftRouteImport } from './routes/arbetskraft'
+import { Route as AnstalldaRouteImport } from './routes/anstallda'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ModulIdRouteImport } from './routes/modul.$id'
+import { Route as KursIdRouteImport } from './routes/kurs.$id'
 
-const UtgaendeCertifikatRoute = UtgaendeCertifikatRouteImport.update({
-  id: '/utgaende-certifikat',
-  path: '/utgaende-certifikat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UtbildningRoute = UtbildningRouteImport.update({
-  id: '/utbildning',
-  path: '/utbildning',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SpelaInRoute = SpelaInRouteImport.update({
-  id: '/spela-in',
-  path: '/spela-in',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PersonalRoute = PersonalRouteImport.update({
-  id: '/personal',
-  path: '/personal',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ModulerRoute = ModulerRouteImport.update({
-  id: '/moduler',
-  path: '/moduler',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MobilRoute = MobilRouteImport.update({
-  id: '/mobil',
-  path: '/mobil',
+const RegistreraRoute = RegistreraRouteImport.update({
+  id: '/registrera',
+  path: '/registrera',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -63,19 +28,14 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const KompetensmatrisRoute = KompetensmatrisRouteImport.update({
-  id: '/kompetensmatris',
-  path: '/kompetensmatris',
+const LaddaUppRoute = LaddaUppRouteImport.update({
+  id: '/ladda-upp',
+  path: '/ladda-upp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InstallningarRoute = InstallningarRouteImport.update({
-  id: '/installningar',
-  path: '/installningar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InhyrdPersonalRoute = InhyrdPersonalRouteImport.update({
-  id: '/inhyrd-personal',
-  path: '/inhyrd-personal',
+const KurserRoute = KurserRouteImport.update({
+  id: '/kurser',
+  path: '/kurser',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -83,29 +43,9 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CertifikatRoute = CertifikatRouteImport.update({
-  id: '/certifikat',
-  path: '/certifikat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BemanningspartnersRoute = BemanningspartnersRouteImport.update({
-  id: '/bemanningspartners',
-  path: '/bemanningspartners',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BemanningsbolagRoute = BemanningsbolagRouteImport.update({
-  id: '/bemanningsbolag',
-  path: '/bemanningsbolag',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AvdelningRoute = AvdelningRouteImport.update({
-  id: '/avdelning',
-  path: '/avdelning',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArbetskraftRoute = ArbetskraftRouteImport.update({
-  id: '/arbetskraft',
-  path: '/arbetskraft',
+const AnstalldaRoute = AnstalldaRouteImport.update({
+  id: '/anstallda',
+  path: '/anstallda',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -113,199 +53,94 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ModulIdRoute = ModulIdRouteImport.update({
-  id: '/modul/$id',
-  path: '/modul/$id',
+const KursIdRoute = KursIdRouteImport.update({
+  id: '/kurs/$id',
+  path: '/kurs/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/arbetskraft': typeof ArbetskraftRoute
-  '/avdelning': typeof AvdelningRoute
-  '/bemanningsbolag': typeof BemanningsbolagRoute
-  '/bemanningspartners': typeof BemanningspartnersRoute
-  '/certifikat': typeof CertifikatRoute
+  '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
-  '/inhyrd-personal': typeof InhyrdPersonalRoute
-  '/installningar': typeof InstallningarRoute
-  '/kompetensmatris': typeof KompetensmatrisRoute
+  '/kurser': typeof KurserRoute
+  '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
-  '/mobil': typeof MobilRoute
-  '/moduler': typeof ModulerRoute
-  '/personal': typeof PersonalRoute
-  '/spela-in': typeof SpelaInRoute
-  '/utbildning': typeof UtbildningRoute
-  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
-  '/modul/$id': typeof ModulIdRoute
+  '/registrera': typeof RegistreraRoute
+  '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/arbetskraft': typeof ArbetskraftRoute
-  '/avdelning': typeof AvdelningRoute
-  '/bemanningsbolag': typeof BemanningsbolagRoute
-  '/bemanningspartners': typeof BemanningspartnersRoute
-  '/certifikat': typeof CertifikatRoute
+  '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
-  '/inhyrd-personal': typeof InhyrdPersonalRoute
-  '/installningar': typeof InstallningarRoute
-  '/kompetensmatris': typeof KompetensmatrisRoute
+  '/kurser': typeof KurserRoute
+  '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
-  '/mobil': typeof MobilRoute
-  '/moduler': typeof ModulerRoute
-  '/personal': typeof PersonalRoute
-  '/spela-in': typeof SpelaInRoute
-  '/utbildning': typeof UtbildningRoute
-  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
-  '/modul/$id': typeof ModulIdRoute
+  '/registrera': typeof RegistreraRoute
+  '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/arbetskraft': typeof ArbetskraftRoute
-  '/avdelning': typeof AvdelningRoute
-  '/bemanningsbolag': typeof BemanningsbolagRoute
-  '/bemanningspartners': typeof BemanningspartnersRoute
-  '/certifikat': typeof CertifikatRoute
+  '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
-  '/inhyrd-personal': typeof InhyrdPersonalRoute
-  '/installningar': typeof InstallningarRoute
-  '/kompetensmatris': typeof KompetensmatrisRoute
+  '/kurser': typeof KurserRoute
+  '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
-  '/mobil': typeof MobilRoute
-  '/moduler': typeof ModulerRoute
-  '/personal': typeof PersonalRoute
-  '/spela-in': typeof SpelaInRoute
-  '/utbildning': typeof UtbildningRoute
-  '/utgaende-certifikat': typeof UtgaendeCertifikatRoute
-  '/modul/$id': typeof ModulIdRoute
+  '/registrera': typeof RegistreraRoute
+  '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/arbetskraft'
-    | '/avdelning'
-    | '/bemanningsbolag'
-    | '/bemanningspartners'
-    | '/certifikat'
+    | '/anstallda'
     | '/dashboard'
-    | '/inhyrd-personal'
-    | '/installningar'
-    | '/kompetensmatris'
+    | '/kurser'
+    | '/ladda-upp'
     | '/login'
-    | '/mobil'
-    | '/moduler'
-    | '/personal'
-    | '/spela-in'
-    | '/utbildning'
-    | '/utgaende-certifikat'
-    | '/modul/$id'
+    | '/registrera'
+    | '/kurs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/arbetskraft'
-    | '/avdelning'
-    | '/bemanningsbolag'
-    | '/bemanningspartners'
-    | '/certifikat'
+    | '/anstallda'
     | '/dashboard'
-    | '/inhyrd-personal'
-    | '/installningar'
-    | '/kompetensmatris'
+    | '/kurser'
+    | '/ladda-upp'
     | '/login'
-    | '/mobil'
-    | '/moduler'
-    | '/personal'
-    | '/spela-in'
-    | '/utbildning'
-    | '/utgaende-certifikat'
-    | '/modul/$id'
+    | '/registrera'
+    | '/kurs/$id'
   id:
     | '__root__'
     | '/'
-    | '/arbetskraft'
-    | '/avdelning'
-    | '/bemanningsbolag'
-    | '/bemanningspartners'
-    | '/certifikat'
+    | '/anstallda'
     | '/dashboard'
-    | '/inhyrd-personal'
-    | '/installningar'
-    | '/kompetensmatris'
+    | '/kurser'
+    | '/ladda-upp'
     | '/login'
-    | '/mobil'
-    | '/moduler'
-    | '/personal'
-    | '/spela-in'
-    | '/utbildning'
-    | '/utgaende-certifikat'
-    | '/modul/$id'
+    | '/registrera'
+    | '/kurs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ArbetskraftRoute: typeof ArbetskraftRoute
-  AvdelningRoute: typeof AvdelningRoute
-  BemanningsbolagRoute: typeof BemanningsbolagRoute
-  BemanningspartnersRoute: typeof BemanningspartnersRoute
-  CertifikatRoute: typeof CertifikatRoute
+  AnstalldaRoute: typeof AnstalldaRoute
   DashboardRoute: typeof DashboardRoute
-  InhyrdPersonalRoute: typeof InhyrdPersonalRoute
-  InstallningarRoute: typeof InstallningarRoute
-  KompetensmatrisRoute: typeof KompetensmatrisRoute
+  KurserRoute: typeof KurserRoute
+  LaddaUppRoute: typeof LaddaUppRoute
   LoginRoute: typeof LoginRoute
-  MobilRoute: typeof MobilRoute
-  ModulerRoute: typeof ModulerRoute
-  PersonalRoute: typeof PersonalRoute
-  SpelaInRoute: typeof SpelaInRoute
-  UtbildningRoute: typeof UtbildningRoute
-  UtgaendeCertifikatRoute: typeof UtgaendeCertifikatRoute
-  ModulIdRoute: typeof ModulIdRoute
+  RegistreraRoute: typeof RegistreraRoute
+  KursIdRoute: typeof KursIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/utgaende-certifikat': {
-      id: '/utgaende-certifikat'
-      path: '/utgaende-certifikat'
-      fullPath: '/utgaende-certifikat'
-      preLoaderRoute: typeof UtgaendeCertifikatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/utbildning': {
-      id: '/utbildning'
-      path: '/utbildning'
-      fullPath: '/utbildning'
-      preLoaderRoute: typeof UtbildningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/spela-in': {
-      id: '/spela-in'
-      path: '/spela-in'
-      fullPath: '/spela-in'
-      preLoaderRoute: typeof SpelaInRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/personal': {
-      id: '/personal'
-      path: '/personal'
-      fullPath: '/personal'
-      preLoaderRoute: typeof PersonalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/moduler': {
-      id: '/moduler'
-      path: '/moduler'
-      fullPath: '/moduler'
-      preLoaderRoute: typeof ModulerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mobil': {
-      id: '/mobil'
-      path: '/mobil'
-      fullPath: '/mobil'
-      preLoaderRoute: typeof MobilRouteImport
+    '/registrera': {
+      id: '/registrera'
+      path: '/registrera'
+      fullPath: '/registrera'
+      preLoaderRoute: typeof RegistreraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -315,25 +150,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/kompetensmatris': {
-      id: '/kompetensmatris'
-      path: '/kompetensmatris'
-      fullPath: '/kompetensmatris'
-      preLoaderRoute: typeof KompetensmatrisRouteImport
+    '/ladda-upp': {
+      id: '/ladda-upp'
+      path: '/ladda-upp'
+      fullPath: '/ladda-upp'
+      preLoaderRoute: typeof LaddaUppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/installningar': {
-      id: '/installningar'
-      path: '/installningar'
-      fullPath: '/installningar'
-      preLoaderRoute: typeof InstallningarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inhyrd-personal': {
-      id: '/inhyrd-personal'
-      path: '/inhyrd-personal'
-      fullPath: '/inhyrd-personal'
-      preLoaderRoute: typeof InhyrdPersonalRouteImport
+    '/kurser': {
+      id: '/kurser'
+      path: '/kurser'
+      fullPath: '/kurser'
+      preLoaderRoute: typeof KurserRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -343,39 +171,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/certifikat': {
-      id: '/certifikat'
-      path: '/certifikat'
-      fullPath: '/certifikat'
-      preLoaderRoute: typeof CertifikatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bemanningspartners': {
-      id: '/bemanningspartners'
-      path: '/bemanningspartners'
-      fullPath: '/bemanningspartners'
-      preLoaderRoute: typeof BemanningspartnersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bemanningsbolag': {
-      id: '/bemanningsbolag'
-      path: '/bemanningsbolag'
-      fullPath: '/bemanningsbolag'
-      preLoaderRoute: typeof BemanningsbolagRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/avdelning': {
-      id: '/avdelning'
-      path: '/avdelning'
-      fullPath: '/avdelning'
-      preLoaderRoute: typeof AvdelningRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/arbetskraft': {
-      id: '/arbetskraft'
-      path: '/arbetskraft'
-      fullPath: '/arbetskraft'
-      preLoaderRoute: typeof ArbetskraftRouteImport
+    '/anstallda': {
+      id: '/anstallda'
+      path: '/anstallda'
+      fullPath: '/anstallda'
+      preLoaderRoute: typeof AnstalldaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -385,11 +185,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/modul/$id': {
-      id: '/modul/$id'
-      path: '/modul/$id'
-      fullPath: '/modul/$id'
-      preLoaderRoute: typeof ModulIdRouteImport
+    '/kurs/$id': {
+      id: '/kurs/$id'
+      path: '/kurs/$id'
+      fullPath: '/kurs/$id'
+      preLoaderRoute: typeof KursIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -397,34 +197,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ArbetskraftRoute: ArbetskraftRoute,
-  AvdelningRoute: AvdelningRoute,
-  BemanningsbolagRoute: BemanningsbolagRoute,
-  BemanningspartnersRoute: BemanningspartnersRoute,
-  CertifikatRoute: CertifikatRoute,
+  AnstalldaRoute: AnstalldaRoute,
   DashboardRoute: DashboardRoute,
-  InhyrdPersonalRoute: InhyrdPersonalRoute,
-  InstallningarRoute: InstallningarRoute,
-  KompetensmatrisRoute: KompetensmatrisRoute,
+  KurserRoute: KurserRoute,
+  LaddaUppRoute: LaddaUppRoute,
   LoginRoute: LoginRoute,
-  MobilRoute: MobilRoute,
-  ModulerRoute: ModulerRoute,
-  PersonalRoute: PersonalRoute,
-  SpelaInRoute: SpelaInRoute,
-  UtbildningRoute: UtbildningRoute,
-  UtgaendeCertifikatRoute: UtgaendeCertifikatRoute,
-  ModulIdRoute: ModulIdRoute,
+  RegistreraRoute: RegistreraRoute,
+  KursIdRoute: KursIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
