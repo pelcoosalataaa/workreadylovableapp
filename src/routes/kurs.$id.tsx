@@ -77,7 +77,8 @@ function KursVisning() {
               <div className="space-y-2">
                 {q.alternativ.map((a, i) => {
                   const isValt = i === valt;
-                  const isRatt = i === q.ratt_svar;
+                  const visarFacit = rattSvar !== null;
+                  const isRatt = i === rattSvar;
                   let klass = "border-border hover:bg-accent";
                   if (visarFacit) {
                     if (isRatt) klass = "border-green-600 bg-green-600/10 text-green-700 dark:text-green-400";
@@ -99,9 +100,22 @@ function KursVisning() {
                 })}
               </div>
               <div className="flex justify-end">
-                {!visarFacit ? (
-                  <Button disabled={valt === null} onClick={() => setVisarFacit(true)}>
-                    Kontrollera svar
+                {rattSvar === null ? (
+                  <Button
+                    disabled={valt === null || kontrollerar}
+                    onClick={async () => {
+                      setKontrollerar(true);
+                      try {
+                        const res = await kontrollera({ data: { kurs_id: kurs.id, fraga_idx: quizIdx } });
+                        setRattSvar(res.ratt_svar);
+                      } catch {
+                        toast.error("Kunde inte kontrollera svar");
+                      } finally {
+                        setKontrollerar(false);
+                      }
+                    }}
+                  >
+                    {kontrollerar ? "Kontrollerar…" : "Kontrollera svar"}
                   </Button>
                 ) : (
                   <Button
@@ -111,7 +125,7 @@ function KursVisning() {
                       if (!sista) {
                         setSvar(nyaSvar);
                         setValt(null);
-                        setVisarFacit(false);
+                        setRattSvar(null);
                         setQuizIdx(quizIdx + 1);
                       } else {
                         setSkickar(true);
