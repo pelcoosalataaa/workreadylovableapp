@@ -14,6 +14,8 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
     if (!LOVABLE_API_KEY) throw new Error("Saknar LOVABLE_API_KEY");
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    if (!OPENAI_API_KEY) throw new Error("Saknar OPENAI_API_KEY");
 
     const { data: signed, error: sErr } = await supabase
       .storage.from("kurser").createSignedUrl(data.storage_path, 600);
@@ -28,9 +30,9 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
     fd.append("model", "whisper-1");
     fd.append("language", "sv");
 
-    const whisperRes = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+    const whisperRes = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
-      headers: { "Lovable-API-Key": LOVABLE_API_KEY },
+      headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
       body: fd,
     });
     if (!whisperRes.ok) {
