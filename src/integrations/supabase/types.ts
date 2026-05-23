@@ -44,8 +44,35 @@ export type Database = {
         }
         Relationships: []
       }
+      kurs_facit: {
+        Row: {
+          kurs_id: string
+          ratt_svar: number[]
+          skapad_at: string
+        }
+        Insert: {
+          kurs_id: string
+          ratt_svar: number[]
+          skapad_at?: string
+        }
+        Update: {
+          kurs_id?: string
+          ratt_svar?: number[]
+          skapad_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kurs_facit_kurs_id_fkey"
+            columns: ["kurs_id"]
+            isOneToOne: true
+            referencedRelation: "kurser"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kurser: {
         Row: {
+          chef_id: string
           foretag_id: string
           id: string
           quiz: Json
@@ -55,6 +82,7 @@ export type Database = {
           transkription: string | null
         }
         Insert: {
+          chef_id: string
           foretag_id: string
           id?: string
           quiz?: Json
@@ -64,6 +92,7 @@ export type Database = {
           transkription?: string | null
         }
         Update: {
+          chef_id?: string
           foretag_id?: string
           id?: string
           quiz?: Json
