@@ -13,6 +13,7 @@ import { Route as RegistreraRouteImport } from './routes/registrera'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaddaUppRouteImport } from './routes/ladda-upp'
 import { Route as KurserRouteImport } from './routes/kurser'
+import { Route as GlomtLosenordRouteImport } from './routes/glomt-losenord'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AnstalldaRouteImport } from './routes/anstallda'
 import { Route as IndexRouteImport } from './routes/index'
@@ -36,6 +37,11 @@ const LaddaUppRoute = LaddaUppRouteImport.update({
 const KurserRoute = KurserRouteImport.update({
   id: '/kurser',
   path: '/kurser',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GlomtLosenordRoute = GlomtLosenordRouteImport.update({
+  id: '/glomt-losenord',
+  path: '/glomt-losenord',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/anstallda': typeof AnstalldaRoute
   '/dashboard': typeof DashboardRoute
+  '/glomt-losenord': typeof GlomtLosenordRoute
   '/kurser': typeof KurserRoute
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anstallda'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anstallda'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/anstallda'
     | '/dashboard'
+    | '/glomt-losenord'
     | '/kurser'
     | '/ladda-upp'
     | '/login'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnstalldaRoute: typeof AnstalldaRoute
   DashboardRoute: typeof DashboardRoute
+  GlomtLosenordRoute: typeof GlomtLosenordRoute
   KurserRoute: typeof KurserRoute
   LaddaUppRoute: typeof LaddaUppRoute
   LoginRoute: typeof LoginRoute
@@ -164,6 +177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KurserRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/glomt-losenord': {
+      id: '/glomt-losenord'
+      path: '/glomt-losenord'
+      fullPath: '/glomt-losenord'
+      preLoaderRoute: typeof GlomtLosenordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnstalldaRoute: AnstalldaRoute,
   DashboardRoute: DashboardRoute,
+  GlomtLosenordRoute: GlomtLosenordRoute,
   KurserRoute: KurserRoute,
   LaddaUppRoute: LaddaUppRoute,
   LoginRoute: LoginRoute,
@@ -208,3 +229,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
