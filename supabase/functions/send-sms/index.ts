@@ -1,7 +1,8 @@
 // Supabase Edge Function: send-sms
-// Sends an SMS via Twilio's REST API.
+// Sends an SMS via Twilio's REST API. Requires an authenticated user.
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,30 +16,57 @@ interface SendSmsBody {
   message?: string;
 }
 
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { to, message } = (await req.json()) as SendSmsBody;
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return json({ success: false, error: "Unauthorized" }, 401);
 
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return json({ success: false, error: "Server misconfigured" }, 500);
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userErr } = await supabase.auth.getUser();
+    if (userErr || !userData?.user) {
+      return json({ success: false, error: "Unauthorized" }, 401);
+    }
+
+    // --- Input ---
+    const { to, message } = (await req.json()) as SendSmsBody;
     if (!to || !message) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Missing 'to' or 'message'" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return json({ success: false, error: "Missing 'to' or 'message'" }, 400);
+    }
+    if (typeof to !== "string" || typeof message !== "string") {
+      return json({ success: false, error: "Invalid input" }, 400);
+    }
+    if (!/^\+[1-9]\d{6,15}$/.test(to)) {
+      return json({ success: false, error: "Invalid phone number" }, 400);
+    }
+    if (message.length > 480) {
+      return json({ success: false, error: "Message too long" }, 400);
     }
 
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
-
     if (!accountSid || !authToken || !fromNumber) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Twilio credentials not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return json({ success: false, error: "Twilio credentials not configured" }, 500);
     }
 
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
@@ -52,27 +80,15 @@ serve(async (req) => {
       },
       body,
     });
-
     const data = await twilioRes.json();
-
     if (!twilioRes.ok) {
       console.error("Twilio error:", data);
-      return new Response(
-        JSON.stringify({ success: false, error: data?.message ?? "Twilio request failed" }),
-        { status: twilioRes.status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return json({ success: false, error: data?.message ?? "Twilio request failed" }, twilioRes.status);
     }
-
-    return new Response(
-      JSON.stringify({ success: true, sid: data.sid }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ success: true, sid: data.sid });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";
     console.error("send-sms exception:", msg);
-    return new Response(
-      JSON.stringify({ success: false, error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ success: false, error: msg }, 500);
   }
 });
