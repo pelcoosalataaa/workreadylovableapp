@@ -67,7 +67,7 @@ function KursVisning() {
 
         {fas === "quiz" && (() => {
           const q = kurs.quiz[quizIdx];
-          const visarFacit = valt !== null;
+          const sista = quizIdx === kurs.quiz.length - 1;
           return (
             <div className="card-shadow space-y-4 rounded-2xl bg-card p-8">
               <div className="text-sm text-muted-foreground">Fråga {quizIdx + 1} av {kurs.quiz.length}</div>
@@ -75,16 +75,20 @@ function KursVisning() {
               <div className="space-y-2">
                 {q.alternativ.map((a, i) => {
                   const isValt = i === valt;
-                  const klass = !visarFacit
-                    ? "border-border hover:bg-accent"
-                    : isValt
-                    ? "border-primary bg-primary/10"
-                    : "border-border opacity-60";
+                  const isRatt = i === q.ratt_svar;
+                  let klass = "border-border hover:bg-accent";
+                  if (visarFacit) {
+                    if (isRatt) klass = "border-green-600 bg-green-600/10 text-green-700 dark:text-green-400";
+                    else if (isValt) klass = "border-red-600 bg-red-600/10 text-red-700 dark:text-red-400";
+                    else klass = "border-border opacity-60";
+                  } else if (isValt) {
+                    klass = "border-primary bg-primary/10";
+                  }
                   return (
                     <button
                       key={i}
                       disabled={visarFacit}
-                      onClick={() => setValt(i)}
+                      onClick={() => !visarFacit && setValt(i)}
                       className={`w-full rounded-xl border-2 px-4 py-3 text-left transition ${klass}`}
                     >
                       {a}
@@ -92,15 +96,20 @@ function KursVisning() {
                   );
                 })}
               </div>
-              {visarFacit && (
-                <div className="flex justify-end">
+              <div className="flex justify-end">
+                {!visarFacit ? (
+                  <Button disabled={valt === null} onClick={() => setVisarFacit(true)}>
+                    Kontrollera svar
+                  </Button>
+                ) : (
                   <Button
                     disabled={skickar}
                     onClick={async () => {
                       const nyaSvar = [...svar, valt!];
-                      if (quizIdx < kurs.quiz.length - 1) {
+                      if (!sista) {
                         setSvar(nyaSvar);
                         setValt(null);
+                        setVisarFacit(false);
                         setQuizIdx(quizIdx + 1);
                       } else {
                         setSkickar(true);
@@ -116,10 +125,10 @@ function KursVisning() {
                       }
                     }}
                   >
-                    {quizIdx < kurs.quiz.length - 1 ? "Nästa fråga" : "Lämna in"}
+                    {sista ? "Lämna in" : "Nästa fråga"}
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })()}
