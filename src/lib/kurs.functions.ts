@@ -128,15 +128,15 @@ export const kontrolleraSvar = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    // Confirm caller has access to this course (RLS on kurser scopes by company)
     const { data: kurs, error } = await supabase
-      .from("kurser")
-      .select("quiz")
-      .eq("id", data.kurs_id)
-      .maybeSingle();
+      .from("kurser").select("id").eq("id", data.kurs_id).maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
-    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
-    if (data.fraga_idx >= quiz.length) throw new Error("Ogiltig fråga");
-    return { ratt_svar: quiz[data.fraga_idx].ratt_svar };
+    const { data: facit, error: fErr } = await supabaseAdmin
+      .from("kurs_facit").select("ratt_svar").eq("kurs_id", data.kurs_id).maybeSingle();
+    if (fErr || !facit) throw new Error("Facit saknas");
+    if (data.fraga_idx >= facit.ratt_svar.length) throw new Error("Ogiltig fråga");
+    return { ratt_svar: facit.ratt_svar[data.fraga_idx] };
   });
 
 // --- Lämna in quiz: rättning sker på servern ---
