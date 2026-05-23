@@ -73,14 +73,24 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
       throw new Error("Ogiltigt JSON-svar från AI");
     }
 
+    const quizUtanFacit = kurs.quiz.map((q) => ({ fraga: q.fraga, alternativ: q.alternativ }));
+    const rattSvar = kurs.quiz.map((q) => q.ratt_svar);
+
     const { data: rad, error: iErr } = await supabase.from("kurser").insert({
       foretag_id: userId,
+      chef_id: userId,
       titel: data.kursnamn || kurs.titel,
       steg: kurs.steg as unknown as never,
-      quiz: kurs.quiz as unknown as never,
+      quiz: quizUtanFacit as unknown as never,
       transkription,
     }).select("id").single();
     if (iErr) throw new Error("Kunde inte spara kurs: " + iErr.message);
+
+    const { error: fErr } = await supabaseAdmin.from("kurs_facit").insert({
+      kurs_id: rad.id,
+      ratt_svar: rattSvar,
+    });
+    if (fErr) throw new Error("Kunde inte spara facit: " + fErr.message);
 
     return { kurs_id: rad.id };
   });
@@ -118,15 +128,15 @@ export const kontrolleraSvar = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+    // Confirm caller has access to this course (RLS on kurser scopes by company)
     const { data: kurs, error } = await supabase
-      .from("kurser")
-      .select("quiz")
-      .eq("id", data.kurs_id)
-      .maybeSingle();
+      .from("kurser").select("id").eq("id", data.kurs_id).maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
-    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
-    if (data.fraga_idx >= quiz.length) throw new Error("Ogiltig fråga");
-    return { ratt_svar: quiz[data.fraga_idx].ratt_svar };
+    const { data: facit, error: fErr } = await supabaseAdmin
+      .from("kurs_facit").select("ratt_svar").eq("kurs_id", data.kurs_id).maybeSingle();
+    if (fErr || !facit) throw new Error("Facit saknas");
+    if (data.fraga_idx >= facit.ratt_svar.length) throw new Error("Ogiltig fråga");
+    return { ratt_svar: facit.ratt_svar[data.fraga_idx] };
   });
 
 // --- Lämna in quiz: rättning sker på servern ---
@@ -141,18 +151,18 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const { data: kurs, error } = await supabase
-      .from("kurser")
-      .select("id, quiz")
-      .eq("id", data.kurs_id)
-      .maybeSingle();
+      .from("kurser").select("id").eq("id", data.kurs_id).maybeSingle();
     if (error || !kurs) throw new Error("Kurs hittades inte");
 
-    const quiz = kurs.quiz as unknown as Array<{ ratt_svar: number }>;
-    if (data.svar.length !== quiz.length) throw new Error("Felaktigt antal svar");
+    const { data: facit, error: fErr } = await supabaseAdmin
+      .from("kurs_facit").select("ratt_svar").eq("kurs_id", data.kurs_id).maybeSingle();
+    if (fErr || !facit) throw new Error("Facit saknas");
+    const rattSvar = facit.ratt_svar;
+    if (data.svar.length !== rattSvar.length) throw new Error("Felaktigt antal svar");
 
     let poang = 0;
-    for (let i = 0; i < quiz.length; i++) {
-      if (data.svar[i] === quiz[i].ratt_svar) poang++;
+    for (let i = 0; i < rattSvar.length; i++) {
+      if (data.svar[i] === rattSvar[i]) poang++;
     }
     const godkand = poang >= 6;
 
@@ -174,5 +184,5 @@ export const lamnaInQuiz = createServerFn({ method: "POST" })
       }
     }
 
-    return { poang, antal: quiz.length, godkand };
+    return { poang, antal: rattSvar.length, godkand };
   });
