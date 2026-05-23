@@ -61,10 +61,17 @@ function Anstallda() {
     e.preventDefault();
     setSkickar(true);
     try {
-      await bjud({ data: form });
+      await bjud({
+        data: {
+          namn: form.namn,
+          epost: form.epost,
+          typ: form.typ,
+          bolag: form.typ === "inhyrd" ? form.bolag : undefined,
+        },
+      });
       toast.success("Inbjudan skickad!");
       setOppen(false);
-      setForm({ namn: "", epost: "" });
+      setForm({ namn: "", epost: "", typ: "egen", bolag: "" });
       await ladda();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Fel");
@@ -89,6 +96,25 @@ function Anstallda() {
                 <div>
                   <Label>Namn</Label>
                   <Input required value={form.namn} onChange={(e) => setForm({ ...form, namn: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Bolag</Label>
+                  <Select value={form.typ} onValueChange={(v) => setForm({ ...form, typ: v as "egen" | "inhyrd" })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="egen">Egen anställd</SelectItem>
+                      <SelectItem value="inhyrd">Inhyrd personal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.typ === "inhyrd" && (
+                    <Input
+                      className="mt-2"
+                      placeholder="Vilket bolag?"
+                      required
+                      value={form.bolag}
+                      onChange={(e) => setForm({ ...form, bolag: e.target.value })}
+                    />
+                  )}
                 </div>
                 <div>
                   <Label>E-post</Label>
