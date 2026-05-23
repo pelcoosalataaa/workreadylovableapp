@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/anstallda")({ component: Anstallda });
 
-type Rad = { id: string; namn: string; epost: string; klarade: number };
+type Rad = { id: string; namn: string; epost: string; klarade: string[] };
 
 function Anstallda() {
   const { loading, user, profil } = useAuth();
@@ -32,11 +32,21 @@ function Anstallda() {
       .eq("foretag_id", profil.foretag_id)
       .eq("roll", "anstalld");
     if (!anst) return;
-    const { data: res } = await supabase.from("resultat").select("anvandare_id,godkand").eq("godkand", true);
-    const counts = new Map<string, number>();
-    res?.forEach((r) => counts.set(r.anvandare_id, (counts.get(r.anvandare_id) ?? 0) + 1));
-    setLista(anst.map((a) => ({ ...a, klarade: counts.get(a.id) ?? 0 })));
+    const { data: res } = await supabase
+      .from("resultat")
+      .select("anvandare_id, kurser!inner(titel)")
+      .eq("godkand", true);
+    const titlar = new Map<string, string[]>();
+    (res ?? []).forEach((r: { anvandare_id: string; kurser: { titel: string } | { titel: string }[] | null }) => {
+      const k = Array.isArray(r.kurser) ? r.kurser[0] : r.kurser;
+      if (!k) return;
+      const arr = titlar.get(r.anvandare_id) ?? [];
+      arr.push(k.titel);
+      titlar.set(r.anvandare_id, arr);
+    });
+    setLista(anst.map((a) => ({ ...a, klarade: titlar.get(a.id) ?? [] })));
   };
+
 
   useEffect(() => {
     if (loading) return;
@@ -97,14 +107,29 @@ function Anstallda() {
           ) : (
             <ul className="divide-y divide-border">
               {lista.map((a) => (
-                <li key={a.id} className="flex items-center justify-between px-4 py-3">
-                  <div>
-                    <div className="font-medium">{a.namn}</div>
-                    <div className="text-xs text-muted-foreground">{a.epost}</div>
+                <li key={a.id} className="px-4 py-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="font-medium">{a.namn}</div>
+                      <div className="text-xs text-muted-foreground">{a.epost}</div>
+                    </div>
+                    <span className="shrink-0 text-sm font-medium text-primary">{a.klarade.length} klarade</span>
                   </div>
-                  <span className="text-sm text-muted-foreground">{a.klarade} klarade</span>
+                  {a.klarade.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-xs font-medium text-muted-foreground">Klarade kurser:</div>
+                      <ul className="mt-1 flex flex-wrap gap-1.5">
+                        {a.klarade.map((titel, i) => (
+                          <li key={i} className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary">
+                            ✅ {titel}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </li>
               ))}
+
             </ul>
           )}
         </div>

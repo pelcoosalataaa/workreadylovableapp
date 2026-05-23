@@ -52,10 +52,11 @@ function Dashboard() {
           <Link to="/ladda-upp" className="card-shadow flex items-center gap-4 rounded-2xl bg-primary p-6 text-primary-foreground transition hover:opacity-95">
             <Upload className="h-8 w-8" />
             <div>
-              <div className="text-lg font-semibold">Ladda upp video</div>
-              <div className="text-sm opacity-80">Skapa en kurs med AI</div>
+              <div className="text-lg font-semibold">Skapa kurs</div>
+              <div className="text-sm opacity-80">Ladda upp video eller dokument</div>
             </div>
           </Link>
+
           <Link to="/anstallda" className="card-shadow flex items-center gap-4 rounded-2xl bg-card p-6 text-primary transition hover:bg-accent">
             <UserPlus className="h-8 w-8" />
             <div>
