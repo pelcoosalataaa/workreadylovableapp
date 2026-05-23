@@ -7,7 +7,10 @@ import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/kurs/$id")({ component: KursVisning });
+export const Route = createFileRoute("/kurs/$id")({
+  component: KursVisning,
+  validateSearch: (s: Record<string, unknown>) => ({ repetera: s.repetera === 1 || s.repetera === "1" ? 1 : undefined }),
+});
 
 type QuizFraga = { fraga: string; alternativ: string[] };
 type Kurs = { id: string; titel: string; steg: string[]; quiz: QuizFraga[] };

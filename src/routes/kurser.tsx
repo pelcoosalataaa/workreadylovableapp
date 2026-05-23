@@ -61,7 +61,12 @@ function Kurser() {
             klarade.map((k) => (
               <div key={k.id} className="card-shadow flex items-center justify-between rounded-2xl bg-card p-5">
                 <span className="font-medium">{k.titel}</span>
-                <span className="font-semibold text-primary">✅ Klar</span>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-primary">✅ Klar</span>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/kurs/$id" params={{ id: k.id }} search={{ repetera: 1 }}>Repetera</Link>
+                  </Button>
+                </div>
               </div>
             ))
           )}
