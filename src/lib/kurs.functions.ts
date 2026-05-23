@@ -51,7 +51,7 @@ export const skapaKursMedAi = createServerFn({ method: "POST" })
         "Lovable-API-Key": LOVABLE_API_KEY,
       },
       body: JSON.stringify({
-        model: "openai/gpt-4o-mini",
+        model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: "Du skapar tydliga e-kurser på svenska och svarar enbart med giltig JSON." },
           { role: "user", content: prompt },
