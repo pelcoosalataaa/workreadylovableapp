@@ -149,6 +149,7 @@ function KursVisning() {
                   onClick={() => {
                     setSvar([]);
                     setValt(null);
+                    setVisarFacit(false);
                     setQuizIdx(0);
                     setStegIdx(0);
                     setResultat(null);
