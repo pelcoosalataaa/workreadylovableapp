@@ -3,13 +3,25 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { bjudInAnstalld } from "@/lib/anstallda.functions";
+import { bjudInAnstalld, taBortAnstalld } from "@/lib/anstallda.functions";
 import { Topbar } from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/anstallda")({ component: Anstallda });
@@ -20,9 +32,11 @@ function Anstallda() {
   const { loading, user, profil } = useAuth();
   const navigate = useNavigate();
   const bjud = useServerFn(bjudInAnstalld);
+  const raderaFn = useServerFn(taBortAnstalld);
   const [oppen, setOppen] = useState(false);
   const [form, setForm] = useState<{ namn: string; epost: string; typ: "egen" | "inhyrd"; bolag: string }>({ namn: "", epost: "", typ: "egen", bolag: "" });
   const [skickar, setSkickar] = useState(false);
+  const [raderar, setRaderar] = useState<string | null>(null);
   const [lista, setLista] = useState<Rad[]>([]);
 
   const ladda = async () => {
@@ -77,6 +91,19 @@ function Anstallda() {
       toast.error(err instanceof Error ? err.message : "Fel");
     } finally {
       setSkickar(false);
+    }
+  };
+
+  const radera = async (id: string) => {
+    try {
+      setRaderar(id);
+      await raderaFn({ data: { anvandare_id: id } });
+      toast.success("Anställd borttagen");
+      setLista((l) => l.filter((a) => a.id !== id));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Kunde inte ta bort");
+    } finally {
+      setRaderar(null);
     }
   };
 
@@ -141,7 +168,28 @@ function Anstallda() {
                       <div className="text-xs text-muted-foreground">{a.epost}</div>
                       {a.bolag && <div className="text-xs text-muted-foreground">Bolag: {a.bolag}</div>}
                     </div>
-                    <span className="shrink-0 text-sm font-medium text-primary">{a.klarade.length} klarade</span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-sm font-medium text-primary">{a.klarade.length} klarade</span>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" disabled={raderar === a.id} aria-label="Ta bort anställd">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ta bort anställd?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              "{a.namn}" och alla resultat tas bort permanent. Kontot kan inte återställas.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => radera(a.id)}>Ta bort</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                   {a.klarade.length > 0 && (
                     <div className="mt-2">
