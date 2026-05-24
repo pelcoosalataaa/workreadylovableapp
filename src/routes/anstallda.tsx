@@ -94,6 +94,19 @@ function Anstallda() {
     }
   };
 
+  const radera = async (id: string) => {
+    try {
+      setRaderar(id);
+      await raderaFn({ data: { anvandare_id: id } });
+      toast.success("Anställd borttagen");
+      setLista((l) => l.filter((a) => a.id !== id));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Kunde inte ta bort");
+    } finally {
+      setRaderar(null);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <Topbar />
