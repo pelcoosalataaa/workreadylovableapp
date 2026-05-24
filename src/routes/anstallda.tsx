@@ -32,9 +32,11 @@ function Anstallda() {
   const { loading, user, profil } = useAuth();
   const navigate = useNavigate();
   const bjud = useServerFn(bjudInAnstalld);
+  const raderaFn = useServerFn(taBortAnstalld);
   const [oppen, setOppen] = useState(false);
   const [form, setForm] = useState<{ namn: string; epost: string; typ: "egen" | "inhyrd"; bolag: string }>({ namn: "", epost: "", typ: "egen", bolag: "" });
   const [skickar, setSkickar] = useState(false);
+  const [raderar, setRaderar] = useState<string | null>(null);
   const [lista, setLista] = useState<Rad[]>([]);
 
   const ladda = async () => {
