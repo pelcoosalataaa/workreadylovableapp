@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as RegistreraRouteImport } from './routes/registrera'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaddaUppRouteImport } from './routes/ladda-upp'
@@ -20,6 +21,11 @@ import { Route as AnstalldaRouteImport } from './routes/anstallda'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as KursIdRouteImport } from './routes/kurs.$id'
 
+const SetPasswordRoute = SetPasswordRouteImport.update({
+  id: '/set-password',
+  path: '/set-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RegistreraRoute = RegistreraRouteImport.update({
   id: '/registrera',
   path: '/registrera',
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
   '/registrera': typeof RegistreraRoute
+  '/set-password': typeof SetPasswordRoute
   '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRoutesByTo {
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
   '/registrera': typeof RegistreraRoute
+  '/set-password': typeof SetPasswordRoute
   '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRoutesById {
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/ladda-upp': typeof LaddaUppRoute
   '/login': typeof LoginRoute
   '/registrera': typeof RegistreraRoute
+  '/set-password': typeof SetPasswordRoute
   '/kurs/$id': typeof KursIdRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/ladda-upp'
     | '/login'
     | '/registrera'
+    | '/set-password'
     | '/kurs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/ladda-upp'
     | '/login'
     | '/registrera'
+    | '/set-password'
     | '/kurs/$id'
   id:
     | '__root__'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/ladda-upp'
     | '/login'
     | '/registrera'
+    | '/set-password'
     | '/kurs/$id'
   fileRoutesById: FileRoutesById
 }
@@ -157,11 +169,19 @@ export interface RootRouteChildren {
   LaddaUppRoute: typeof LaddaUppRoute
   LoginRoute: typeof LoginRoute
   RegistreraRoute: typeof RegistreraRoute
+  SetPasswordRoute: typeof SetPasswordRoute
   KursIdRoute: typeof KursIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/set-password': {
+      id: '/set-password'
+      path: '/set-password'
+      fullPath: '/set-password'
+      preLoaderRoute: typeof SetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/registrera': {
       id: '/registrera'
       path: '/registrera'
@@ -245,6 +265,7 @@ const rootRouteChildren: RootRouteChildren = {
   LaddaUppRoute: LaddaUppRoute,
   LoginRoute: LoginRoute,
   RegistreraRoute: RegistreraRoute,
+  SetPasswordRoute: SetPasswordRoute,
   KursIdRoute: KursIdRoute,
 }
 export const routeTree = rootRouteImport
