@@ -48,9 +48,6 @@ function Login() {
             Glömt lösenord?
           </Link>
         </p>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Ny här? <Link to="/registrera" className="font-semibold text-primary hover:underline">Skapa konto</Link>
-        </p>
       </div>
     </div>
   );
