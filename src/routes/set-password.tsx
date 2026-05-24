@@ -14,34 +14,58 @@ function SetPassword() {
   const [losen2, setLosen2] = useState("");
   const [laddar, setLaddar] = useState(false);
   const [redo, setRedo] = useState(false);
+  const [fel, setFel] = useState<string | null>(null);
 
   useEffect(() => {
-    // Supabase-inbjudningslänk innehåller token i URL-hashen och hanteras
-    // automatiskt av supabase-js (detectSessionInUrl). Vi väntar bara på
-    // att sessionen blir tillgänglig.
-    const kolla = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
+    const init = async () => {
+      const hash = window.location.hash.startsWith("#")
+        ? window.location.hash.slice(1)
+        : window.location.hash;
+      const params = new URLSearchParams(hash);
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+      const hashFel = params.get("error_description") ?? params.get("error");
+
+      if (hashFel) {
+        setFel(decodeURIComponent(hashFel));
+        return;
+      }
+
+      if (access_token && refresh_token) {
+        const { error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (error) {
+          setFel(error.message);
+          return;
+        }
+        window.history.replaceState(null, "", window.location.pathname);
         setRedo(true);
         return;
       }
+
+      const { data } = await supabase.auth.getSession();
+      if (data.session) setRedo(true);
+      else setFel("Ogiltig eller utgången inbjudningslänk.");
     };
-    kolla();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) setRedo(true);
-    });
-    return () => subscription.unsubscribe();
+    init();
   }, []);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (losen.length < 6) return toast.error("Lösenordet måste vara minst 6 tecken");
-    if (losen !== losen2) return toast.error("Lösenorden matchar inte");
+    setFel(null);
+    if (losen.length < 6) {
+      setFel("Lösenordet måste vara minst 6 tecken.");
+      return;
+    }
+    if (losen !== losen2) {
+      setFel("Lösenorden matchar inte.");
+      return;
+    }
     setLaddar(true);
     const { data: userData, error } = await supabase.auth.updateUser({ password: losen });
     if (error) {
       setLaddar(false);
-      return toast.error(error.message);
+      setFel(error.message);
+      return;
     }
     const uid = userData.user?.id;
     let roll: string | null = null;
@@ -54,31 +78,52 @@ function SetPassword() {
       roll = (profil as { roll?: string } | null)?.roll ?? null;
     }
     setLaddar(false);
-    toast.success("Lösenord sparat");
+    toast.success("Kontot är aktiverat");
     navigate({ to: roll === "chef" ? "/dashboard" : "/kurser" });
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       <div className="card-shadow w-full max-w-md rounded-2xl bg-card p-8">
-        <h1 className="mb-2 text-3xl font-bold text-primary">Välj lösenord</h1>
+        <h1 className="mb-2 text-3xl font-bold text-primary">Aktivera ditt konto</h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          Välkommen! Skapa ett lösenord för att slutföra ditt konto.
+          Välkommen! Välj ett lösenord för att slutföra registreringen.
         </p>
         {!redo ? (
-          <p className="text-sm text-muted-foreground">Verifierar inbjudningslänk…</p>
+          <p className="text-sm text-muted-foreground">
+            {fel ?? "Verifierar inbjudningslänk…"}
+          </p>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="p1">Lösenord</Label>
-              <Input id="p1" type="password" required value={losen} onChange={(e) => setLosen(e.target.value)} />
+              <Label htmlFor="p1">Välj lösenord</Label>
+              <Input
+                id="p1"
+                type="password"
+                required
+                minLength={6}
+                value={losen}
+                onChange={(e) => setLosen(e.target.value)}
+              />
             </div>
             <div>
               <Label htmlFor="p2">Bekräfta lösenord</Label>
-              <Input id="p2" type="password" required value={losen2} onChange={(e) => setLosen2(e.target.value)} />
+              <Input
+                id="p2"
+                type="password"
+                required
+                minLength={6}
+                value={losen2}
+                onChange={(e) => setLosen2(e.target.value)}
+              />
             </div>
-            <Button type="submit" className="w-full" disabled={laddar}>
-              {laddar ? "Sparar…" : "Spara lösenord"}
+            {fel && <p className="text-sm font-medium text-destructive">{fel}</p>}
+            <Button
+              type="submit"
+              className="w-full bg-[#1e3a8a] text-white hover:bg-[#1e40af]"
+              disabled={laddar}
+            >
+              {laddar ? "Aktiverar…" : "Aktivera mitt konto"}
             </Button>
           </form>
         )}
