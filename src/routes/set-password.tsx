@@ -87,7 +87,7 @@ function SetPassword() {
       <div className="card-shadow w-full max-w-md rounded-2xl bg-card p-8">
         <h1 className="mb-2 text-3xl font-bold text-primary">Aktivera ditt konto</h1>
         <p className="mb-6 text-sm text-muted-foreground">
-          Välkommen! Välj ett lösenord för att slutföra registreringen.
+          Välkommen till WorkReady! Välj ett lösenord för att aktivera ditt konto.
         </p>
         {!redo ? (
           <p className="text-sm text-muted-foreground">
