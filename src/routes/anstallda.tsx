@@ -168,7 +168,28 @@ function Anstallda() {
                       <div className="text-xs text-muted-foreground">{a.epost}</div>
                       {a.bolag && <div className="text-xs text-muted-foreground">Bolag: {a.bolag}</div>}
                     </div>
-                    <span className="shrink-0 text-sm font-medium text-primary">{a.klarade.length} klarade</span>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className="text-sm font-medium text-primary">{a.klarade.length} klarade</span>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" disabled={raderar === a.id} aria-label="Ta bort anställd">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Ta bort anställd?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              "{a.namn}" och alla resultat tas bort permanent. Kontot kan inte återställas.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => radera(a.id)}>Ta bort</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                   {a.klarade.length > 0 && (
                     <div className="mt-2">
